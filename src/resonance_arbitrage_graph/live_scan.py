@@ -64,6 +64,7 @@ def main() -> int:
             item.route,
             item.result,
             snapshots=quotes,
+            evaluation_time_ms=now_ms,
         )
         opportunity_payloads.append(
             {
