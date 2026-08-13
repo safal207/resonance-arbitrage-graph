@@ -14,7 +14,7 @@ from .regime import (
     classify_market_regime,
 )
 from .regime_features import derive_route_regime_features
-from .rolling_state import RollingMarketWindow, RollingWindowSummary
+from .rolling_state import RollingMarketSample, RollingMarketWindow, RollingWindowSummary
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,20 +46,31 @@ def derive_window_regime_context(
         evaluation_time_ms=evaluation_time_ms,
     )
     bound_indices = sorted({binding["snapshot_index"] for binding in bindings})
-    route_markets = {
-        market_key(snapshots[index].venue, snapshots[index].symbol)
-        for index in bound_indices
-    }
+    indices_by_market: dict[str, list[int]] = {}
+    for index in bound_indices:
+        snapshot = snapshots[index]
+        indices_by_market.setdefault(market_key(snapshot.venue, snapshot.symbol), []).append(index)
 
     summaries: dict[str, RollingWindowSummary] = {}
     digests: dict[str, str] = {}
     volatilities: list[float] = []
 
-    for key in sorted(route_markets):
+    for key in sorted(indices_by_market):
         try:
             window = windows_by_market[key]
         except KeyError as exc:
             raise ValueError(f"missing rolling window for route market: {key}") from exc
+
+        expected_samples = {
+            RollingMarketSample.from_quote(snapshots[index])
+            for index in indices_by_market[key]
+        }
+        if len(expected_samples) != 1:
+            raise ValueError(f"ambiguous current route snapshot for market: {key}")
+        expected_tail = next(iter(expected_samples))
+        if window.samples[-1] != expected_tail:
+            raise ValueError(f"rolling window tail does not match current route snapshot: {key}")
+
         summary = window.summary(evaluation_time_ms=evaluation_time_ms)
         summaries[key] = summary
         digests[key] = window.sha256
