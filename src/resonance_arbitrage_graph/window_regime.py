@@ -4,9 +4,15 @@ from dataclasses import dataclass
 from collections.abc import Mapping, Sequence
 import math
 
+from .market_evidence import bind_route_to_snapshots
 from .model import Edge
 from .quotes import QuoteSnapshot
-from .regime import RegimeClassification, RegimePolicy, classify_market_regime
+from .regime import (
+    MarketRegime,
+    RegimeClassification,
+    RegimePolicy,
+    classify_market_regime,
+)
 from .regime_features import derive_route_regime_features
 from .rolling_state import RollingMarketWindow, RollingWindowSummary
 
@@ -34,7 +40,17 @@ def derive_window_regime_context(
     if not edges:
         raise ValueError("route must contain at least one edge")
 
-    route_markets = {market_key(snapshot.venue, snapshot.symbol) for snapshot in snapshots}
+    bindings = bind_route_to_snapshots(
+        edges,
+        snapshots,
+        evaluation_time_ms=evaluation_time_ms,
+    )
+    bound_indices = sorted({binding["snapshot_index"] for binding in bindings})
+    route_markets = {
+        market_key(snapshots[index].venue, snapshots[index].symbol)
+        for index in bound_indices
+    }
+
     summaries: dict[str, RollingWindowSummary] = {}
     digests: dict[str, str] = {}
     volatilities: list[float] = []
@@ -55,9 +71,12 @@ def derive_window_regime_context(
                 start_amount=start_amount,
                 short_window_return_volatility_bps=None,
             )
-            classification = classify_market_regime(features, policy=regime_policy)
             return WindowRegimeContext(
-                classification=classification,
+                classification=RegimeClassification(
+                    regime=MarketRegime.UNKNOWN,
+                    features=features,
+                    reasons=("rolling_window_incomplete", *summary.reasons),
+                ),
                 window_sha256_by_market=digests,
                 window_summary_by_market=summaries,
             )
