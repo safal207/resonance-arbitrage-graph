@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+import math
 from collections.abc import Sequence
 from typing import Any
 
@@ -16,7 +17,17 @@ class EvidenceReceipt:
     sha256: str
 
     def canonical_json(self) -> str:
-        return json.dumps(self.payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        return json.dumps(
+            self.payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+
+
+def _finite_or_none(value: float) -> float | None:
+    return value if math.isfinite(value) else None
 
 
 def _edge_payload(edge: Edge) -> dict[str, Any]:
@@ -27,7 +38,7 @@ def _edge_payload(edge: Edge) -> dict[str, Any]:
         "fee_bps": edge.fee_bps,
         "slippage_bps": edge.slippage_bps,
         "gas_bps": edge.gas_bps,
-        "capacity": edge.capacity,
+        "capacity": _finite_or_none(edge.capacity),
         "latency_ms": edge.latency_ms,
         "quote_age_ms": edge.quote_age_ms,
         "failure_probability": edge.failure_probability,
@@ -79,6 +90,12 @@ def make_evidence_receipt(
             "prediction_error": execution.prediction_error,
         }
 
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
     digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     return EvidenceReceipt(payload=payload, sha256=digest)
