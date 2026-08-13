@@ -1,6 +1,20 @@
 # Changelog
 
-## v0.10.0 (in development)
+## v0.11.0 (in development)
+
+- Add expanding temporal walk-forward folds around the v0.10 joint execute/volatility calibration engine.
+- Add strict outcome-availability boundaries: every calibration outcome must be observed before the first validation decision in that fold.
+- Keep all attempts of one logical operation together and use the latest outcome-availability timestamp across attempts.
+- Reuse the exact v0.10 symmetric 2×2 causal-support, truth/survival, candidate-selection and untouched-validation semantics inside every fold.
+- Force each nested v0.10 split to the preplanned walk-forward calibration/validation geometry while keeping all non-split guardrails frozen.
+- Count failed/sparse fold validation in the temporal denominator instead of silently dropping it.
+- Add validation pass-rate, selected-policy coverage, unique-policy, policy-switch-rate and threshold-range stability metrics.
+- Add explicit `PASSED_STABILITY`, `INSUFFICIENT_CORPUS`, `INSUFFICIENT_FOLDS` and `UNSTABLE` statuses.
+- Bind fold plan, source/tail operation order, outcome-availability timestamps, nested v0.10 envelopes and aggregate metrics into deterministic SHA-256 evidence.
+- Add semantic envelope verification plus deterministic replay-bundle reproduction verification.
+- Add offline `resonance-walk-forward-stability` CLI and package version 0.11.0.
+
+## v0.10.0
 
 - Add joint calibration of causally active `execute_net_edge_bps` and `volatile_return_bps` thresholds.
 - Add symmetric 2×2 counterfactual causal-support accounting across baseline, execute-only, volatility-only, and joint candidate decisions.
