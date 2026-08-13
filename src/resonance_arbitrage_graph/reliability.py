@@ -225,6 +225,8 @@ def score_candidate(
         reasons.append("verifier_not_execute_sim")
     if candidate.raw_edge_bps <= 0:
         reasons.append("non_positive_raw_edge")
+    if "regime" in segment_keys and candidate.market_context.get("regime") == "UNKNOWN":
+        reasons.append("unknown_market_regime")
 
     mean_error = profile.mean_prediction_error_bps
     bias_penalty = min(0.0, mean_error if mean_error is not None else 0.0)
