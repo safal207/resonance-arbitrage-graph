@@ -35,6 +35,12 @@ from .reliability import (
     rank_candidates,
     score_candidate,
 )
+from .rolling_state import (
+    RollingMarketSample,
+    RollingMarketWindow,
+    RollingWindowPolicy,
+    RollingWindowSummary,
+)
 from .scanner import (
     CrossVenueObservation,
     ScannedOpportunity,
@@ -42,6 +48,8 @@ from .scanner import (
     observe_cross_venue_spreads,
     scan_cycles,
 )
+from .window_evidence import make_window_regime_evidence_receipt
+from .window_regime import WindowRegimeContext, derive_window_regime_context, market_key
 
 __all__ = [
     "BinanceBookTickerAdapter",
@@ -71,9 +79,14 @@ __all__ = [
     "ReliabilityPolicy",
     "ReliabilityProfile",
     "ReplayError",
+    "RollingMarketSample",
+    "RollingMarketWindow",
+    "RollingWindowPolicy",
+    "RollingWindowSummary",
     "RouteResult",
     "ScannedOpportunity",
     "Verdict",
+    "WindowRegimeContext",
     "bind_route_to_snapshots",
     "build_graph_from_quotes",
     "build_reliability_profile",
@@ -82,10 +95,13 @@ __all__ = [
     "classify_outcome",
     "collapse_operations",
     "derive_route_regime_features",
+    "derive_window_regime_context",
     "evaluate_route",
     "make_evidence_receipt",
     "make_market_evidence_receipt",
     "make_regime_market_evidence_receipt",
+    "make_window_regime_evidence_receipt",
+    "market_key",
     "merge_regime_context",
     "observation_from_evidence",
     "observe_cross_venue_spreads",
