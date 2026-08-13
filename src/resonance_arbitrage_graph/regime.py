@@ -78,6 +78,17 @@ class RegimeClassification:
     features: RegimeFeatures
     reasons: tuple[str, ...]
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.regime, MarketRegime):
+            raise ValueError("regime must be a MarketRegime")
+        if not isinstance(self.features, RegimeFeatures):
+            raise ValueError("features must be RegimeFeatures")
+        if not self.reasons or any(
+            not isinstance(reason, str) or not reason
+            for reason in self.reasons
+        ):
+            raise ValueError("reasons must contain non-empty strings")
+
     def to_market_context(self) -> dict[str, Any]:
         return {
             "regime": self.regime.value,
@@ -153,10 +164,14 @@ def classify_market_regime(
             reasons=tuple(thin_reasons),
         )
 
-    if (
-        features.short_window_return_volatility_bps is not None
-        and features.short_window_return_volatility_bps >= policy.volatile_return_bps
-    ):
+    if features.short_window_return_volatility_bps is None:
+        return RegimeClassification(
+            regime=MarketRegime.UNKNOWN,
+            features=features,
+            reasons=("volatility_feature_missing",),
+        )
+
+    if features.short_window_return_volatility_bps >= policy.volatile_return_bps:
         return RegimeClassification(
             regime=MarketRegime.VOLATILE,
             features=features,
