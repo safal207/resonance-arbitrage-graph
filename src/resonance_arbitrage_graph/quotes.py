@@ -7,6 +7,9 @@ from .model import Edge, Node
 from .validation import require_non_negative
 
 
+_ALLOWED_TIMESTAMP_CLASSES = {"client_observed", "exchange_published"}
+
+
 @dataclass(frozen=True, slots=True)
 class QuoteSnapshot:
     """Normalized best-bid/best-ask snapshot from a public market-data source."""
@@ -23,11 +26,14 @@ class QuoteSnapshot:
     source_url: str
     timestamp_class: str = "client_observed"
     source_timestamp_ms: int | None = None
+    metadata_url: str | None = None
 
     def __post_init__(self) -> None:
         for name in ("venue", "symbol", "base_asset", "quote_asset", "source_url", "timestamp_class"):
             if not getattr(self, name):
                 raise ValueError(f"{name} must be non-empty")
+        if self.metadata_url is not None and not self.metadata_url:
+            raise ValueError("metadata_url must be non-empty when provided")
 
         for name, value in (
             ("bid_price", self.bid_price),
@@ -42,6 +48,12 @@ class QuoteSnapshot:
             raise ValueError("observed_at_ms cannot be negative")
         if self.source_timestamp_ms is not None and self.source_timestamp_ms < 0:
             raise ValueError("source_timestamp_ms cannot be negative")
+        if self.timestamp_class not in _ALLOWED_TIMESTAMP_CLASSES:
+            raise ValueError(f"unsupported timestamp_class: {self.timestamp_class}")
+        if self.timestamp_class == "exchange_published" and self.source_timestamp_ms is None:
+            raise ValueError("exchange_published snapshots require source_timestamp_ms")
+        if self.timestamp_class == "client_observed" and self.source_timestamp_ms is not None:
+            raise ValueError("client_observed snapshots cannot claim source_timestamp_ms")
 
     @property
     def freshness_reference_ms(self) -> int:
