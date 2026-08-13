@@ -22,13 +22,12 @@ def derive_route_regime_features(
     *,
     evaluation_time_ms: int,
     start_amount: float,
-    cross_rate_dislocation_bps: float | None = None,
     short_window_return_volatility_bps: float | None = None,
 ) -> RegimeFeatures:
     """Derive candidate-specific regime features from exact route provenance.
 
-    Capacity is normalized leg-by-leg in each edge's source-asset units. This avoids
-    comparing raw quantities from different assets as if they shared one unit.
+    Capacity is normalized leg-by-leg in each edge's source-asset units. Cross-rate
+    dislocation is derived from raw route rates, not supplied by the caller.
     """
 
     if not edges:
@@ -39,6 +38,8 @@ def derive_route_regime_features(
         raise ValueError("evaluation_time_ms must be non-negative")
     if not math.isfinite(start_amount) or start_amount <= 0:
         raise ValueError("start_amount must be finite and positive")
+    if edges[-1].dst != edges[0].src:
+        raise ValueError("regime dislocation requires a cycle returning to the start node")
 
     bindings = bind_route_to_snapshots(
         edges,
@@ -56,11 +57,13 @@ def derive_route_regime_features(
 
     current_amount = start_amount
     capacity_ratios: list[float] = []
+    raw_rate_product = 1.0
     for edge in edges:
         ratio = edge.capacity / current_amount
         if not math.isfinite(ratio) or ratio <= 0:
             raise ValueError("route capacity ratio must be finite and positive")
         capacity_ratios.append(ratio)
+        raw_rate_product *= edge.rate
 
         current_amount = (
             current_amount
@@ -70,11 +73,14 @@ def derive_route_regime_features(
         if not math.isfinite(current_amount) or current_amount <= 0:
             raise ValueError("route amount became non-finite or non-positive")
 
+    if not math.isfinite(raw_rate_product) or raw_rate_product <= 0:
+        raise ValueError("route raw rate product must be finite and positive")
+
     return RegimeFeatures(
         normalized_spread_bps=max(spreads),
         top_of_book_capacity_ratio=min(capacity_ratios),
         quote_age_ms=max(ages),
         quote_age_dispersion_ms=max(ages) - min(ages),
-        cross_rate_dislocation_bps=cross_rate_dislocation_bps,
+        cross_rate_dislocation_bps=abs(raw_rate_product - 1.0) * 10_000.0,
         short_window_return_volatility_bps=short_window_return_volatility_bps,
     )
