@@ -1,6 +1,17 @@
 # Changelog
 
-## v0.7.0 (in development)
+## v0.8.0 (in development)
+
+- Add strict chronological holdout splitting by logical operation, keeping retries on one side of the split.
+- Add calibration-only search for the causally active verifier execute threshold with untouched out-of-sample validation.
+- Keep the full RegimePolicy and rolling-window measurement policy frozen instead of pretending a label-only volatility threshold is an executable-policy tuning dimension.
+- Add Wilson lower-bound truth/survival guardrails for uncertainty-sensitive policy evaluation.
+- Reject heterogeneous untuned policy/measurement contexts instead of blending incomparable history.
+- Bind source/subset digests, split membership, candidate evaluations, selected policy and validation result into deterministic SHA-256 reports.
+- Add explicit fail-closed statuses for insufficient corpus/calibration/validation and failed holdout validation.
+- Add offline `resonance-holdout-calibration` CLI with caller-supplied guardrails and no network or execution path.
+
+## v0.7.0
 
 - Add deterministic offline replay bundles for captured quote snapshots and rolling windows.
 - Recompute route verdicts and market regimes during replay instead of trusting stored labels.

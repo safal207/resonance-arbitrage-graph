@@ -21,6 +21,8 @@ public/fixture market state
   -> truth metrics
   -> regime-segmented reliability ranking
   -> offline replay + calibration benchmark
+  -> chronological holdout
+  -> out-of-sample execute-threshold gate
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -33,6 +35,54 @@ AND capacity is sufficient
 AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 ```
+
+## v0.8 — Holdout Policy Calibration
+
+v0.8 prevents the causally active execute threshold from being selected and graded on the same replay history.
+
+```text
+replay corpus
+  -> logical-operation groups
+  -> strict chronological split
+  -> calibration bundle
+  -> execute-threshold grid
+  -> calibration-only selection
+  -> freeze candidate
+  -> untouched validation bundle
+  -> out-of-sample gate
+```
+
+Core holdout invariants:
+
+- splitting happens by `logical_operation_id`, never raw retry rows;
+- all attempts for one logical operation remain on one side of the split;
+- validation is strictly later than calibration;
+- candidate selection sees calibration only;
+- validation can pass/fail the selected candidate but cannot choose a fallback;
+- all untuned `Policy` fields, the full `RegimePolicy`, and rolling-window policy remain frozen measurement context;
+- uncertainty-sensitive guardrails use Wilson lower bounds rather than raw ratios alone;
+- insufficient corpus/calibration/validation fails closed explicitly;
+- the final report binds corpus/subset SHA-256 values, split membership, grid, evaluations, selected candidate and validation result;
+- all results remain advisory and paper-only.
+
+Why only execute threshold? `execute_net_edge` directly changes `EXECUTE_SIM` vs `OBSERVE`. The current `volatile_return_bps` threshold changes a `NORMAL` / `VOLATILE` label but does not itself suppress execution, so optimizing it against overall Opportunity Truth Rate would be a non-causal tuning exercise. v0.8 keeps that regime threshold frozen until a future regime-gated execution policy makes it causally active.
+
+Offline holdout CLI:
+
+```bash
+resonance-holdout-calibration replay-bundle.json \
+  --validation-fraction 0.30 \
+  --execute-threshold-bps 20,30,40,50 \
+  --min-calibration-operations 20 \
+  --min-validation-operations 10 \
+  --min-calibration-truth-events 10 \
+  --min-validation-truth-events 5 \
+  --min-truth-lower-bound 0.60 \
+  --min-survival-lower-bound 0.70 \
+  --confidence-z 1.96
+```
+
+These numbers are examples only. Guardrails are explicit caller inputs rather than hidden trading recommendations.
 
 ## v0.7 — Market-State Replay & Calibration Benchmark
 
@@ -179,9 +229,10 @@ base route evidence
   -> regime features + policy
   -> rolling-window state + window SHA
   -> replay bundle + calibration report SHA
+  -> holdout split + candidate evaluations + validation report SHA
 ```
 
-The observation layer recomputes evidence digests before admitting outcomes to memory. The replay layer similarly verifies the raw replay-bundle digest, reconstructs strongly typed cases, requires canonical round-trip equality, and verifies the reconstructed digest again.
+The observation layer recomputes evidence digests before admitting outcomes to memory. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context, explicit guardrails, calibration-only selection and untouched validation result into a deterministic report envelope.
 
 ## Why cross-venue is observe-only
 
@@ -193,11 +244,11 @@ Buying on venue A and selling on venue B does not return capital to the same ven
 pytest
 ```
 
-Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, lookahead rejection, replay-bundle tamper detection, retry collapse, deterministic calibration reports and advisory threshold sensitivity.
+Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime context, uncertainty-sensitive Wilson guardrails and holdout-report tamper detection.
 
 ## Safety boundary
 
-The system remains paper-only. Market data is public GET-only; replay is offline local-file input only. There is no private API-key handling, account endpoint, order endpoint, signing, wallet interaction, transfer/bridge path, daemon or live execution.
+The system remains paper-only. Market data is public GET-only; replay and holdout consume local files only. There is no private API-key handling, account endpoint, order endpoint, signing, wallet interaction, transfer/bridge path, daemon or live execution.
 
 See:
 
@@ -208,4 +259,5 @@ See:
 - `docs/v0.5-design.md`
 - `docs/v0.6-design.md`
 - `docs/v0.7-design.md`
-- Issue #13 — v0.7 Market-State Replay & Calibration Benchmark
+- `docs/v0.8-design.md`
+- Issue #15 — v0.8 Holdout Policy Calibration
