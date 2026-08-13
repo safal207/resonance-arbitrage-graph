@@ -88,6 +88,19 @@ def test_route_features_use_bound_spreads_leg_capacity_freshness_and_rates():
     assert features.short_window_return_volatility_bps == 30.0
 
 
+def test_regime_feature_route_must_be_continuous():
+    edges, snapshots = _triangle()
+    discontinuous = (edges[0], edges[2], edges[1])
+    with pytest.raises(ValueError, match="continuous"):
+        derive_route_regime_features(
+            discontinuous,
+            snapshots,
+            evaluation_time_ms=10_000,
+            start_amount=100.0,
+            short_window_return_volatility_bps=30.0,
+        )
+
+
 def test_feature_derivation_rejects_future_snapshot_and_invalid_start_amount():
     edges, snapshots = _triangle(evaluation_time_ms=10_002)
     future = _quote(
