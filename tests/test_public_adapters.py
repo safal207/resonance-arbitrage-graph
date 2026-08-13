@@ -1,11 +1,25 @@
+import pytest
+
 from resonance_arbitrage_graph.adapters import BinanceBookTickerAdapter, KrakenPreTradeAdapter
 
 
-def test_binance_adapter_normalizes_book_ticker_without_auth():
+def test_binance_adapter_verifies_pair_metadata_and_normalizes_book_ticker():
     seen = []
 
     def fake_fetch(url):
         seen.append(url)
+        if "/exchangeInfo?" in url:
+            return {
+                "symbols": [
+                    {
+                        "symbol": "BTCUSDT",
+                        "status": "TRADING",
+                        "baseAsset": "BTC",
+                        "quoteAsset": "USDT",
+                        "isSpotTradingAllowed": True,
+                    }
+                ]
+            }
         return {
             "symbol": "BTCUSDT",
             "bidPrice": "80000.00",
@@ -18,7 +32,8 @@ def test_binance_adapter_normalizes_book_ticker_without_auth():
         "BTCUSDT", base_asset="BTC", quote_asset="USDT"
     )
 
-    assert seen and seen[0].startswith("https://data-api.binance.vision/api/v3/ticker/bookTicker?")
+    assert seen[0].startswith("https://api.binance.com/api/v3/exchangeInfo?")
+    assert seen[1].startswith("https://data-api.binance.vision/api/v3/ticker/bookTicker?")
     assert quote.venue == "BINANCE_SPOT"
     assert quote.base_asset == "BTC"
     assert quote.quote_asset == "USDT"
@@ -26,6 +41,26 @@ def test_binance_adapter_normalizes_book_ticker_without_auth():
     assert quote.ask_price == 80001.0
     assert quote.timestamp_class == "client_observed"
     assert quote.source_timestamp_ms is None
+    assert quote.metadata_url and "/exchangeInfo?" in quote.metadata_url
+
+
+def test_binance_adapter_rejects_caller_pair_label_that_disagrees_with_exchange():
+    def fake_fetch(_url):
+        return {
+            "symbols": [
+                {
+                    "symbol": "BTCUSDT",
+                    "status": "TRADING",
+                    "baseAsset": "BTC",
+                    "quoteAsset": "USDT",
+                    "isSpotTradingAllowed": True,
+                }
+            ]
+        }
+
+    adapter = BinanceBookTickerAdapter(fetch_json=fake_fetch)
+    with pytest.raises(ValueError, match="pair metadata mismatch"):
+        adapter.fetch("BTCUSDT", base_asset="ETH", quote_asset="USDT")
 
 
 def test_kraken_adapter_uses_exchange_publication_timestamp():
@@ -66,3 +101,4 @@ def test_kraken_adapter_uses_exchange_publication_timestamp():
     assert quote.ask_price == 80020.0
     assert quote.timestamp_class == "exchange_published"
     assert quote.source_timestamp_ms is not None
+    assert quote.metadata_url == quote.source_url
