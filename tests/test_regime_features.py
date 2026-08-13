@@ -70,14 +70,13 @@ def _triangle(evaluation_time_ms: int = 10_000):
     return (btc_buy, eth_buy, eth_sell), (btc_usdt, eth_btc, eth_usdt)
 
 
-def test_route_features_use_bound_spreads_leg_capacity_and_freshness():
+def test_route_features_use_bound_spreads_leg_capacity_freshness_and_rates():
     edges, snapshots = _triangle()
     features = derive_route_regime_features(
         edges,
         snapshots,
         evaluation_time_ms=10_000,
         start_amount=100.0,
-        cross_rate_dislocation_bps=12.0,
         short_window_return_volatility_bps=30.0,
     )
 
@@ -85,7 +84,7 @@ def test_route_features_use_bound_spreads_leg_capacity_and_freshness():
     assert features.top_of_book_capacity_ratio == pytest.approx(4.004)
     assert features.quote_age_ms == 500
     assert features.quote_age_dispersion_ms == 400
-    assert features.cross_rate_dislocation_bps == 12.0
+    assert features.cross_rate_dislocation_bps == pytest.approx(abs(100 / 100.1 - 1) * 10_000)
     assert features.short_window_return_volatility_bps == 30.0
 
 
@@ -101,11 +100,11 @@ def test_feature_derivation_rejects_future_snapshot_and_invalid_start_amount():
         ask_qty=4.0,
         observed_at_ms=10_003,
     )
-    future_buy, _ = quote_to_trade_edges(future, _ZERO_COST, now_ms=10_002)
+    future_buy, future_sell = quote_to_trade_edges(future, _ZERO_COST, now_ms=10_002)
 
     with pytest.raises(ValueError, match="future"):
         derive_route_regime_features(
-            [future_buy],
+            [future_buy, future_sell],
             [future],
             evaluation_time_ms=10_002,
             start_amount=100.0,
