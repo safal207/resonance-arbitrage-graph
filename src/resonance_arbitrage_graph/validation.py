@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import math
+
 
 def require_non_negative(name: str, value: float) -> None:
-    if value < 0:
-        raise ValueError(f"{name} cannot be negative")
+    if not math.isfinite(value) or value < 0:
+        raise ValueError(f"{name} must be finite and non-negative")
