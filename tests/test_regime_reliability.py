@@ -1,5 +1,10 @@
 from resonance_arbitrage_graph.observation import OpportunityObservation, OutcomeClass
-from resonance_arbitrage_graph.reliability import RankingCandidate, build_reliability_profile, score_candidate
+from resonance_arbitrage_graph.reliability import (
+    RankingCandidate,
+    RankingStatus,
+    build_reliability_profile,
+    score_candidate,
+)
 
 
 _SHA = "b" * 64
@@ -44,7 +49,7 @@ def test_exact_regime_segmentation_prevents_cross_regime_history_leakage():
     assert profile.false_positive == 0
 
 
-def test_unknown_regime_candidate_is_not_rankable():
+def test_unknown_regime_candidate_is_ineligible():
     candidate = RankingCandidate(
         candidate_id="candidate-a",
         route_id="route-a",
@@ -55,5 +60,6 @@ def test_unknown_regime_candidate_is_not_rankable():
 
     score = score_candidate(candidate, [])
 
+    assert score.status is RankingStatus.INELIGIBLE
     assert score.adjusted_score_bps == 0.0
-    assert score.status.value != "RANKED"
+    assert "unknown_market_regime" in score.reasons
