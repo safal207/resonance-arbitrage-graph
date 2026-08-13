@@ -1,6 +1,14 @@
 # Changelog
 
-## v0.4.0 (in development)
+## v0.5.0 (in development)
+
+- Add deterministic market regimes: NORMAL, VOLATILE, THIN_LIQUIDITY, DISLOCATED and fail-closed UNKNOWN.
+- Derive route-specific spread, capacity, freshness and cross-rate-dislocation features from exact quote provenance.
+- Add collision-safe regime market context and reject UNKNOWN in reliability ranking.
+- Bind regime features, feature provenance, classification reasons and RegimePolicy thresholds into SHA-256 evidence.
+- Emit derived regime from the public read-only live paper scanner.
+
+## v0.4.0
 
 - Add route/context-segmented reliability profiles from v0.3 logical observations.
 - Add Bayesian-smoothed Opportunity Truth Rate and Route Survival Rate.

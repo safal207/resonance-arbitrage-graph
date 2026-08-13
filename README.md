@@ -2,7 +2,7 @@
 
 A paper-only causal verification engine for crypto-arbitrage opportunities.
 
-The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, settlement risk and historical signal reliability — and to emit deterministic evidence and outcome memory for that decision.
+The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, settlement risk, market regime and historical signal reliability — and to emit deterministic evidence and outcome memory for that decision.
 
 ## Causal spine
 
@@ -13,13 +13,14 @@ public/fixture market state
   -> discrepancy
   -> candidate route
   -> execution constraints
+  -> route-bound market regime
   -> state transitions
   -> settlement assumptions
   -> paper PnL
-  -> quote-bound evidence
+  -> quote + regime-bound evidence
   -> opportunity observation
   -> truth metrics
-  -> reliability-adjusted ranking
+  -> regime-segmented reliability ranking
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -32,6 +33,47 @@ AND capacity is sufficient
 AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 ```
+
+## v0.5 — Regime-Aware Calibration
+
+v0.5 derives a market regime for each paper route and binds that regime into evidence before reliability history can use it.
+
+Regimes:
+
+```text
+NORMAL
+VOLATILE
+THIN_LIQUIDITY
+DISLOCATED
+UNKNOWN
+```
+
+The feature vector is route-specific:
+
+- maximum normalized spread across the snapshots actually bound to the route;
+- minimum leg capacity ratio, computed in each edge's own source-asset units;
+- maximum quote age and quote-age dispersion;
+- cross-rate dislocation derived from the product of raw route rates;
+- explicit short-window return volatility when available.
+
+Classification precedence is deterministic:
+
+```text
+freshness failure -> UNKNOWN
+DISLOCATED
+THIN_LIQUIDITY
+missing volatility -> UNKNOWN
+VOLATILE
+NORMAL
+```
+
+A route that is not already provably dislocated/thin cannot be called `NORMAL` without short-window volatility evidence. It remains `UNKNOWN`, which fails closed and is `INELIGIBLE` for reliability ranking.
+
+`make_regime_market_evidence_receipt(...)` recomputes route-bound features and classification before adding the regime, feature provenance, reasons and `RegimePolicy` thresholds to SHA-256 evidence. `merge_regime_context(...)` attaches the derived regime to observation/ranking context and rejects conflicting caller-supplied regime fields.
+
+The current short-window volatility feature is explicit external input because the public snapshot adapter does not yet maintain a rolling time series. When supplied, evidence marks it `caller_supplied_explicit_feature`; spread, capacity, freshness and cross-rate dislocation are route-bound derived features.
+
+Observation memory also inherits `regime`, `regime_features` and `regime_reasons` from a regime-bound receipt and rejects caller attempts to relabel the evidence into a different regime.
 
 ## v0.4 — Reliability-Adjusted Ranking
 
@@ -126,9 +168,17 @@ resonance-live-scan \
   --max-hops 3
 ```
 
-`--fee-bps` and `--slippage-bps` are **paper-model assumptions**, not claims about your actual exchange account.
+To distinguish `NORMAL` from `VOLATILE`, supply a measured short-window volatility feature:
 
-Each surfaced cycle includes a logical operation ID, deterministic evidence SHA-256 and explicit edge-to-snapshot market bindings.
+```bash
+--short-window-volatility-bps 82
+```
+
+Without it, otherwise normal-looking routes remain `UNKNOWN`; strongly `DISLOCATED` or `THIN_LIQUIDITY` routes can still be classified from route-bound evidence alone.
+
+`--fee-bps` and `--slippage-bps` are **paper-model assumptions**, not claims about your actual exchange account. `--short-window-volatility-bps` is also explicit caller input and its provenance is labeled as such in evidence.
+
+Each surfaced cycle includes a logical operation ID, derived market regime, deterministic evidence SHA-256 and explicit edge-to-snapshot market bindings.
 
 Kraken uses the same CLI shape; pair symbols may contain `/`, for example `BTC/USDT:BTC:USDT`.
 
@@ -160,6 +210,8 @@ The base evidence receipt contains:
 - SHA-256 of the canonical payload
 
 `make_market_evidence_receipt(...)` additionally binds the public quote snapshots and evaluation time used for the decision. It refuses to produce a receipt if an edge cannot be derived from exactly one supplied snapshot using the expected venue, asset direction, price, top-of-book capacity and quote age.
+
+`make_regime_market_evidence_receipt(...)` extends that proof with route-derived regime features, explicit feature provenance, classification reasons and policy thresholds.
 
 The observation layer recomputes the SHA-256 over canonical receipt JSON before admitting it to memory. The reliability layer consumes validated, collapsed observations rather than raw retry rows.
 
@@ -206,6 +258,11 @@ Coverage includes:
 - historical prediction-bias suppression
 - route/context segment isolation
 - deterministic reliability ranking
+- deterministic regime classification and precedence
+- route-bound capacity/spread/freshness/dislocation features
+- regime-evidence tamper rejection
+- evidence-bound observation regime inheritance/conflict rejection
+- exact-regime reliability isolation and `UNKNOWN` fail-closed ranking
 
 ## Safety boundary
 
@@ -217,4 +274,5 @@ See:
 - `docs/v0.2-design.md`
 - `docs/v0.3-design.md`
 - `docs/v0.4-design.md`
-- Issue #7 — v0.4 Reliability-Adjusted Ranking
+- `docs/v0.5-design.md`
+- Issue #9 — v0.5 Regime-Aware Calibration

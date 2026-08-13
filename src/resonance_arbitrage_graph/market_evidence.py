@@ -63,12 +63,14 @@ def _edge_snapshot_side(
     return side
 
 
-def _bind_route_to_snapshots(
+def bind_route_to_snapshots(
     edges: Sequence[Edge],
     snapshots: Sequence[QuoteSnapshot],
     *,
     evaluation_time_ms: int,
 ) -> list[dict[str, Any]]:
+    """Return exact edge-to-snapshot provenance bindings for a route."""
+
     bindings: list[dict[str, Any]] = []
     for edge_index, edge in enumerate(edges):
         matches = [
@@ -98,6 +100,10 @@ def _bind_route_to_snapshots(
     return bindings
 
 
+# Backward-compatible private alias for code/tests that may still import it.
+_bind_route_to_snapshots = bind_route_to_snapshots
+
+
 def make_market_evidence_receipt(
     operation_id: str,
     edges: Sequence[Edge],
@@ -114,7 +120,7 @@ def make_market_evidence_receipt(
     if evaluation_time_ms < 0:
         raise ValueError("evaluation_time_ms cannot be negative")
 
-    bindings = _bind_route_to_snapshots(
+    bindings = bind_route_to_snapshots(
         edges,
         snapshots,
         evaluation_time_ms=evaluation_time_ms,

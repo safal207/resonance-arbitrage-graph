@@ -14,6 +14,13 @@ from .evidence import EvidenceReceipt
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _ALLOWED_VERDICTS = {"EXECUTE_SIM", "OBSERVE", "REJECT"}
+_ALLOWED_MARKET_REGIMES = {
+    "NORMAL",
+    "VOLATILE",
+    "THIN_LIQUIDITY",
+    "DISLOCATED",
+    "UNKNOWN",
+}
 
 
 class OutcomeClass(str, Enum):
@@ -34,6 +41,47 @@ def verify_evidence_receipt(receipt: EvidenceReceipt) -> None:
     digest = hashlib.sha256(receipt.canonical_json().encode("utf-8")).hexdigest()
     if not hmac.compare_digest(digest, receipt.sha256):
         raise ValueError("evidence receipt SHA-256 does not match payload")
+
+
+def _merge_regime_context_from_receipt(
+    payload: dict[str, Any],
+    market_context: dict[str, Any] | None,
+) -> dict[str, Any]:
+    context = dict(market_context or {})
+    regime_payload = payload.get("market_regime")
+    if regime_payload is None:
+        return context
+    if not isinstance(regime_payload, dict):
+        raise ValueError("evidence market_regime must be an object")
+
+    regime = regime_payload.get("regime")
+    features = regime_payload.get("features")
+    reasons = regime_payload.get("reasons")
+    if regime not in _ALLOWED_MARKET_REGIMES:
+        raise ValueError("evidence market_regime has invalid regime")
+    if not isinstance(features, dict):
+        raise ValueError("evidence market_regime features must be an object")
+    if not isinstance(reasons, list) or not reasons or any(
+        not isinstance(reason, str) or not reason
+        for reason in reasons
+    ):
+        raise ValueError("evidence market_regime reasons must be non-empty strings")
+
+    derived = {
+        "regime": regime,
+        "regime_features": dict(features),
+        "regime_reasons": list(reasons),
+    }
+    for key, value in derived.items():
+        if key in context and context[key] != value:
+            raise ValueError(f"market_context conflicts with evidence-bound regime field: {key}")
+        context[key] = value
+
+    try:
+        json.dumps(context, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("evidence-bound market_context must be strict JSON") from exc
+    return context
 
 
 def classify_outcome(
@@ -205,6 +253,7 @@ def observation_from_evidence(
         required_edge_bps=required_edge_bps,
         expired=expired,
     )
+    bound_market_context = _merge_regime_context_from_receipt(payload, market_context)
 
     return OpportunityObservation(
         logical_operation_id=logical_operation_id,
@@ -220,7 +269,7 @@ def observation_from_evidence(
         observed_edge_bps=observed_edge_bps,
         outcome_class=outcome,
         evidence_sha256=receipt.sha256,
-        market_context=market_context or {},
+        market_context=bound_market_context,
     )
 
 
