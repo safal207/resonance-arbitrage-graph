@@ -10,6 +10,7 @@ The project does **not** place live orders, sign transactions, hold exchange key
 public/fixture market state
   -> normalized quote snapshot
   -> verified pair metadata
+  -> rolling public market window
   -> discrepancy
   -> candidate route
   -> execution constraints
@@ -17,7 +18,7 @@ public/fixture market state
   -> state transitions
   -> settlement assumptions
   -> paper PnL
-  -> quote + regime-bound evidence
+  -> quote + rolling-window + regime-bound evidence
   -> opportunity observation
   -> truth metrics
   -> regime-segmented reliability ranking
@@ -33,6 +34,32 @@ AND capacity is sufficient
 AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 ```
+
+## v0.6 — Evidence-Bound Rolling Market State
+
+v0.6 removes caller-supplied volatility from the live paper path. The scanner samples public GET-only market data into deterministic rolling windows and derives short-window volatility from the observed mid-price returns.
+
+A rolling window is scoped to one exact:
+
+```text
+venue + symbol + base_asset + quote_asset
+```
+
+Each sample preserves bid/ask price and quantity, observation time, timestamp class, optional exchange timestamp, freshness reference, source URL and metadata URL.
+
+Important invariants:
+
+- input samples must already be strictly timestamp ordered;
+- duplicate/reordered timestamps are rejected rather than silently sorted;
+- all samples in a window must belong to the same exact market;
+- minimum sample count and time coverage are explicit `RollingWindowPolicy` fields;
+- incomplete window evidence yields `UNKNOWN`, never guessed `NORMAL`;
+- the final sample of every route-bound window must exactly equal the current `QuoteSnapshot` backing that route;
+- the exact canonical window, summary and SHA-256 are bound into final evidence.
+
+Volatility is derived as the population standard deviation of consecutive mid-price returns in basis points. It is not annualized, so the sampling cadence and window policy are part of the evidence-bearing assumptions.
+
+For multi-leg routes, v0.6 conservatively uses the maximum derived volatility among the exact markets bound to the route.
 
 ## v0.5 — Regime-Aware Calibration
 
@@ -54,7 +81,7 @@ The feature vector is route-specific:
 - minimum leg capacity ratio, computed in each edge's own source-asset units;
 - maximum quote age and quote-age dispersion;
 - cross-rate dislocation derived from the product of raw route rates;
-- explicit short-window return volatility when available.
+- short-window return volatility.
 
 Classification precedence is deterministic:
 
@@ -67,13 +94,11 @@ VOLATILE
 NORMAL
 ```
 
-A route that is not already provably dislocated/thin cannot be called `NORMAL` without short-window volatility evidence. It remains `UNKNOWN`, which fails closed and is `INELIGIBLE` for reliability ranking.
+A route cannot be called `NORMAL` without volatility evidence. v0.5 exposed an explicit lower-level volatility input; v0.6 replaces that input in the live scanner with an evidence-bound rolling window.
 
-`make_regime_market_evidence_receipt(...)` recomputes route-bound features and classification before adding the regime, feature provenance, reasons and `RegimePolicy` thresholds to SHA-256 evidence. `merge_regime_context(...)` attaches the derived regime to observation/ranking context and rejects conflicting caller-supplied regime fields.
+`make_regime_market_evidence_receipt(...)` binds route-derived features, feature provenance, reasons and `RegimePolicy` thresholds. `make_window_regime_evidence_receipt(...)` is the stronger v0.6 path: volatility provenance is `derived_from_rolling_window` and the full window evidence is included in the final digest.
 
-The current short-window volatility feature is explicit external input because the public snapshot adapter does not yet maintain a rolling time series. When supplied, evidence marks it `caller_supplied_explicit_feature`; spread, capacity, freshness and cross-rate dislocation are route-bound derived features.
-
-Observation memory also inherits `regime`, `regime_features` and `regime_reasons` from a regime-bound receipt and rejects caller attempts to relabel the evidence into a different regime.
+Observation memory inherits `regime`, `regime_features` and `regime_reasons` from a regime-bound receipt and rejects caller attempts to relabel evidence into a different regime.
 
 ## v0.4 — Reliability-Adjusted Ranking
 
@@ -165,20 +190,18 @@ resonance-live-scan \
   --amount 1000 \
   --fee-bps 10 \
   --slippage-bps 5 \
-  --max-hops 3
+  --max-hops 3 \
+  --rolling-samples 5 \
+  --rolling-interval-ms 1000 \
+  --rolling-horizon-ms 5000 \
+  --rolling-min-coverage-ratio 0.8
 ```
 
-To distinguish `NORMAL` from `VOLATILE`, supply a measured short-window volatility feature:
+The scanner synchronously collects the rolling samples before evaluating opportunities. It performs public reads only; there is no daemon or trading loop.
 
-```bash
---short-window-volatility-bps 82
-```
+`--fee-bps`, `--slippage-bps` and rolling-window settings are **paper-model assumptions**, not claims about your actual exchange account or universally optimal market windows.
 
-Without it, otherwise normal-looking routes remain `UNKNOWN`; strongly `DISLOCATED` or `THIN_LIQUIDITY` routes can still be classified from route-bound evidence alone.
-
-`--fee-bps` and `--slippage-bps` are **paper-model assumptions**, not claims about your actual exchange account. `--short-window-volatility-bps` is also explicit caller input and its provenance is labeled as such in evidence.
-
-Each surfaced cycle includes a logical operation ID, derived market regime, deterministic evidence SHA-256 and explicit edge-to-snapshot market bindings.
+Each surfaced cycle includes a logical operation ID, derived market regime, per-market rolling-window SHA/summary, deterministic final evidence SHA-256 and explicit edge-to-snapshot market bindings.
 
 Kraken uses the same CLI shape; pair symbols may contain `/`, for example `BTC/USDT:BTC:USDT`.
 
@@ -212,6 +235,8 @@ The base evidence receipt contains:
 `make_market_evidence_receipt(...)` additionally binds the public quote snapshots and evaluation time used for the decision. It refuses to produce a receipt if an edge cannot be derived from exactly one supplied snapshot using the expected venue, asset direction, price, top-of-book capacity and quote age.
 
 `make_regime_market_evidence_receipt(...)` extends that proof with route-derived regime features, explicit feature provenance, classification reasons and policy thresholds.
+
+`make_window_regime_evidence_receipt(...)` additionally binds the exact rolling public samples, their source/timestamp provenance, window policy, per-market digest, summary and current-snapshot tail identity.
 
 The observation layer recomputes the SHA-256 over canonical receipt JSON before admitting it to memory. The reliability layer consumes validated, collapsed observations rather than raw retry rows.
 
@@ -263,6 +288,12 @@ Coverage includes:
 - regime-evidence tamper rejection
 - evidence-bound observation regime inheritance/conflict rejection
 - exact-regime reliability isolation and `UNKNOWN` fail-closed ranking
+- rolling-window strict ordering and duplicate rejection
+- deterministic rolling-window SHA and derived volatility
+- rolling-window price/provenance tamper sensitivity
+- current-route snapshot ↔ rolling-window-tail binding
+- incomplete rolling-window `UNKNOWN` behavior
+- synchronous live rolling collection without network calls in CI
 
 ## Safety boundary
 
@@ -275,4 +306,5 @@ See:
 - `docs/v0.3-design.md`
 - `docs/v0.4-design.md`
 - `docs/v0.5-design.md`
-- Issue #9 — v0.5 Regime-Aware Calibration
+- `docs/v0.6-design.md`
+- Issue #11 — v0.6 Evidence-Bound Rolling Market State
