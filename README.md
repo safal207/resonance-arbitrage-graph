@@ -24,7 +24,8 @@ public/fixture market state
   -> regime-segmented reliability ranking
   -> offline replay + calibration benchmark
   -> chronological holdout
-  -> out-of-sample execute-threshold gate
+  -> joint execute/volatility causal calibration
+  -> untouched out-of-sample validation
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -38,6 +39,71 @@ AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 AND final post-regime verdict never exceeds the base verifier verdict
 ```
+
+## v0.10 — Joint Causal Holdout Calibration
+
+v0.10 jointly calibrates the two thresholds that now change the actual paper decision population:
+
+```text
+execute_net_edge_bps × volatile_return_bps
+```
+
+The volatility threshold only became causally active after v0.9 introduced the regime execution gate.
+
+For every logical operation, v0.10 evaluates three counterfactual paths:
+
+```text
+baseline
+  = baseline execute + baseline volatility
+
+execute-only
+  = candidate execute + baseline volatility
+
+candidate
+  = candidate execute + candidate volatility
+```
+
+This separates:
+
+- execute-caused final-verdict changes;
+- volatility-caused regime-label changes;
+- volatility-caused **final-verdict** changes;
+- total final-verdict changes from the joint pair.
+
+A regime relabel is not enough. If changing the volatility threshold turns `NORMAL` into `VOLATILE` while the base verifier is already `OBSERVE`, the final decision remains `OBSERVE`; that produces label support but **zero volatility causal support** and cannot qualify the candidate.
+
+Core v0.10 invariants:
+
+- calibration and validation remain strictly chronological by `logical_operation_id`;
+- retries never cross split boundaries;
+- validation never chooses among candidate pairs;
+- all untuned engine/regime fields, full `RegimeExecutionPolicy`, and rolling-window policy remain frozen;
+- baseline execute and volatility thresholds must be uniform across the corpus;
+- joint volatility calibration requires `NORMAL -> ALLOW` and a suppressive `VOLATILE -> OBSERVE_ONLY/REJECT` gate;
+- causal-support counts are eligibility guardrails, not score rewards;
+- validation can explicitly fail for insufficient out-of-sample causal support;
+- reports are canonical JSON + SHA-256 and remain advisory/paper-only.
+
+Offline joint holdout CLI:
+
+```bash
+resonance-joint-holdout-calibration replay-bundle.json \
+  --validation-fraction 0.30 \
+  --execute-threshold-bps 25,30,35,40 \
+  --volatile-threshold-bps 20,40,60,75 \
+  --min-calibration-operations 20 \
+  --min-validation-operations 10 \
+  --min-calibration-truth-events 10 \
+  --min-validation-truth-events 5 \
+  --min-truth-lower-bound 0.60 \
+  --min-survival-lower-bound 0.70 \
+  --min-calibration-execute-causal-changes 1 \
+  --min-calibration-volatility-causal-changes 1 \
+  --min-validation-execute-causal-changes 1 \
+  --min-validation-volatility-causal-changes 1
+```
+
+These numbers are examples only. Guardrails are explicit caller inputs rather than hidden trading recommendations.
 
 ## v0.9 — Evidence-Bound Regime Execution Gate
 
@@ -75,9 +141,9 @@ UNKNOWN         -> REJECT
 
 `UNKNOWN` is structurally fail-closed and cannot be configured to allow execution. A base `REJECT` can never be promoted, and a base `OBSERVE` can never become `EXECUTE_SIM`.
 
-Evidence now exposes `base_verdict` and final `verdict` separately and binds the gate action, full canonical `RegimeExecutionPolicy`, and gate-policy SHA-256. Observation memory validates the gate against the bound policy before accepting the receipt and classifies outcomes from the **final** verdict. Therefore a regime-downgraded `OBSERVE` does not enter the Opportunity Truth Rate denominator.
+Evidence exposes `base_verdict` and final `verdict` separately and binds the gate action, full canonical `RegimeExecutionPolicy`, and gate-policy SHA-256. Observation memory validates the gate against the bound policy before accepting the receipt and classifies outcomes from the **final** verdict. Therefore a regime-downgraded `OBSERVE` does not enter the Opportunity Truth Rate denominator.
 
-Replay artifacts move to schema v0.2. Replay rebuilds the route, recomputes the base verifier verdict, recomputes the rolling regime, reapplies the regime gate, and only then grades the later paper outcome. Gate policy is part of the replay decision fingerprint, so changing regime action semantics across retries is decision drift.
+Replay artifacts use schema v0.2. Replay rebuilds the route, recomputes the base verifier verdict, recomputes the rolling regime, reapplies the regime gate, and only then grades the later paper outcome. Gate policy is part of the replay decision fingerprint, so changing regime action semantics across retries is decision drift.
 
 Replay v0.1 artifacts are intentionally not silently reinterpreted as v0.2 because v0.1 did not bind this causal policy.
 
@@ -110,8 +176,6 @@ Core holdout invariants:
 - the final report binds corpus/subset SHA-256 values, split membership, grid, evaluations, selected candidate and validation result;
 - all results remain advisory and paper-only.
 
-v0.8 tunes only `execute_net_edge`. After v0.9, volatility thresholds are now causally active through the regime gate, making a future two-dimensional holdout calibration meaningful rather than label-only optimization.
-
 Offline holdout CLI:
 
 ```bash
@@ -126,8 +190,6 @@ resonance-holdout-calibration replay-bundle.json \
   --min-survival-lower-bound 0.70 \
   --confidence-z 1.96
 ```
-
-These numbers are examples only. Guardrails are explicit caller inputs rather than hidden trading recommendations.
 
 ## v0.7 — Market-State Replay & Calibration Benchmark
 
@@ -275,10 +337,11 @@ base route evidence
   -> rolling-window state + window SHA
   -> regime action + final verdict + gate-policy SHA
   -> replay bundle + calibration report SHA
-  -> holdout split + candidate evaluations + validation report SHA
+  -> chronological holdout evidence
+  -> joint candidate + causal-support + untouched-validation evidence
 ```
 
-The observation layer recomputes evidence digests before admitting outcomes to memory and validates the evidence-bound regime gate against its policy. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context including gate policy, explicit guardrails, calibration-only selection and untouched validation result into a deterministic report envelope.
+The observation layer recomputes evidence digests before admitting outcomes to memory and validates the evidence-bound regime gate against its policy. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context, explicit guardrails, calibration-only selection and untouched validation result into deterministic report envelopes.
 
 ## Why cross-venue is observe-only
 
@@ -290,7 +353,7 @@ Buying on venue A and selling on venue B does not return capital to the same ven
 pytest
 ```
 
-Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, monotonic regime-gate matrices, gate-policy evidence binding, final-verdict truth accounting, replay gate recomputation, gate-policy retry drift, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime/gate context, uncertainty-sensitive Wilson guardrails and holdout-report tamper detection.
+Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, monotonic regime-gate matrices, gate-policy evidence binding, final-verdict truth accounting, replay gate recomputation, gate-policy retry drift, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime/gate context, Wilson guardrails, joint execute/volatility counterfactual support, label-vs-action causal checks, out-of-sample causal-support gates and report tamper detection.
 
 ## Safety boundary
 
@@ -307,4 +370,5 @@ See:
 - `docs/v0.7-design.md`
 - `docs/v0.8-design.md`
 - `docs/v0.9-design.md`
-- Issue #17 — v0.9 Evidence-Bound Regime Execution Gate
+- `docs/v0.10-design.md`
+- Issue #19 — v0.10 Joint Causal Holdout Calibration
