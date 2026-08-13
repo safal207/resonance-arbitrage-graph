@@ -23,7 +23,7 @@ from .replay import (
 _HOLDOUT_REPORT_SCHEMA = "resonance.arbitrage.holdout-report/v0.1"
 _SELECTION_RULE = (
     "calibration_only:truth_lower_bound>survival_lower_bound>truth_events>"
-    "execute_sim_count>overprediction_penalty>lexical_thresholds"
+    "execute_sim_count>overprediction_penalty>execute_threshold"
 )
 
 
@@ -90,52 +90,33 @@ class HoldoutPolicy:
 @dataclass(frozen=True, slots=True)
 class PolicyCandidate:
     execute_net_edge_bps: float
-    volatile_return_bps: float
 
     def __post_init__(self) -> None:
         if not math.isfinite(self.execute_net_edge_bps) or self.execute_net_edge_bps <= 0:
             raise ValueError("execute_net_edge_bps must be finite and positive")
-        if not math.isfinite(self.volatile_return_bps) or self.volatile_return_bps < 0:
-            raise ValueError("volatile_return_bps must be finite and non-negative")
 
     def to_payload(self) -> dict[str, float]:
-        return {
-            "execute_net_edge_bps": self.execute_net_edge_bps,
-            "volatile_return_bps": self.volatile_return_bps,
-        }
+        return {"execute_net_edge_bps": self.execute_net_edge_bps}
 
 
 @dataclass(frozen=True, slots=True)
 class CandidateGrid:
     execute_net_edge_bps: tuple[float, ...]
-    volatile_return_bps: tuple[float, ...]
 
     def __post_init__(self) -> None:
         execute = tuple(sorted(set(self.execute_net_edge_bps)))
-        volatile = tuple(sorted(set(self.volatile_return_bps)))
         object.__setattr__(self, "execute_net_edge_bps", execute)
-        object.__setattr__(self, "volatile_return_bps", volatile)
-        if not execute or not volatile:
-            raise ValueError("candidate grid dimensions must be non-empty")
+        if not execute:
+            raise ValueError("candidate grid must be non-empty")
         for value in execute:
             if not math.isfinite(value) or value <= 0:
                 raise ValueError("execute threshold grid values must be finite and positive")
-        for value in volatile:
-            if not math.isfinite(value) or value < 0:
-                raise ValueError("volatile threshold grid values must be finite and non-negative")
 
     def candidates(self) -> tuple[PolicyCandidate, ...]:
-        return tuple(
-            PolicyCandidate(execute_net_edge_bps=execute, volatile_return_bps=volatile)
-            for execute in self.execute_net_edge_bps
-            for volatile in self.volatile_return_bps
-        )
+        return tuple(PolicyCandidate(execute_net_edge_bps=value) for value in self.execute_net_edge_bps)
 
     def to_payload(self) -> dict[str, list[float]]:
-        return {
-            "execute_net_edge_bps": list(self.execute_net_edge_bps),
-            "volatile_return_bps": list(self.volatile_return_bps),
-        }
+        return {"execute_net_edge_bps": list(self.execute_net_edge_bps)}
 
 
 def wilson_lower_bound(successes: int, total: int, *, z: float = 1.96) -> float | None:
@@ -268,25 +249,37 @@ def split_replay_bundle(bundle: ReplayBundle, policy: HoldoutPolicy) -> HoldoutS
     )
     calibration = ReplayBundle(cases=calibration_cases)
     validation = ReplayBundle(cases=validation_cases)
-    calibration_operation_ids = tuple(row[1] for row in rows[:cut])
-    validation_operation_ids = tuple(row[1] for row in rows[cut:])
     summary = HoldoutSplitSummary(
         calibration_bundle_sha256=calibration.sha256,
         validation_bundle_sha256=validation.sha256,
-        calibration_operation_ids=calibration_operation_ids,
-        validation_operation_ids=validation_operation_ids,
+        calibration_operation_ids=tuple(row[1] for row in rows[:cut]),
+        validation_operation_ids=tuple(row[1] for row in rows[cut:]),
         calibration_max_detected_at_ms=rows[cut - 1][0],
         validation_min_detected_at_ms=rows[cut][0],
     )
     return HoldoutSplit(calibration=calibration, validation=validation, summary=summary)
 
 
+def _case_window_policy_payload(case: Any) -> dict[str, Any]:
+    policies = {
+        _canonical_json(asdict(window.policy)): asdict(window.policy)
+        for window in case.windows_by_market.values()
+    }
+    if not policies:
+        raise ValueError("holdout case has no rolling-window policy context")
+    if len(policies) != 1:
+        raise ValueError("rolling-window policy drifted within replay case")
+    return next(iter(policies.values()))
+
+
 def _policy_context_payload(case: Any) -> dict[str, Any]:
     engine = asdict(case.engine_policy)
-    regime = asdict(case.regime_policy)
     engine.pop("execute_net_edge")
-    regime.pop("volatile_return_bps")
-    return {"engine_policy": engine, "regime_policy": regime}
+    return {
+        "engine_policy": engine,
+        "regime_policy": asdict(case.regime_policy),
+        "rolling_window_policy": _case_window_policy_payload(case),
+    }
 
 
 def _validate_policy_context(bundle: ReplayBundle) -> tuple[str, float]:
@@ -305,17 +298,7 @@ def _candidate_results(bundle: ReplayBundle, candidate: PolicyCandidate) -> tupl
             case.engine_policy,
             execute_net_edge=candidate.execute_net_edge_bps / 10_000.0,
         )
-        regime_policy = replace(
-            case.regime_policy,
-            volatile_return_bps=candidate.volatile_return_bps,
-        )
-        results.append(
-            replay_case(
-                case,
-                engine_policy=engine_policy,
-                regime_policy=regime_policy,
-            )
-        )
+        results.append(replay_case(case, engine_policy=engine_policy))
     return tuple(results)
 
 
@@ -350,7 +333,6 @@ def evaluate_policy_candidate(
         reasons.append("TRUTH_LOWER_BOUND_BELOW_FLOOR")
     if survival_lb is None or survival_lb < policy.min_survival_rate_lower_bound:
         reasons.append("SURVIVAL_LOWER_BOUND_BELOW_FLOOR")
-    results_sha256 = _sha256([result.to_payload() for result in results])
     return PolicyEvaluation(
         candidate=candidate,
         metrics=metrics,
@@ -360,7 +342,7 @@ def evaluate_policy_candidate(
         truth_rate_lower_bound=truth_lb,
         survival_rate_lower_bound=survival_lb,
         overprediction_penalty_bps=overprediction_penalty,
-        results_sha256=results_sha256,
+        results_sha256=_sha256([result.to_payload() for result in results]),
         eligible=not reasons,
         reasons=tuple(reasons),
     )
@@ -376,7 +358,6 @@ def _selection_key(evaluation: PolicyEvaluation) -> tuple[Any, ...]:
         -evaluation.execute_sim_count,
         evaluation.overprediction_penalty_bps,
         evaluation.candidate.execute_net_edge_bps,
-        evaluation.candidate.volatile_return_bps,
     )
 
 
@@ -466,6 +447,14 @@ def verify_holdout_report_envelope(envelope: Mapping[str, Any]) -> dict[str, Any
     }
     if set(payload) != expected_keys:
         raise ValueError("holdout report payload fields are not canonical")
+    if payload["selection_rule"] != _SELECTION_RULE:
+        raise ValueError("holdout report selection rule is invalid")
+    if payload["validation_not_used_for_selection"] is not True:
+        raise ValueError("holdout report validation-selection firewall is invalid")
+    if payload["advisory_only"] is not True:
+        raise ValueError("holdout report must remain advisory-only")
+    if payload["status"] not in {status.value for status in HoldoutStatus}:
+        raise ValueError("holdout report status is invalid")
     digest = _sha256(payload)
     if not hmac.compare_digest(digest, supplied_sha):
         raise ValueError("holdout report SHA-256 does not match payload")
@@ -538,9 +527,9 @@ def run_holdout_calibration(
     selected_evaluation = sorted(eligible, key=_selection_key)[0]
     selected_candidate = selected_evaluation.candidate
 
-    # Critical anti-overfit invariant: only the already-selected calibration winner
-    # is evaluated on validation. No validation result can cause a fallback to a
-    # different grid candidate.
+    # Anti-overfit firewall: validation sees only the already-selected
+    # calibration winner. It can fail that candidate, but it cannot trigger a
+    # search over alternative thresholds.
     validation_evaluation = evaluate_policy_candidate(
         split.validation,
         selected_candidate,

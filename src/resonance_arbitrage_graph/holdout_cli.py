@@ -21,12 +21,11 @@ def _csv_floats(value: str) -> tuple[float, ...]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Offline holdout policy calibration for replay bundles. No network or execution path."
+        description="Offline holdout calibration for the causally active execute threshold."
     )
     parser.add_argument("bundle", type=Path, help="local replay-bundle envelope JSON")
     parser.add_argument("--validation-fraction", type=float, required=True)
     parser.add_argument("--execute-threshold-bps", type=_csv_floats, required=True)
-    parser.add_argument("--volatile-threshold-bps", type=_csv_floats, required=True)
     parser.add_argument("--min-calibration-operations", type=int, required=True)
     parser.add_argument("--min-validation-operations", type=int, required=True)
     parser.add_argument("--min-calibration-truth-events", type=int, required=True)
@@ -41,10 +40,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     envelope = json.loads(args.bundle.read_text(encoding="utf-8"))
     bundle = ReplayBundle.from_envelope(envelope)
-    grid = CandidateGrid(
-        execute_net_edge_bps=args.execute_threshold_bps,
-        volatile_return_bps=args.volatile_threshold_bps,
-    )
+    grid = CandidateGrid(execute_net_edge_bps=args.execute_threshold_bps)
     policy = HoldoutPolicy(
         validation_fraction=args.validation_fraction,
         min_calibration_operations=args.min_calibration_operations,

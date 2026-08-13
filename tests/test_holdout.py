@@ -22,7 +22,7 @@ from resonance_arbitrage_graph.window_regime import market_key
 
 ZERO = CostAssumption(fee_bps=0.0, slippage_bps=0.0)
 WINDOW_POLICY = RollingWindowPolicy(horizon_ms=60_000, min_samples=5, min_coverage_ratio=1.0)
-GRID = CandidateGrid(execute_net_edge_bps=(20.0, 40.0), volatile_return_bps=(75.0,))
+GRID = CandidateGrid(execute_net_edge_bps=(20.0, 40.0))
 HOLDOUT_POLICY = HoldoutPolicy(
     validation_fraction=1 / 3,
     min_calibration_operations=4,
@@ -108,6 +108,7 @@ def _case(
     attempt: int = 1,
     expired: bool = False,
     engine_policy: Policy | None = None,
+    regime_policy: RegimePolicy | None = None,
 ) -> ReplayCase:
     snapshots, windows, legs = _decision_state(detected_at_ms)
     return ReplayCase(
@@ -121,7 +122,7 @@ def _case(
         windows_by_market=windows,
         legs=legs,
         engine_policy=engine_policy or Policy(),
-        regime_policy=RegimePolicy(),
+        regime_policy=regime_policy or RegimePolicy(),
         outcome=ReplayOutcome(
             observed_at_ms=detected_at_ms + 1_000 + attempt,
             realized_net_edge_bps=realized_edge_bps,
@@ -221,12 +222,24 @@ def test_no_strict_chronological_boundary_fails_closed():
     assert "strict chronological boundary" in report.reasons[0]
 
 
-def test_untuned_policy_context_drift_is_rejected():
+def test_untuned_engine_policy_context_drift_is_rejected():
     bundle = _bundle()
     cases = list(bundle.cases)
     cases[-1] = replace(
         cases[-1],
         engine_policy=replace(cases[-1].engine_policy, max_quote_age_ms=4_000),
+    )
+
+    with pytest.raises(ValueError, match="policy context drifted"):
+        run_holdout_calibration(ReplayBundle(cases=tuple(cases)), GRID, HOLDOUT_POLICY)
+
+
+def test_regime_policy_is_frozen_context_not_a_fake_tuning_dimension():
+    bundle = _bundle()
+    cases = list(bundle.cases)
+    cases[-1] = replace(
+        cases[-1],
+        regime_policy=replace(cases[-1].regime_policy, volatile_return_bps=100.0),
     )
 
     with pytest.raises(ValueError, match="policy context drifted"):
@@ -251,13 +264,19 @@ def test_candidate_execute_threshold_must_exceed_corpus_observe_threshold():
         run_holdout_calibration(bundle, GRID, HOLDOUT_POLICY)
 
 
-def test_holdout_report_envelope_detects_tamper():
+def test_holdout_report_envelope_detects_tamper_and_fixed_flag_forgery():
     report = run_holdout_calibration(_bundle(), GRID, HOLDOUT_POLICY)
     envelope = deepcopy(report.to_envelope())
     envelope["payload"]["selected_candidate"]["execute_net_edge_bps"] += 1.0
 
     with pytest.raises(ValueError, match="SHA-256"):
         verify_holdout_report_envelope(envelope)
+
+    forged = deepcopy(report.to_envelope())
+    forged["payload"]["validation_not_used_for_selection"] = False
+    forged["sha256"] = report.sha256
+    with pytest.raises(ValueError, match="firewall"):
+        verify_holdout_report_envelope(forged)
 
 
 def test_wilson_lower_bound_is_uncertainty_sensitive():
