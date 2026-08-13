@@ -123,7 +123,14 @@ def test_positive_prediction_bias_does_not_increase_current_edge():
 
 def test_negative_prediction_bias_reduces_or_suppresses_edge():
     observations = [
-        _obs(f"op-{i}", f"exec-{i}", 1, expected_bps=20.0, observed_bps=5.0, outcome=OutcomeClass.FALSE_POSITIVE)
+        _obs(
+            f"op-{i}",
+            f"exec-{i}",
+            1,
+            expected_bps=20.0,
+            observed_bps=5.0,
+            outcome=OutcomeClass.FALSE_POSITIVE,
+        )
         for i in range(1, 6)
     ]
 
@@ -140,8 +147,23 @@ def test_negative_prediction_bias_reduces_or_suppresses_edge():
 def test_segment_filter_prevents_route_and_context_leakage():
     observations = [
         _obs("binance-good", "exec-1", 1, venue="binance", outcome=OutcomeClass.TRUE_POSITIVE),
-        _obs("kraken-bad", "exec-2", 1, venue="kraken", outcome=OutcomeClass.FALSE_POSITIVE, observed_bps=0.0),
-        _obs("other-route", "exec-3", 1, route="route-b", venue="binance", outcome=OutcomeClass.FALSE_POSITIVE, observed_bps=0.0),
+        _obs(
+            "kraken-bad",
+            "exec-2",
+            1,
+            venue="kraken",
+            outcome=OutcomeClass.FALSE_POSITIVE,
+            observed_bps=0.0,
+        ),
+        _obs(
+            "other-route",
+            "exec-3",
+            1,
+            route="route-b",
+            venue="binance",
+            outcome=OutcomeClass.FALSE_POSITIVE,
+            observed_bps=0.0,
+        ),
     ]
 
     profile = build_reliability_profile(
@@ -153,6 +175,34 @@ def test_segment_filter_prevents_route_and_context_leakage():
     assert profile.matched_operations == 1
     assert profile.true_positive == 1
     assert profile.false_positive == 0
+
+
+def test_missing_historical_segment_key_does_not_match_explicit_none():
+    legacy = OpportunityObservation(
+        logical_operation_id="legacy",
+        execution_id="legacy-exec",
+        attempt=1,
+        opportunity_id="legacy-opp",
+        route_id="route-a",
+        detected_at_ms=1_000,
+        observed_at_ms=1_100,
+        expected_verdict="EXECUTE_SIM",
+        required_edge_bps=10.0,
+        expected_edge_bps=20.0,
+        observed_edge_bps=15.0,
+        outcome_class=OutcomeClass.TRUE_POSITIVE,
+        evidence_sha256=_SHA,
+        market_context={"venue": "binance"},
+    )
+
+    profile = build_reliability_profile(
+        [legacy],
+        route_id="route-a",
+        market_context={"venue": "binance", "regime": None},
+    )
+
+    assert profile.matched_operations == 0
+    assert profile.truth_samples == 0
 
 
 def test_retry_history_is_collapsed_by_logical_operation():
