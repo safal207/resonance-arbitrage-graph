@@ -54,7 +54,7 @@ The feature vector is route-specific:
 - minimum leg capacity ratio, computed in each edge's own source-asset units;
 - maximum quote age and quote-age dispersion;
 - cross-rate dislocation derived from the product of raw route rates;
-- optional explicit short-window return volatility.
+- explicit short-window return volatility when available.
 
 Classification precedence is deterministic:
 
@@ -62,15 +62,18 @@ Classification precedence is deterministic:
 freshness failure -> UNKNOWN
 DISLOCATED
 THIN_LIQUIDITY
+missing volatility -> UNKNOWN
 VOLATILE
 NORMAL
 ```
 
-`UNKNOWN` fails closed and is `INELIGIBLE` for reliability ranking.
+A route that is not already provably dislocated/thin cannot be called `NORMAL` without short-window volatility evidence. It remains `UNKNOWN`, which fails closed and is `INELIGIBLE` for reliability ranking.
 
 `make_regime_market_evidence_receipt(...)` recomputes route-bound features and classification before adding the regime, feature provenance, reasons and `RegimePolicy` thresholds to SHA-256 evidence. `merge_regime_context(...)` attaches the derived regime to observation/ranking context and rejects conflicting caller-supplied regime fields.
 
-The current short-window volatility feature is optional and explicit. When supplied, evidence marks it `caller_supplied_explicit_feature`; spread, capacity, freshness and cross-rate dislocation are route-bound derived features.
+The current short-window volatility feature is explicit external input because the public snapshot adapter does not yet maintain a rolling time series. When supplied, evidence marks it `caller_supplied_explicit_feature`; spread, capacity, freshness and cross-rate dislocation are route-bound derived features.
+
+Observation memory also inherits `regime`, `regime_features` and `regime_reasons` from a regime-bound receipt and rejects caller attempts to relabel the evidence into a different regime.
 
 ## v0.4 — Reliability-Adjusted Ranking
 
@@ -165,11 +168,13 @@ resonance-live-scan \
   --max-hops 3
 ```
 
-Optional measured short-window volatility can be supplied for v0.5 regime classification:
+To distinguish `NORMAL` from `VOLATILE`, supply a measured short-window volatility feature:
 
 ```bash
 --short-window-volatility-bps 82
 ```
+
+Without it, otherwise normal-looking routes remain `UNKNOWN`; strongly `DISLOCATED` or `THIN_LIQUIDITY` routes can still be classified from route-bound evidence alone.
 
 `--fee-bps` and `--slippage-bps` are **paper-model assumptions**, not claims about your actual exchange account. `--short-window-volatility-bps` is also explicit caller input and its provenance is labeled as such in evidence.
 
@@ -256,6 +261,7 @@ Coverage includes:
 - deterministic regime classification and precedence
 - route-bound capacity/spread/freshness/dislocation features
 - regime-evidence tamper rejection
+- evidence-bound observation regime inheritance/conflict rejection
 - exact-regime reliability isolation and `UNKNOWN` fail-closed ranking
 
 ## Safety boundary
