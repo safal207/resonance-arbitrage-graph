@@ -1,5 +1,5 @@
 from resonance_arbitrage_graph import Edge, Node, evaluate_route
-from resonance_arbitrage_graph.evidence_ext import make_market_evidence_receipt
+from resonance_arbitrage_graph.market_evidence import make_market_evidence_receipt
 from resonance_arbitrage_graph.quotes import QuoteSnapshot
 
 
