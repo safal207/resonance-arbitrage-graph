@@ -33,7 +33,6 @@ def make_regime_market_evidence_receipt(
         snapshots,
         evaluation_time_ms=evaluation_time_ms,
         start_amount=result.start_amount,
-        cross_rate_dislocation_bps=classification.features.cross_rate_dislocation_bps,
         short_window_return_volatility_bps=(
             classification.features.short_window_return_volatility_bps
         ),
@@ -60,6 +59,18 @@ def make_regime_market_evidence_receipt(
     payload["market_regime"] = {
         "regime": classification.regime.value,
         "features": classification.features.to_context(),
+        "feature_provenance": {
+            "normalized_spread_bps": "route_bound_public_quotes",
+            "top_of_book_capacity_ratio": "route_bound_edge_capacity",
+            "quote_age_ms": "route_bound_public_quotes",
+            "quote_age_dispersion_ms": "route_bound_public_quotes",
+            "cross_rate_dislocation_bps": "route_bound_raw_edge_rates",
+            "short_window_return_volatility_bps": (
+                "caller_supplied_explicit_feature"
+                if classification.features.short_window_return_volatility_bps is not None
+                else "not_supplied"
+            ),
+        },
         "reasons": list(classification.reasons),
         "policy": asdict(regime_policy),
     }
