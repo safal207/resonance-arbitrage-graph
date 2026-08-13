@@ -37,6 +37,14 @@ def test_stale_or_time_incoherent_features_fail_closed_unknown():
     assert incoherent.regime is MarketRegime.UNKNOWN
 
 
+def test_missing_volatility_fails_closed_when_no_stronger_regime_signal_exists():
+    result = classify_market_regime(
+        _features(short_window_return_volatility_bps=None)
+    )
+    assert result.regime is MarketRegime.UNKNOWN
+    assert result.reasons == ("volatility_feature_missing",)
+
+
 def test_dislocation_has_precedence_over_volatility_and_thin_liquidity():
     result = classify_market_regime(
         _features(
@@ -59,6 +67,16 @@ def test_thin_liquidity_has_precedence_over_volatility():
     )
     assert result.regime is MarketRegime.THIN_LIQUIDITY
     assert "low_capacity_ratio" in result.reasons
+
+
+def test_stronger_regime_can_be_classified_without_volatility_window():
+    result = classify_market_regime(
+        _features(
+            cross_rate_dislocation_bps=50.0,
+            short_window_return_volatility_bps=None,
+        )
+    )
+    assert result.regime is MarketRegime.DISLOCATED
 
 
 def test_wide_spread_is_thin_liquidity_signal():
