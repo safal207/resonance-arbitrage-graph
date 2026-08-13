@@ -5,6 +5,7 @@ import json
 import time
 
 from .adapters import BinanceBookTickerAdapter, KrakenPreTradeAdapter
+from .market_evidence import make_market_evidence_receipt
 from .model import Node
 from .quotes import CostAssumption
 from .scanner import scan_cycles
@@ -55,9 +56,34 @@ def main() -> int:
         max_hops=args.max_hops,
     )
 
+    opportunity_payloads = []
+    for index, item in enumerate(opportunities):
+        operation_id = f"live-scan-{adapter.venue}-{now_ms}-{index}"
+        receipt = make_market_evidence_receipt(
+            operation_id,
+            item.route,
+            item.result,
+            snapshots=quotes,
+        )
+        opportunity_payloads.append(
+            {
+                "logical_operation_id": operation_id,
+                "route": [f"{edge.src.key}->{edge.dst.key}" for edge in item.route],
+                "verdict": item.result.verdict.value,
+                "gross_edge": item.result.gross_edge,
+                "net_edge": item.result.net_edge,
+                "risk_adjusted_edge": item.result.risk_adjusted_edge,
+                "success_probability": item.result.success_probability,
+                "reasons": list(item.result.reasons),
+                "evidence_sha256": receipt.sha256,
+                "market_bindings": receipt.payload["market_bindings"],
+            }
+        )
+
     output = {
         "paper_only": True,
         "venue": adapter.venue,
+        "scan_observed_at_ms": now_ms,
         "cost_assumptions": {
             "fee_bps": costs.fee_bps,
             "slippage_bps": costs.slippage_bps,
@@ -76,21 +102,11 @@ def main() -> int:
                 "source_timestamp_ms": quote.source_timestamp_ms,
                 "timestamp_class": quote.timestamp_class,
                 "source_url": quote.source_url,
+                "metadata_url": quote.metadata_url,
             }
             for quote in quotes
         ],
-        "opportunities": [
-            {
-                "route": [f"{edge.src.key}->{edge.dst.key}" for edge in item.route],
-                "verdict": item.result.verdict.value,
-                "gross_edge": item.result.gross_edge,
-                "net_edge": item.result.net_edge,
-                "risk_adjusted_edge": item.result.risk_adjusted_edge,
-                "success_probability": item.result.success_probability,
-                "reasons": list(item.result.reasons),
-            }
-            for item in opportunities
-        ],
+        "opportunities": opportunity_payloads,
     }
     print(json.dumps(output, indent=2, sort_keys=True))
     return 0
