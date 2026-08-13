@@ -26,6 +26,7 @@ def snapshot_payload(snapshot: QuoteSnapshot) -> dict[str, Any]:
         "source_timestamp_ms": snapshot.source_timestamp_ms,
         "timestamp_class": snapshot.timestamp_class,
         "source_url": snapshot.source_url,
+        "metadata_url": snapshot.metadata_url,
     }
 
 
