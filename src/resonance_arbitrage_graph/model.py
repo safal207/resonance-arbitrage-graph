@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from enum import Enum
 import math
 
+from .validation import require_non_negative
+
 
 class Verdict(str, Enum):
     EXECUTE_SIM = "EXECUTE_SIM"
@@ -41,12 +43,20 @@ class Edge:
     confidence: float = 1.0
 
     def __post_init__(self) -> None:
-        if self.rate <= 0:
-            raise ValueError("rate must be positive")
-        if self.capacity <= 0:
+        if not math.isfinite(self.rate) or self.rate <= 0:
+            raise ValueError("rate must be finite and positive")
+        if self.capacity <= 0 or math.isnan(self.capacity):
             raise ValueError("capacity must be positive")
         if self.latency_ms < 0 or self.quote_age_ms < 0:
             raise ValueError("latency and quote age cannot be negative")
+
+        for name, value in (
+            ("fee_bps", self.fee_bps),
+            ("slippage_bps", self.slippage_bps),
+            ("gas_bps", self.gas_bps),
+        ):
+            require_non_negative(name, value)
+
         for name, value in (
             ("failure_probability", self.failure_probability),
             ("settlement_probability", self.settlement_probability),
@@ -70,10 +80,11 @@ class Edge:
         )
 
     def apply(self, amount: float, *, extra_slippage_bps: float = 0.0) -> float:
-        if amount <= 0:
-            raise ValueError("amount must be positive")
+        if not math.isfinite(amount) or amount <= 0:
+            raise ValueError("amount must be finite and positive")
         if amount > self.capacity:
             raise ValueError("capacity exceeded")
+        require_non_negative("extra_slippage_bps", extra_slippage_bps)
         cost_bps = self.total_cost_bps + extra_slippage_bps
         if cost_bps >= 10_000:
             raise ValueError("combined execution costs must be below 100%")
