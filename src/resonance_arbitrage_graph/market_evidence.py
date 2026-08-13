@@ -34,7 +34,12 @@ def snapshots_payload(snapshots: Sequence[QuoteSnapshot]) -> list[dict[str, Any]
     return [snapshot_payload(snapshot) for snapshot in snapshots]
 
 
-def _edge_snapshot_side(edge: Edge, snapshot: QuoteSnapshot) -> str | None:
+def _edge_snapshot_side(
+    edge: Edge,
+    snapshot: QuoteSnapshot,
+    *,
+    evaluation_time_ms: int,
+) -> str | None:
     if edge.src.venue != snapshot.venue or edge.dst.venue != snapshot.venue:
         return None
 
@@ -53,18 +58,30 @@ def _edge_snapshot_side(edge: Edge, snapshot: QuoteSnapshot) -> str | None:
         return None
     if not math.isclose(edge.capacity, expected_capacity, rel_tol=1e-12, abs_tol=0.0):
         return None
+    if edge.quote_age_ms != snapshot.age_ms(evaluation_time_ms):
+        return None
     return side
 
 
 def _bind_route_to_snapshots(
-    edges: Sequence[Edge], snapshots: Sequence[QuoteSnapshot]
+    edges: Sequence[Edge],
+    snapshots: Sequence[QuoteSnapshot],
+    *,
+    evaluation_time_ms: int,
 ) -> list[dict[str, Any]]:
     bindings: list[dict[str, Any]] = []
     for edge_index, edge in enumerate(edges):
         matches = [
             (snapshot_index, side)
             for snapshot_index, snapshot in enumerate(snapshots)
-            if (side := _edge_snapshot_side(edge, snapshot)) is not None
+            if (
+                side := _edge_snapshot_side(
+                    edge,
+                    snapshot,
+                    evaluation_time_ms=evaluation_time_ms,
+                )
+            )
+            is not None
         ]
         if not matches:
             raise ValueError(f"route edge {edge_index} is not backed by any supplied market snapshot")
@@ -87,14 +104,21 @@ def make_market_evidence_receipt(
     result: RouteResult,
     *,
     snapshots: Sequence[QuoteSnapshot],
+    evaluation_time_ms: int,
     execution: PaperExecution | None = None,
 ) -> EvidenceReceipt:
-    """Bind normalized public quote provenance to the deterministic route receipt."""
+    """Bind public quote price, capacity and freshness to the deterministic route receipt."""
 
     if not snapshots:
         raise ValueError("at least one market snapshot is required")
+    if evaluation_time_ms < 0:
+        raise ValueError("evaluation_time_ms cannot be negative")
 
-    bindings = _bind_route_to_snapshots(edges, snapshots)
+    bindings = _bind_route_to_snapshots(
+        edges,
+        snapshots,
+        evaluation_time_ms=evaluation_time_ms,
+    )
     receipt = make_evidence_receipt(
         operation_id,
         edges,
@@ -102,6 +126,7 @@ def make_market_evidence_receipt(
         execution=execution,
     )
     payload = dict(receipt.payload)
+    payload["market_evaluation_time_ms"] = evaluation_time_ms
     payload["market_data"] = snapshots_payload(snapshots)
     payload["market_bindings"] = bindings
 
