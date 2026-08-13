@@ -5,6 +5,7 @@ from resonance_arbitrage_graph.regime import (
     RegimeFeatures,
     RegimePolicy,
     classify_market_regime,
+    merge_regime_context,
 )
 
 
@@ -91,3 +92,13 @@ def test_classification_market_context_is_strict_and_explicit():
     assert context["regime"] == "NORMAL"
     assert context["regime_features"]["normalized_spread_bps"] == 5.0
     assert context["regime_reasons"] == ["within_normal_thresholds"]
+
+
+def test_merge_regime_context_preserves_base_and_rejects_override():
+    result = classify_market_regime(_features())
+    merged = merge_regime_context({"venue": "binance"}, result)
+    assert merged["venue"] == "binance"
+    assert merged["regime"] == "NORMAL"
+
+    with pytest.raises(ValueError, match="conflicts"):
+        merge_regime_context({"venue": "binance", "regime": "VOLATILE"}, result)
