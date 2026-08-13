@@ -167,6 +167,9 @@ def observation_from_evidence(
 ) -> OpportunityObservation:
     verify_evidence_receipt(receipt)
     payload = receipt.payload
+    if payload.get("paper_only") is not True:
+        raise ValueError("observation memory only accepts paper-only evidence")
+
     logical_operation_id = payload.get("logical_operation_id")
     if not isinstance(logical_operation_id, str) or not logical_operation_id:
         raise ValueError("evidence receipt has no logical_operation_id")
