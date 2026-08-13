@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from collections.abc import Sequence
+import math
 
 from .model import Edge, RouteResult, Verdict
 
@@ -13,6 +14,20 @@ class Policy:
     max_quote_age_ms: int = 3_000
     max_route_latency_ms: int = 5_000
     min_success_probability: float = 0.75
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.execute_net_edge) or self.execute_net_edge <= 0:
+            raise ValueError("execute_net_edge must be finite and positive")
+        if not math.isfinite(self.observe_net_edge) or self.observe_net_edge < 0:
+            raise ValueError("observe_net_edge must be finite and non-negative")
+        if self.execute_net_edge <= self.observe_net_edge:
+            raise ValueError("execute_net_edge must be greater than observe_net_edge")
+        if self.max_quote_age_ms < 0:
+            raise ValueError("max_quote_age_ms cannot be negative")
+        if self.max_route_latency_ms < 0:
+            raise ValueError("max_route_latency_ms cannot be negative")
+        if not math.isfinite(self.min_success_probability) or not 0.0 <= self.min_success_probability <= 1.0:
+            raise ValueError("min_success_probability must be between 0 and 1")
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,8 +49,8 @@ def evaluate_route(
     *,
     policy: Policy | None = None,
 ) -> RouteResult:
-    if amount <= 0:
-        raise ValueError("amount must be positive")
+    if not math.isfinite(amount) or amount <= 0:
+        raise ValueError("amount must be finite and positive")
     if not edges:
         raise ValueError("route must contain at least one edge")
 
