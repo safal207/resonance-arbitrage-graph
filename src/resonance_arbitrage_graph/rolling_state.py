@@ -32,7 +32,11 @@ class RollingMarketSample:
     base_asset: str
     quote_asset: str
     observed_at_ms: int
+    timestamp_class: str
+    source_timestamp_ms: int | None
     freshness_reference_ms: int
+    source_url: str
+    metadata_url: str | None
     bid_price: float
     bid_qty: float
     ask_price: float
@@ -46,7 +50,11 @@ class RollingMarketSample:
             base_asset=quote.base_asset,
             quote_asset=quote.quote_asset,
             observed_at_ms=quote.observed_at_ms,
+            timestamp_class=quote.timestamp_class,
+            source_timestamp_ms=quote.source_timestamp_ms,
             freshness_reference_ms=quote.freshness_reference_ms,
+            source_url=quote.source_url,
+            metadata_url=quote.metadata_url,
             bid_price=quote.bid_price,
             bid_qty=quote.bid_qty,
             ask_price=quote.ask_price,
@@ -54,13 +62,22 @@ class RollingMarketSample:
         )
 
     def __post_init__(self) -> None:
-        for name in ("venue", "symbol", "base_asset", "quote_asset"):
+        for name in (
+            "venue",
+            "symbol",
+            "base_asset",
+            "quote_asset",
+            "timestamp_class",
+            "source_url",
+        ):
             if not getattr(self, name):
                 raise ValueError(f"{name} must be non-empty")
+        if self.metadata_url is not None and not self.metadata_url:
+            raise ValueError("metadata_url must be non-empty when provided")
         if self.observed_at_ms < 0 or self.freshness_reference_ms < 0:
             raise ValueError("sample timestamps cannot be negative")
-        if self.freshness_reference_ms > self.observed_at_ms:
-            raise ValueError("freshness reference cannot be after observation time")
+        if self.source_timestamp_ms is not None and self.source_timestamp_ms < 0:
+            raise ValueError("source_timestamp_ms cannot be negative")
         for name in ("bid_price", "bid_qty", "ask_price", "ask_qty"):
             value = getattr(self, name)
             if not math.isfinite(value) or value <= 0:
@@ -149,10 +166,9 @@ class RollingMarketWindow:
         samples = [RollingMarketSample.from_quote(quote) for quote in quotes]
         if not samples:
             raise ValueError("at least one quote is required")
-        samples.sort(key=lambda sample: sample.observed_at_ms)
         for previous, current in zip(samples, samples[1:]):
-            if previous.observed_at_ms == current.observed_at_ms:
-                raise ValueError("duplicate rolling-window observation timestamp")
+            if current.observed_at_ms <= previous.observed_at_ms:
+                raise ValueError("rolling-window input must be strictly timestamp ordered")
         effective_end = end_ms if end_ms is not None else samples[-1].observed_at_ms
         if effective_end < 0:
             raise ValueError("end_ms cannot be negative")
@@ -211,11 +227,9 @@ class RollingMarketWindow:
         spreads = [sample.spread_bps for sample in self.samples]
         notionals = [sample.top_book_notional_quote for sample in self.samples]
         ages = [
-            evaluation_time - sample.freshness_reference_ms
+            max(0, evaluation_time - sample.freshness_reference_ms)
             for sample in self.samples
         ]
-        if any(age < 0 for age in ages):
-            raise ValueError("rolling-window freshness reference cannot be in the future")
 
         return RollingWindowSummary(
             venue=first.venue,
