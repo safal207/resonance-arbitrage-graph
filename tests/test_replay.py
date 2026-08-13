@@ -222,3 +222,30 @@ def test_threshold_sensitivity_is_advisory_and_changes_prediction_population():
     assert low.execute_sim_count == 1
     assert high.execute_sim_count == 0
     assert low.to_payload()["advisory_only"] is True
+
+
+def test_replay_case_copies_and_freezes_decision_collections():
+    snapshots, windows, legs = _decision_state()
+    case = ReplayCase(
+        case_id="frozen-a1",
+        logical_operation_id="frozen",
+        attempt=1,
+        detected_at_ms=60_000,
+        evaluation_time_ms=60_000,
+        start_amount=1_000.0,
+        snapshots=list(snapshots),
+        windows_by_market=windows,
+        legs=list(legs),
+        engine_policy=Policy(),
+        regime_policy=RegimePolicy(),
+        outcome=ReplayOutcome(observed_at_ms=61_000, realized_net_edge_bps=40.0),
+    )
+    digest = case.sha256
+    windows.clear()
+
+    assert isinstance(case.snapshots, tuple)
+    assert isinstance(case.legs, tuple)
+    assert len(case.windows_by_market) == 3
+    assert case.sha256 == digest
+    with pytest.raises(TypeError):
+        case.windows_by_market["fixture:OTHER"] = next(iter(case.windows_by_market.values()))
