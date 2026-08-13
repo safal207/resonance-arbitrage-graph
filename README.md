@@ -2,7 +2,7 @@
 
 A paper-only causal verification engine for crypto-arbitrage opportunities.
 
-The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, and settlement risk — and to emit deterministic evidence for that decision.
+The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, and settlement risk — and to emit deterministic evidence and outcome memory for that decision.
 
 ## Causal spine
 
@@ -17,6 +17,8 @@ public/fixture market state
   -> settlement assumptions
   -> paper PnL
   -> quote-bound evidence
+  -> opportunity observation
+  -> truth metrics
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -29,6 +31,37 @@ AND capacity is sufficient
 AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 ```
+
+## v0.3 — Opportunity Memory & Truth Metrics
+
+v0.3 records whether opportunities that looked executable actually survive the paper execution path.
+
+- `OpportunityObservation` binds a logical opportunity, concrete execution attempt, expected/observed edge, truth class and evidence SHA-256.
+- `observation_from_evidence(...)` recomputes the receipt digest, takes `logical_operation_id` from the receipt, and derives edge/verdict/outcome instead of trusting duplicate caller claims.
+- `ObservationJournal` is an append-only deterministic JSONL journal with flush + fsync.
+- Retries use a new `execution_id` under the same `logical_operation_id` and must increment `attempt` exactly once.
+- Retry identity cannot drift across `opportunity_id`, `route_id` or detection time.
+- Terminal outcomes block later replay attempts.
+- Truth classes: `TRUE_POSITIVE`, `FALSE_POSITIVE`, `EXPIRED`, `REJECTED`, `INDETERMINATE`.
+- `REJECTED` and `INDETERMINATE` are excluded from Opportunity Truth Rate rather than mislabeled as false positives.
+
+Metrics:
+
+```text
+Opportunity Truth Rate
+  = TP / (TP + FP)
+
+False Opportunity Rate
+  = FP / (TP + FP)
+
+Route Survival Rate
+  = (TP + FP) / (TP + FP + EXPIRED)
+
+Prediction Error
+  = observed_edge_bps - expected_edge_bps
+```
+
+The v0.3 file journal is intentionally **single-writer**. Multi-process locking/database storage is a future layer and must preserve the same causal identity and terminal-state invariants.
 
 ## v0.2 — public read-only market data
 
@@ -101,7 +134,9 @@ The base evidence receipt contains:
 
 `make_market_evidence_receipt(...)` additionally binds the public quote snapshots and evaluation time used for the decision. It refuses to produce a receipt if an edge cannot be derived from exactly one supplied snapshot using the expected venue, asset direction, price, top-of-book capacity and quote age.
 
-## Why cross-venue is observe-only in v0.2
+v0.3 does not accept the receipt digest at face value: the observation layer recomputes the SHA-256 over canonical receipt JSON before admitting it to memory.
+
+## Why cross-venue is observe-only
 
 Buying on venue A and selling on venue B does not return capital to the same venue state. Calling that an executable cycle without modeling inventory/rebalance would hide a real state transition.
 
@@ -124,27 +159,29 @@ Until those edges exist, cross-venue gaps are observations, not `EXECUTE_SIM` ro
 pytest
 ```
 
-Coverage includes the original verifier/replay/evidence tests plus:
+Coverage includes:
 
+- verifier/replay/base evidence contracts
 - normalized quote and timestamp-provenance validation
 - top-of-book capacity mapping
-- conservative freshness timestamps
-- mocked Binance metadata + market-data adapter flow
-- caller/exchange pair-metadata mismatch rejection
-- mocked Kraken public pre-trade adapter
+- mocked Binance and Kraken public adapters
 - live-shaped triangular quote graph
-- fail-closed missing cost assumptions
 - cross-venue observe-only boundary
 - route-edge ↔ quote-price/capacity/freshness provenance binding
 - tampered quote and forged quote-age rejection
-- CLI pair parsing
+- evidence-digest tamper rejection before observation memory
+- retry collapse without truth-metric double-counting
+- duplicate execution and attempt-gap rejection
+- terminal-state replay rejection
+- canonical JSONL journal round-trip
 
 ## Safety boundary
 
-The market-data layer implements GET-only public data. There is no private API-key handling, signing, account endpoint, order endpoint, wallet interaction, or fund-transfer path.
+The system remains paper-only. The market-data layer implements GET-only public data. There is no private API-key handling, signing, account endpoint, order endpoint, wallet interaction, or fund-transfer path.
 
 See:
 
 - `docs/market-data-contracts.md`
 - `docs/v0.2-design.md`
-- Issue #3 — v0.2 public read-only market feeds and live paper scan
+- `docs/v0.3-design.md`
+- Issue #5 — v0.3 Opportunity Memory & Truth Metrics
