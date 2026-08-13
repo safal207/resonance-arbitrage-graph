@@ -9,13 +9,14 @@ The project does **not** place live orders, sign transactions, hold exchange key
 ```text
 public/fixture market state
   -> normalized quote snapshot
+  -> verified pair metadata
   -> discrepancy
   -> candidate route
   -> execution constraints
   -> state transitions
   -> settlement assumptions
   -> paper PnL
-  -> evidence
+  -> quote-bound evidence
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -34,13 +35,13 @@ AND modeled execution/settlement confidence is acceptable
 v0.2 connects real public quotes to the existing verifier while keeping execution strictly paper-only.
 
 - `QuoteSnapshot` normalizes venue, pair, best bid/ask, quantities, timestamps and source identity.
-- Binance Spot adapter consumes the public `bookTicker` market-data endpoint.
-- Kraken Spot adapter consumes the public `PreTrade` top-of-book endpoint.
+- Binance Spot verifies pair metadata through public `exchangeInfo`, then consumes public `bookTicker` for best bid/ask.
+- Kraken Spot consumes public `PreTrade`, which supplies top-of-book data, pair metadata and publication timestamps.
 - Quote snapshots become buy/sell graph edges with top-of-book capacity.
 - Fee/slippage assumptions are explicit caller inputs; the engine does not guess a user's fee tier.
 - Single-venue triangular cycles can be evaluated with real public quotes.
 - Cross-venue gaps are deliberately classified `OBSERVE_ONLY_REBALANCE_UNMODELED` until transfer/rebalance/settlement edges exist.
-- Public quote provenance can be bound into deterministic SHA-256 evidence receipts.
+- Public quote provenance is bound into deterministic SHA-256 evidence by venue, pair, side, rate, capacity and freshness at evaluation time.
 
 ### Live paper scan
 
@@ -66,6 +67,8 @@ resonance-live-scan \
 ```
 
 `--fee-bps` and `--slippage-bps` are **paper-model assumptions**, not claims about your actual exchange account.
+
+Each surfaced cycle includes a logical operation ID, deterministic evidence SHA-256 and explicit edge-to-snapshot market bindings.
 
 Kraken uses the same CLI shape; pair symbols may contain `/`, for example `BTC/USDT:BTC:USDT`.
 
@@ -96,7 +99,7 @@ The base evidence receipt contains:
 - optional observed paper-execution outcome
 - SHA-256 of the canonical payload
 
-`make_market_evidence_receipt(...)` additionally binds the public quote snapshots used for the decision, including source URL and timestamp class. Changing quote provenance changes the digest.
+`make_market_evidence_receipt(...)` additionally binds the public quote snapshots and evaluation time used for the decision. It refuses to produce a receipt if an edge cannot be derived from exactly one supplied snapshot using the expected venue, asset direction, price, top-of-book capacity and quote age.
 
 ## Why cross-venue is observe-only in v0.2
 
@@ -123,14 +126,17 @@ pytest
 
 Coverage includes the original verifier/replay/evidence tests plus:
 
-- normalized quote validation
+- normalized quote and timestamp-provenance validation
 - top-of-book capacity mapping
 - conservative freshness timestamps
-- mocked Binance and Kraken adapters (CI has no network dependency)
+- mocked Binance metadata + market-data adapter flow
+- caller/exchange pair-metadata mismatch rejection
+- mocked Kraken public pre-trade adapter
 - live-shaped triangular quote graph
 - fail-closed missing cost assumptions
 - cross-venue observe-only boundary
-- market-data provenance in evidence
+- route-edge ↔ quote-price/capacity/freshness provenance binding
+- tampered quote and forged quote-age rejection
 - CLI pair parsing
 
 ## Safety boundary
