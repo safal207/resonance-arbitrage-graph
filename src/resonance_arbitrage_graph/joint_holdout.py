@@ -7,11 +7,11 @@ import hashlib
 import hmac
 import json
 import math
+from types import MappingProxyType
 from typing import Any
 
 from .holdout import HoldoutPolicy, HoldoutSplitError, split_replay_bundle, wilson_lower_bound
 from .model import Verdict
-from .regime import RegimePolicy
 from .regime_gate import RegimeAction
 from .replay import ReplayBundle, ReplayMetrics, ReplayResult, calculate_replay_metrics, replay_case
 
@@ -36,6 +36,24 @@ def _canonical_json(payload: Any) -> str:
 
 def _sha256(payload: Any) -> str:
     return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _freeze_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType(
+            {str(key): _freeze_json(item) for key, item in value.items()}
+        )
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_json(item) for item in value)
+    return value
+
+
+def _thaw_json(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _thaw_json(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw_json(item) for item in value]
+    return value
 
 
 class JointHoldoutStatus(str, Enum):
@@ -193,7 +211,16 @@ class JointPolicyContext:
     baseline_execute_net_edge_bps: float
     baseline_volatile_return_bps: float
     observe_net_edge_bps: float
-    frozen_context: dict[str, Any]
+    frozen_context: Mapping[str, Any]
+
+    def __post_init__(self) -> None:
+        raw_context = _thaw_json(self.frozen_context)
+        if not isinstance(raw_context, dict):
+            raise ValueError("joint policy frozen_context must be a JSON object")
+        digest = _sha256(raw_context)
+        if not hmac.compare_digest(digest, self.sha256):
+            raise ValueError("joint policy context SHA-256 does not match frozen context")
+        object.__setattr__(self, "frozen_context", _freeze_json(raw_context))
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -201,7 +228,7 @@ class JointPolicyContext:
             "baseline_execute_net_edge_bps": self.baseline_execute_net_edge_bps,
             "baseline_volatile_return_bps": self.baseline_volatile_return_bps,
             "observe_net_edge_bps": self.observe_net_edge_bps,
-            "frozen_context": self.frozen_context,
+            "frozen_context": _thaw_json(self.frozen_context),
         }
 
 
@@ -488,6 +515,25 @@ def verify_joint_holdout_report_envelope(envelope: Mapping[str, Any]) -> dict[st
         raise ValueError("joint holdout report envelope is incomplete") from exc
     if not isinstance(payload, dict) or not isinstance(supplied_sha, str):
         raise ValueError("joint holdout report envelope has invalid types")
+    expected_keys = {
+        "schema",
+        "source_bundle_sha256",
+        "policy_context",
+        "joint_policy",
+        "candidate_grid",
+        "status",
+        "split",
+        "calibration_evaluations",
+        "selected_candidate",
+        "validation_evaluation",
+        "reasons",
+        "selection_rule",
+        "causal_support_is_eligibility_not_objective",
+        "validation_not_used_for_selection",
+        "advisory_only",
+    }
+    if set(payload) != expected_keys:
+        raise ValueError("joint holdout report payload fields are not canonical")
     if payload.get("schema") != _JOINT_REPORT_SCHEMA:
         raise ValueError("unsupported joint holdout report schema")
     if payload.get("selection_rule") != _SELECTION_RULE:
@@ -500,6 +546,25 @@ def verify_joint_holdout_report_envelope(envelope: Mapping[str, Any]) -> dict[st
         raise ValueError("joint holdout report must remain advisory-only")
     if payload.get("status") not in {status.value for status in JointHoldoutStatus}:
         raise ValueError("joint holdout report status is invalid")
+
+    context = payload.get("policy_context")
+    if not isinstance(context, dict):
+        raise ValueError("joint holdout policy_context must be an object")
+    expected_context_keys = {
+        "sha256",
+        "baseline_execute_net_edge_bps",
+        "baseline_volatile_return_bps",
+        "observe_net_edge_bps",
+        "frozen_context",
+    }
+    if set(context) != expected_context_keys:
+        raise ValueError("joint holdout policy_context fields are not canonical")
+    if not isinstance(context.get("sha256"), str) or not isinstance(context.get("frozen_context"), dict):
+        raise ValueError("joint holdout policy_context has invalid types")
+    context_digest = _sha256(context["frozen_context"])
+    if not hmac.compare_digest(context_digest, context["sha256"]):
+        raise ValueError("joint holdout policy context SHA-256 does not match frozen context")
+
     digest = _sha256(payload)
     if not hmac.compare_digest(digest, supplied_sha):
         raise ValueError("joint holdout report SHA-256 does not match payload")
