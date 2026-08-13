@@ -5,9 +5,11 @@ import json
 import time
 
 from .adapters import BinanceBookTickerAdapter, KrakenPreTradeAdapter
-from .market_evidence import make_market_evidence_receipt
 from .model import Node
 from .quotes import CostAssumption
+from .regime import classify_market_regime
+from .regime_evidence import make_regime_market_evidence_receipt
+from .regime_features import derive_route_regime_features
 from .scanner import scan_cycles
 
 
@@ -27,6 +29,12 @@ def main() -> int:
     parser.add_argument("--fee-bps", type=float, required=True, help="explicit paper-model fee assumption")
     parser.add_argument("--slippage-bps", type=float, required=True, help="explicit paper-model slippage assumption")
     parser.add_argument("--max-hops", type=int, default=3)
+    parser.add_argument(
+        "--short-window-volatility-bps",
+        type=float,
+        default=None,
+        help="optional explicit short-window return-volatility feature for regime classification",
+    )
     args = parser.parse_args()
 
     if args.venue == "binance":
@@ -59,12 +67,21 @@ def main() -> int:
     opportunity_payloads = []
     for index, item in enumerate(opportunities):
         operation_id = f"live-scan-{adapter.venue}-{now_ms}-{index}"
-        receipt = make_market_evidence_receipt(
+        features = derive_route_regime_features(
+            item.route,
+            quotes,
+            evaluation_time_ms=now_ms,
+            start_amount=item.result.start_amount,
+            short_window_return_volatility_bps=args.short_window_volatility_bps,
+        )
+        classification = classify_market_regime(features)
+        receipt = make_regime_market_evidence_receipt(
             operation_id,
             item.route,
             item.result,
             snapshots=quotes,
             evaluation_time_ms=now_ms,
+            classification=classification,
         )
         opportunity_payloads.append(
             {
@@ -76,6 +93,7 @@ def main() -> int:
                 "risk_adjusted_edge": item.result.risk_adjusted_edge,
                 "success_probability": item.result.success_probability,
                 "reasons": list(item.result.reasons),
+                "market_regime": receipt.payload["market_regime"],
                 "evidence_sha256": receipt.sha256,
                 "market_bindings": receipt.payload["market_bindings"],
             }
@@ -90,6 +108,7 @@ def main() -> int:
             "slippage_bps": costs.slippage_bps,
             "gas_bps": costs.gas_bps,
         },
+        "short_window_volatility_bps": args.short_window_volatility_bps,
         "quotes": [
             {
                 "symbol": quote.symbol,
