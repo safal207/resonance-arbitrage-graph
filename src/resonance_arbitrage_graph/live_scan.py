@@ -121,16 +121,22 @@ def main() -> int:
             windows_by_market=windows,
             evaluation_time_ms=now_ms,
         )
+        gate = receipt.payload["regime_execution_gate"]
+        final_verdict = receipt.payload["expected"]["verdict"]
         opportunity_payloads.append(
             {
                 "logical_operation_id": operation_id,
                 "route": [f"{edge.src.key}->{edge.dst.key}" for edge in item.route],
-                "verdict": item.result.verdict.value,
+                "verdict": final_verdict,
+                "base_verdict": item.result.verdict.value,
+                "final_verdict": final_verdict,
+                "regime_action": gate["action"],
+                "regime_execution_policy_sha256": gate["policy_sha256"],
                 "gross_edge": item.result.gross_edge,
                 "net_edge": item.result.net_edge,
                 "risk_adjusted_edge": item.result.risk_adjusted_edge,
                 "success_probability": item.result.success_probability,
-                "reasons": list(item.result.reasons),
+                "reasons": list(item.result.reasons) + list(gate["reasons"]),
                 "market_regime": receipt.payload["market_regime"],
                 "rolling_market_state": {
                     key: {

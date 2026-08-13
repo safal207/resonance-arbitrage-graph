@@ -14,9 +14,11 @@ public/fixture market state
   -> discrepancy
   -> candidate route
   -> execution constraints
+  -> base verifier verdict
   -> route-bound market regime
-  -> paper PnL
-  -> quote + rolling-window + regime-bound evidence
+  -> monotonic regime execution gate
+  -> final paper verdict
+  -> quote + rolling-window + regime + gate-bound evidence
   -> opportunity observation
   -> truth metrics
   -> regime-segmented reliability ranking
@@ -34,7 +36,50 @@ AND quotes are fresh
 AND capacity is sufficient
 AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
+AND final post-regime verdict never exceeds the base verifier verdict
 ```
+
+## v0.9 — Evidence-Bound Regime Execution Gate
+
+v0.9 makes the derived market regime causally active while keeping the system paper-only.
+
+```text
+base verifier verdict
+  -> evidence-derived rolling regime
+  -> explicit regime action
+  -> monotonic downgrade
+  -> final paper verdict
+```
+
+Verdict order:
+
+```text
+REJECT < OBSERVE < EXECUTE_SIM
+```
+
+Invariant:
+
+```text
+final_verdict <= base_verdict
+```
+
+Default regime actions:
+
+```text
+NORMAL          -> ALLOW
+VOLATILE        -> OBSERVE_ONLY
+THIN_LIQUIDITY  -> OBSERVE_ONLY
+DISLOCATED      -> OBSERVE_ONLY
+UNKNOWN         -> REJECT
+```
+
+`UNKNOWN` is structurally fail-closed and cannot be configured to allow execution. A base `REJECT` can never be promoted, and a base `OBSERVE` can never become `EXECUTE_SIM`.
+
+Evidence now exposes `base_verdict` and final `verdict` separately and binds the gate action, full canonical `RegimeExecutionPolicy`, and gate-policy SHA-256. Observation memory validates the gate against the bound policy before accepting the receipt and classifies outcomes from the **final** verdict. Therefore a regime-downgraded `OBSERVE` does not enter the Opportunity Truth Rate denominator.
+
+Replay artifacts move to schema v0.2. Replay rebuilds the route, recomputes the base verifier verdict, recomputes the rolling regime, reapplies the regime gate, and only then grades the later paper outcome. Gate policy is part of the replay decision fingerprint, so changing regime action semantics across retries is decision drift.
+
+Replay v0.1 artifacts are intentionally not silently reinterpreted as v0.2 because v0.1 did not bind this causal policy.
 
 ## v0.8 — Holdout Policy Calibration
 
@@ -59,13 +104,13 @@ Core holdout invariants:
 - validation is strictly later than calibration;
 - candidate selection sees calibration only;
 - validation can pass/fail the selected candidate but cannot choose a fallback;
-- all untuned `Policy` fields, the full `RegimePolicy`, and rolling-window policy remain frozen measurement context;
+- all untuned `Policy` fields, full `RegimePolicy`, full `RegimeExecutionPolicy`, and rolling-window policy remain frozen measurement context;
 - uncertainty-sensitive guardrails use Wilson lower bounds rather than raw ratios alone;
 - insufficient corpus/calibration/validation fails closed explicitly;
 - the final report binds corpus/subset SHA-256 values, split membership, grid, evaluations, selected candidate and validation result;
 - all results remain advisory and paper-only.
 
-Why only execute threshold? `execute_net_edge` directly changes `EXECUTE_SIM` vs `OBSERVE`. The current `volatile_return_bps` threshold changes a `NORMAL` / `VOLATILE` label but does not itself suppress execution, so optimizing it against overall Opportunity Truth Rate would be a non-causal tuning exercise. v0.8 keeps that regime threshold frozen until a future regime-gated execution policy makes it causally active.
+v0.8 tunes only `execute_net_edge`. After v0.9, volatility thresholds are now causally active through the regime gate, making a future two-dimensional holdout calibration meaningful rather than label-only optimization.
 
 Offline holdout CLI:
 
@@ -86,9 +131,9 @@ These numbers are examples only. Guardrails are explicit caller inputs rather th
 
 ## v0.7 — Market-State Replay & Calibration Benchmark
 
-v0.7 turns captured v0.6 market state into an offline calibration laboratory.
+v0.7 turns captured v0.6 market state into an offline calibration laboratory. v0.9 upgrades the replay case/bundle/report wire schema to v0.2 so gate policy is part of the decision state.
 
-A `ReplayCase` stores the exact quote snapshots, rolling windows, route-leg descriptors, verifier/regime policies and a later paper outcome. It deliberately does **not** store a trusted verdict or regime. Replay rebuilds route edges from the captured quotes, recomputes `evaluate_route(...)`, recomputes the rolling-window market regime, and only then compares the prediction with the later paper result.
+A `ReplayCase` stores the exact quote snapshots, rolling windows, route-leg descriptors, verifier/regime/gate policies and a later paper outcome. It deliberately does **not** store a trusted final verdict or regime. Replay rebuilds route edges from the captured quotes and recomputes the decision chain.
 
 Core replay invariants:
 
@@ -97,7 +142,7 @@ Core replay invariants:
 - retries share one `logical_operation_id`, contiguous attempts and one stable decision fingerprint;
 - a terminal attempt cannot be retried;
 - retries collapse to one logical operation before metrics;
-- incomplete rolling evidence makes an otherwise executable/observable replay `INDETERMINATE`;
+- incomplete rolling evidence derives `UNKNOWN`, and the default v0.9 gate fails closed to final `REJECT`;
 - calibration is segmented by derived regime and semantic route ID;
 - threshold sensitivity is advisory only and never mutates runtime policy.
 
@@ -147,7 +192,7 @@ DISLOCATED
 UNKNOWN
 ```
 
-Inputs include route-bound spread, capacity ratio, quote freshness/dispersion, cross-rate dislocation and rolling return volatility. `UNKNOWN` fails closed for reliability ranking.
+Inputs include route-bound spread, capacity ratio, quote freshness/dispersion, cross-rate dislocation and rolling return volatility. `UNKNOWN` fails closed for reliability ranking and, since v0.9, for the final paper execution verdict.
 
 ## v0.4 — Reliability-Adjusted Ranking
 
@@ -208,7 +253,7 @@ resonance-live-scan \
   --rolling-min-coverage-ratio 0.8
 ```
 
-The scanner synchronously collects public rolling samples before evaluating opportunities. Fee/slippage and rolling-window settings are paper-model assumptions, not claims about an exchange account or universally optimal parameters.
+The scanner synchronously collects public rolling samples before evaluating opportunities. Each opportunity exposes `base_verdict`, `market_regime`, `regime_action`, and `final_verdict`; `verdict` remains a compatibility alias for the final post-gate verdict. Fee/slippage and rolling-window settings are paper-model assumptions, not claims about an exchange account or universally optimal parameters.
 
 ## v0.1 — verification core
 
@@ -228,11 +273,12 @@ base route evidence
   -> public quote provenance
   -> regime features + policy
   -> rolling-window state + window SHA
+  -> regime action + final verdict + gate-policy SHA
   -> replay bundle + calibration report SHA
   -> holdout split + candidate evaluations + validation report SHA
 ```
 
-The observation layer recomputes evidence digests before admitting outcomes to memory. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context, explicit guardrails, calibration-only selection and untouched validation result into a deterministic report envelope.
+The observation layer recomputes evidence digests before admitting outcomes to memory and validates the evidence-bound regime gate against its policy. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context including gate policy, explicit guardrails, calibration-only selection and untouched validation result into a deterministic report envelope.
 
 ## Why cross-venue is observe-only
 
@@ -244,7 +290,7 @@ Buying on venue A and selling on venue B does not return capital to the same ven
 pytest
 ```
 
-Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime context, uncertainty-sensitive Wilson guardrails and holdout-report tamper detection.
+Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, monotonic regime-gate matrices, gate-policy evidence binding, final-verdict truth accounting, replay gate recomputation, gate-policy retry drift, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime/gate context, uncertainty-sensitive Wilson guardrails and holdout-report tamper detection.
 
 ## Safety boundary
 
@@ -260,4 +306,5 @@ See:
 - `docs/v0.6-design.md`
 - `docs/v0.7-design.md`
 - `docs/v0.8-design.md`
-- Issue #15 — v0.8 Holdout Policy Calibration
+- `docs/v0.9-design.md`
+- Issue #17 — v0.9 Evidence-Bound Regime Execution Gate
