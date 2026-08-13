@@ -23,7 +23,7 @@ from .replay import (
 _HOLDOUT_REPORT_SCHEMA = "resonance.arbitrage.holdout-report/v0.1"
 _SELECTION_RULE = (
     "calibration_only:truth_lower_bound>survival_lower_bound>truth_events>"
-    "execute_sim_count>overprediction_penalty>execute_threshold"
+    "lower_indeterminate>overprediction_penalty>higher_execute_threshold"
 )
 
 
@@ -355,9 +355,9 @@ def _selection_key(evaluation: PolicyEvaluation) -> tuple[Any, ...]:
         -evaluation.truth_rate_lower_bound,
         -evaluation.survival_rate_lower_bound,
         -evaluation.truth_events,
-        -evaluation.execute_sim_count,
+        evaluation.metrics.indeterminate,
         evaluation.overprediction_penalty_bps,
-        evaluation.candidate.execute_net_edge_bps,
+        -evaluation.candidate.execute_net_edge_bps,
     )
 
 
