@@ -1,3 +1,5 @@
+import pytest
+
 from resonance_arbitrage_graph.quotes import CostAssumption, QuoteSnapshot, quote_to_trade_edges
 
 
@@ -45,3 +47,20 @@ def test_exchange_timestamp_is_used_conservatively_for_freshness():
     )
 
     assert quote.age_ms(20_500) == 1_500
+
+
+def test_timestamp_class_cannot_claim_exchange_time_without_source_timestamp():
+    with pytest.raises(ValueError, match="require source_timestamp_ms"):
+        QuoteSnapshot(
+            venue="KRAKEN_SPOT",
+            symbol="BTC/USDT",
+            base_asset="BTC",
+            quote_asset="USDT",
+            bid_price=80_000,
+            bid_qty=1,
+            ask_price=80_010,
+            ask_qty=1,
+            observed_at_ms=20_000,
+            source_url="https://example.test",
+            timestamp_class="exchange_published",
+        )
