@@ -35,7 +35,7 @@ def _receipt(
     return EvidenceReceipt(payload=payload, sha256=digest)
 
 
-def _observation(
+def _bound(
     operation_id: str,
     execution_id: str,
     attempt: int,
@@ -45,13 +45,14 @@ def _observation(
     required_edge_bps: float = 10.0,
     expired: bool = False,
 ):
-    return observation_from_evidence(
-        _receipt(
-            operation_id,
-            verdict=verdict,
-            expected_edge=0.0020,
-            observed_edge=observed_edge,
-        ),
+    receipt = _receipt(
+        operation_id,
+        verdict=verdict,
+        expected_edge=0.0020,
+        observed_edge=observed_edge,
+    )
+    observation = observation_from_evidence(
+        receipt,
         execution_id=execution_id,
         attempt=attempt,
         opportunity_id="opp-1",
@@ -62,6 +63,11 @@ def _observation(
         expired=expired,
         market_context={"venue": "binance", "regime": "fixture"},
     )
+    return observation, receipt
+
+
+def _observation(*args, **kwargs):
+    return _bound(*args, **kwargs)[0]
 
 
 def test_receipt_digest_is_verified():
@@ -91,8 +97,10 @@ def test_outcome_is_derived_from_receipt():
 
 def test_retry_counts_once_and_terminal_blocks_replay(tmp_path):
     journal = ObservationJournal(tmp_path / "observations.jsonl")
-    journal.append(_observation("op-1", "exec-1", 1, observed_edge=None))
-    journal.append(_observation("op-1", "exec-2", 2, observed_edge=0.0015))
+    first, first_receipt = _bound("op-1", "exec-1", 1, observed_edge=None)
+    second, second_receipt = _bound("op-1", "exec-2", 2, observed_edge=0.0015)
+    journal.append(first, receipt=first_receipt)
+    journal.append(second, receipt=second_receipt)
 
     metrics = calculate_metrics(journal.load())
     assert metrics.logical_operations == 1
@@ -100,19 +108,32 @@ def test_retry_counts_once_and_terminal_blocks_replay(tmp_path):
     assert metrics.indeterminate == 0
     assert metrics.opportunity_truth_rate == 1.0
 
+    third, third_receipt = _bound("op-1", "exec-3", 3, observed_edge=0.0016)
     with pytest.raises(JournalError, match="terminal outcome"):
-        journal.append(_observation("op-1", "exec-3", 3, observed_edge=0.0016))
+        journal.append(third, receipt=third_receipt)
+
+
+def test_journal_requires_matching_evidence_receipt(tmp_path):
+    journal = ObservationJournal(tmp_path / "observations.jsonl")
+    observation, _ = _bound("op-1", "exec-1", 1, observed_edge=0.0015)
+    wrong_receipt = _receipt("op-2", observed_edge=0.0015)
+
+    with pytest.raises(JournalError, match="evidence binding failed"):
+        journal.append(observation, receipt=wrong_receipt)
 
 
 def test_journal_rejects_duplicate_execution_and_attempt_gap(tmp_path):
     journal = ObservationJournal(tmp_path / "observations.jsonl")
-    journal.append(_observation("op-1", "exec-1", 1, observed_edge=None))
+    first, first_receipt = _bound("op-1", "exec-1", 1, observed_edge=None)
+    journal.append(first, receipt=first_receipt)
 
+    duplicate, duplicate_receipt = _bound("op-2", "exec-1", 1, observed_edge=None)
     with pytest.raises(JournalError, match="duplicate execution_id"):
-        journal.append(_observation("op-2", "exec-1", 1, observed_edge=None))
+        journal.append(duplicate, receipt=duplicate_receipt)
 
+    gap, gap_receipt = _bound("op-1", "exec-3", 3, observed_edge=0.0015)
     with pytest.raises(JournalError, match="increment by exactly one"):
-        journal.append(_observation("op-1", "exec-3", 3, observed_edge=0.0015))
+        journal.append(gap, receipt=gap_receipt)
 
 
 def test_truth_metrics_exclude_rejected_and_indeterminate():
@@ -139,8 +160,8 @@ def test_truth_metrics_exclude_rejected_and_indeterminate():
 
 def test_journal_row_is_canonical_and_round_trips(tmp_path):
     journal = ObservationJournal(tmp_path / "observations.jsonl")
-    observation = _observation("op-1", "exec-1", 1, observed_edge=0.0015)
-    journal.append(observation)
+    observation, receipt = _bound("op-1", "exec-1", 1, observed_edge=0.0015)
+    journal.append(observation, receipt=receipt)
 
     raw = journal.path.read_text(encoding="utf-8")
     assert raw == observation.canonical_json() + "\n"
