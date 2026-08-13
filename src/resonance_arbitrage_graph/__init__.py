@@ -15,6 +15,16 @@ from .observation import (
     verify_observation_evidence_binding,
 )
 from .quotes import CostAssumption, QuoteSnapshot, quote_to_trade_edges
+from .reliability import (
+    RankingCandidate,
+    RankingStatus,
+    ReliabilityAdjustedScore,
+    ReliabilityPolicy,
+    ReliabilityProfile,
+    build_reliability_profile,
+    rank_candidates,
+    score_candidate,
+)
 from .scanner import (
     CrossVenueObservation,
     ScannedOpportunity,
@@ -41,11 +51,17 @@ __all__ = [
     "PaperExecutor",
     "Policy",
     "QuoteSnapshot",
+    "RankingCandidate",
+    "RankingStatus",
+    "ReliabilityAdjustedScore",
+    "ReliabilityPolicy",
+    "ReliabilityProfile",
     "ReplayError",
     "RouteResult",
     "ScannedOpportunity",
     "Verdict",
     "build_graph_from_quotes",
+    "build_reliability_profile",
     "calculate_metrics",
     "classify_outcome",
     "collapse_operations",
@@ -55,7 +71,9 @@ __all__ = [
     "observation_from_evidence",
     "observe_cross_venue_spreads",
     "quote_to_trade_edges",
+    "rank_candidates",
     "scan_cycles",
+    "score_candidate",
     "verify_evidence_receipt",
     "verify_observation_evidence_binding",
 ]
