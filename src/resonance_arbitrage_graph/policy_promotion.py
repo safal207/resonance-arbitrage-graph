@@ -37,7 +37,7 @@ def _sha256(payload: Any) -> str:
     return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
 
 
-def _validate_sha256(value: str, name: str) -> None:
+def _validate_sha256(value: Any, name: str) -> None:
     if not isinstance(value, str) or len(value) != 64:
         raise ValueError(f"{name} must be a 64-character SHA-256 hex digest")
     try:
@@ -46,8 +46,20 @@ def _validate_sha256(value: str, name: str) -> None:
         raise ValueError(f"{name} must be hexadecimal") from exc
 
 
+def _positive_int(value: Any, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValueError(f"{name} must be an integer >= 1")
+
+
+def _fraction(value: Any, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be numeric")
+    if not math.isfinite(float(value)) or not 0.0 <= float(value) <= 1.0:
+        raise ValueError(f"{name} must be finite and in [0, 1]")
+
+
 def _candidate_key(candidate: JointPolicyCandidate) -> tuple[float, float]:
-    return (candidate.execute_net_edge_bps, candidate.volatile_return_bps)
+    return candidate.execute_net_edge_bps, candidate.volatile_return_bps
 
 
 class PolicyPromotionStatus(str, Enum):
@@ -58,6 +70,7 @@ class PolicyPromotionStatus(str, Enum):
     AMBIGUOUS_CALIBRATION_CONSENSUS = "AMBIGUOUS_CALIBRATION_CONSENSUS"
     CONSENSUS_BELOW_FLOOR = "CONSENSUS_BELOW_FLOOR"
     INSUFFICIENT_CANDIDATE_SUPPORT = "INSUFFICIENT_CANDIDATE_SUPPORT"
+    LATEST_CALIBRATION_DISAGREES = "LATEST_CALIBRATION_DISAGREES"
     CANDIDATE_VALIDATION_BELOW_FLOOR = "CANDIDATE_VALIDATION_BELOW_FLOOR"
 
 
@@ -69,14 +82,16 @@ class PolicyPromotionGuardrails:
     min_candidate_validation_pass_rate: float = 2.0 / 3.0
 
     def __post_init__(self) -> None:
-        if self.min_selected_policy_folds < 1:
-            raise ValueError("min_selected_policy_folds must be >= 1")
-        if self.min_candidate_supporting_folds < 1:
-            raise ValueError("min_candidate_supporting_folds must be >= 1")
-        for name in ("min_consensus_fraction", "min_candidate_validation_pass_rate"):
-            value = getattr(self, name)
-            if not math.isfinite(value) or not 0.0 <= value <= 1.0:
-                raise ValueError(f"{name} must be finite and in [0, 1]")
+        _positive_int(self.min_selected_policy_folds, "min_selected_policy_folds")
+        _positive_int(
+            self.min_candidate_supporting_folds,
+            "min_candidate_supporting_folds",
+        )
+        _fraction(self.min_consensus_fraction, "min_consensus_fraction")
+        _fraction(
+            self.min_candidate_validation_pass_rate,
+            "min_candidate_validation_pass_rate",
+        )
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -116,15 +131,13 @@ class CalibrationCandidateSupport:
             "validation_failed_fold_indexes",
         ):
             values = getattr(self, name)
+            for value in values:
+                _positive_int(value, name)
             if tuple(sorted(values)) != values or len(set(values)) != len(values):
                 raise ValueError(f"{name} must be sorted and unique")
-            if any(value < 1 for value in values):
-                raise ValueError(f"{name} must contain positive fold indexes")
         passed = set(self.validation_passed_fold_indexes)
         failed = set(self.validation_failed_fold_indexes)
-        if passed & failed:
-            raise ValueError("validation passed/failed fold sets overlap")
-        if passed | failed != set(self.fold_indexes):
+        if passed & failed or passed | failed != set(self.fold_indexes):
             raise ValueError("validation fold partition must equal candidate support folds")
 
     @property
@@ -133,18 +146,14 @@ class CalibrationCandidateSupport:
 
     @property
     def validation_pass_rate(self) -> float:
-        return len(self.validation_passed_fold_indexes) / len(self.fold_indexes)
+        return len(self.validation_passed_fold_indexes) / self.support_count
 
     def to_payload(self) -> dict[str, Any]:
         return {
             "candidate": self.candidate.to_payload(),
             "fold_indexes": list(self.fold_indexes),
-            "validation_passed_fold_indexes": list(
-                self.validation_passed_fold_indexes
-            ),
-            "validation_failed_fold_indexes": list(
-                self.validation_failed_fold_indexes
-            ),
+            "validation_passed_fold_indexes": list(self.validation_passed_fold_indexes),
+            "validation_failed_fold_indexes": list(self.validation_failed_fold_indexes),
             "support_count": self.support_count,
             "validation_pass_rate": self.validation_pass_rate,
         }
@@ -175,17 +184,50 @@ class PolicyPromotionDecision:
             tuple(self.validation_failed_fold_indexes),
         )
         object.__setattr__(self, "reasons", tuple(self.reasons))
-        if self.selected_policy_folds < 0:
-            raise ValueError("selected_policy_folds must be non-negative")
-        if self.status is PolicyPromotionStatus.PROMOTED and self.candidate is None:
-            raise ValueError("promoted decision requires a candidate")
+        if not isinstance(self.status, PolicyPromotionStatus):
+            raise ValueError("promotion decision status has invalid type")
+        if isinstance(self.selected_policy_folds, bool) or not isinstance(
+            self.selected_policy_folds, int
+        ) or self.selected_policy_folds < 0:
+            raise ValueError("selected_policy_folds must be a non-negative integer")
+        if not self.reasons or any(
+            not isinstance(reason, str) or not reason for reason in self.reasons
+        ):
+            raise ValueError("promotion decision requires non-empty reasons")
         if self.candidate is None:
-            if self.supporting_fold_indexes:
-                raise ValueError("candidate-less decision cannot claim supporting folds")
-            if self.consensus_fraction is not None:
-                raise ValueError("candidate-less decision cannot claim consensus fraction")
-            if self.candidate_validation_pass_rate is not None:
-                raise ValueError("candidate-less decision cannot claim validation pass rate")
+            if self.status is PolicyPromotionStatus.PROMOTED:
+                raise ValueError("promoted decision requires a candidate")
+            if (
+                self.supporting_fold_indexes
+                or self.validation_passed_fold_indexes
+                or self.validation_failed_fold_indexes
+                or self.consensus_fraction is not None
+                or self.candidate_validation_pass_rate is not None
+            ):
+                raise ValueError("candidate-less decision cannot claim candidate evidence")
+            return
+        if not isinstance(self.candidate, JointPolicyCandidate):
+            raise ValueError("promotion decision candidate has invalid type")
+        if not self.supporting_fold_indexes:
+            raise ValueError("candidate decision requires supporting folds")
+        passed = set(self.validation_passed_fold_indexes)
+        failed = set(self.validation_failed_fold_indexes)
+        supporting = set(self.supporting_fold_indexes)
+        if passed & failed or passed | failed != supporting:
+            raise ValueError("decision validation partition must equal supporting folds")
+        _fraction(self.consensus_fraction, "consensus_fraction")
+        _fraction(
+            self.candidate_validation_pass_rate,
+            "candidate_validation_pass_rate",
+        )
+        if self.selected_policy_folds < len(self.supporting_fold_indexes):
+            raise ValueError("candidate support exceeds selected-policy fold count")
+        if self.consensus_fraction != len(self.supporting_fold_indexes) / self.selected_policy_folds:
+            raise ValueError("decision consensus fraction does not match fold evidence")
+        if self.candidate_validation_pass_rate != len(
+            self.validation_passed_fold_indexes
+        ) / len(self.supporting_fold_indexes):
+            raise ValueError("decision validation pass rate does not match fold evidence")
 
     def to_payload(self) -> dict[str, Any]:
         return {
@@ -193,16 +235,110 @@ class PolicyPromotionDecision:
             "candidate": self.candidate.to_payload() if self.candidate else None,
             "selected_policy_folds": self.selected_policy_folds,
             "supporting_fold_indexes": list(self.supporting_fold_indexes),
-            "validation_passed_fold_indexes": list(
-                self.validation_passed_fold_indexes
-            ),
-            "validation_failed_fold_indexes": list(
-                self.validation_failed_fold_indexes
-            ),
+            "validation_passed_fold_indexes": list(self.validation_passed_fold_indexes),
+            "validation_failed_fold_indexes": list(self.validation_failed_fold_indexes),
             "consensus_fraction": self.consensus_fraction,
             "candidate_validation_pass_rate": self.candidate_validation_pass_rate,
             "reasons": list(self.reasons),
         }
+
+
+def _latest_support(
+    support: Sequence[CalibrationCandidateSupport],
+) -> CalibrationCandidateSupport | None:
+    if not support:
+        return None
+    latest_index = max(index for item in support for index in item.fold_indexes)
+    matches = tuple(item for item in support if latest_index in item.fold_indexes)
+    if len(matches) != 1:
+        raise ValueError("latest calibration fold is not uniquely attributable")
+    return matches[0]
+
+
+def _decision_for_support(
+    walk_forward_status: WalkForwardStatus,
+    decomposition_status: DecompositionStatus,
+    support: Sequence[CalibrationCandidateSupport],
+    guardrails: PolicyPromotionGuardrails,
+) -> PolicyPromotionDecision:
+    selected = sum(item.support_count for item in support)
+
+    def blocked(status: PolicyPromotionStatus, reason: str) -> PolicyPromotionDecision:
+        return PolicyPromotionDecision(status, None, selected, (), (), (), None, None, (reason,))
+
+    if walk_forward_status is not WalkForwardStatus.PASSED_STABILITY:
+        return blocked(
+            PolicyPromotionStatus.BLOCKED_WALK_FORWARD,
+            "walk-forward evidence did not pass temporal stability",
+        )
+    if decomposition_status is not DecompositionStatus.STABLE_BASELINE:
+        return blocked(
+            PolicyPromotionStatus.BLOCKED_DECOMPOSITION,
+            "stability decomposition is not a verified stable baseline",
+        )
+    if selected < guardrails.min_selected_policy_folds or not support:
+        return blocked(
+            PolicyPromotionStatus.INSUFFICIENT_SELECTED_POLICIES,
+            "too few walk-forward calibration folds selected a policy",
+        )
+
+    max_support = max(item.support_count for item in support)
+    winners = tuple(item for item in support if item.support_count == max_support)
+    if len(winners) != 1:
+        return blocked(
+            PolicyPromotionStatus.AMBIGUOUS_CALIBRATION_CONSENSUS,
+            "calibration-selected policy consensus has an exact support tie",
+        )
+
+    winner = winners[0]
+    consensus = winner.support_count / selected
+    kwargs = dict(
+        candidate=winner.candidate,
+        selected_policy_folds=selected,
+        supporting_fold_indexes=winner.fold_indexes,
+        validation_passed_fold_indexes=winner.validation_passed_fold_indexes,
+        validation_failed_fold_indexes=winner.validation_failed_fold_indexes,
+        consensus_fraction=consensus,
+        candidate_validation_pass_rate=winner.validation_pass_rate,
+    )
+    if winner.support_count < guardrails.min_candidate_supporting_folds:
+        return PolicyPromotionDecision(
+            PolicyPromotionStatus.INSUFFICIENT_CANDIDATE_SUPPORT,
+            reasons=("calibration-consensus candidate lacks the required fold support",),
+            **kwargs,
+        )
+    if consensus < guardrails.min_consensus_fraction:
+        return PolicyPromotionDecision(
+            PolicyPromotionStatus.CONSENSUS_BELOW_FLOOR,
+            reasons=("calibration-consensus fraction is below the promotion floor",),
+            **kwargs,
+        )
+    latest = _latest_support(support)
+    if latest is None:
+        raise RuntimeError("selected calibration evidence disappeared")
+    if latest.candidate != winner.candidate:
+        return PolicyPromotionDecision(
+            PolicyPromotionStatus.LATEST_CALIBRATION_DISAGREES,
+            reasons=(
+                "latest calibration-selected policy differs from historical consensus; stale consensus cannot be promoted",
+            ),
+            **kwargs,
+        )
+    if winner.validation_pass_rate < guardrails.min_candidate_validation_pass_rate:
+        return PolicyPromotionDecision(
+            PolicyPromotionStatus.CANDIDATE_VALIDATION_BELOW_FLOOR,
+            reasons=(
+                "calibration-consensus candidate failed the validation veto floor; no fallback candidate is selected",
+            ),
+            **kwargs,
+        )
+    return PolicyPromotionDecision(
+        PolicyPromotionStatus.PROMOTED,
+        reasons=(
+            "calibration consensus matches the latest calibration selection and passed stability plus validation-veto guardrails",
+        ),
+        **kwargs,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -234,15 +370,17 @@ class PolicyPromotionReport:
             raise ValueError("walk_forward_status has invalid type")
         if not isinstance(self.decomposition_status, DecompositionStatus):
             raise ValueError("decomposition_status has invalid type")
-        if not isinstance(self.guardrails, PolicyPromotionGuardrails):
-            raise ValueError("guardrails has invalid type")
-        if not isinstance(self.decision, PolicyPromotionDecision):
-            raise ValueError("decision has invalid type")
         keys = [_candidate_key(item.candidate) for item in self.calibration_candidate_support]
-        if keys != sorted(keys) or len(set(keys)) != len(keys):
+        if keys != sorted(keys) or len(keys) != len(set(keys)):
             raise ValueError("calibration candidate support must be uniquely sorted")
-        if sum(item.support_count for item in self.calibration_candidate_support) != self.decision.selected_policy_folds:
-            raise ValueError("promotion decision selected-policy count differs from support evidence")
+        expected = _decision_for_support(
+            self.walk_forward_status,
+            self.decomposition_status,
+            self.calibration_candidate_support,
+            self.guardrails,
+        )
+        if self.decision != expected:
+            raise ValueError("promotion decision does not match candidate support evidence")
 
     def canonical_payload(self) -> dict[str, Any]:
         return {
@@ -260,6 +398,7 @@ class PolicyPromotionReport:
             "decision": self.decision.to_payload(),
             "candidate_selection_source": "walk_forward_calibration_selections_only",
             "validation_can_only_veto": True,
+            "latest_calibration_must_match_consensus": True,
             "decomposition_never_selects_or_mutates_policy": True,
             "promotion_is_not_live_execution": True,
             "advisory_paper_only": True,
@@ -276,123 +415,25 @@ class PolicyPromotionReport:
 def _build_candidate_support(
     walk_forward_report: WalkForwardReport,
 ) -> tuple[CalibrationCandidateSupport, ...]:
-    grouped: dict[
-        tuple[float, float],
-        dict[str, Any],
-    ] = defaultdict(lambda: {"candidate": None, "folds": [], "passed": [], "failed": []})
+    grouped: dict[tuple[float, float], dict[str, Any]] = defaultdict(
+        lambda: {"candidate": None, "folds": [], "passed": [], "failed": []}
+    )
     for fold in walk_forward_report.folds:
         candidate = fold.selected_candidate
         if candidate is None:
             continue
-        key = _candidate_key(candidate)
-        row = grouped[key]
+        row = grouped[_candidate_key(candidate)]
         row["candidate"] = candidate
         row["folds"].append(fold.plan.index)
-        if fold.passed:
-            row["passed"].append(fold.plan.index)
-        else:
-            row["failed"].append(fold.plan.index)
-    support = []
-    for key in sorted(grouped):
-        row = grouped[key]
-        support.append(
-            CalibrationCandidateSupport(
-                candidate=row["candidate"],
-                fold_indexes=tuple(row["folds"]),
-                validation_passed_fold_indexes=tuple(row["passed"]),
-                validation_failed_fold_indexes=tuple(row["failed"]),
-            )
+        row["passed" if fold.passed else "failed"].append(fold.plan.index)
+    return tuple(
+        CalibrationCandidateSupport(
+            grouped[key]["candidate"],
+            tuple(grouped[key]["folds"]),
+            tuple(grouped[key]["passed"]),
+            tuple(grouped[key]["failed"]),
         )
-    return tuple(support)
-
-
-def _decision_for_support(
-    walk_forward_status: WalkForwardStatus,
-    decomposition_status: DecompositionStatus,
-    support: Sequence[CalibrationCandidateSupport],
-    guardrails: PolicyPromotionGuardrails,
-) -> PolicyPromotionDecision:
-    selected_policy_folds = sum(item.support_count for item in support)
-
-    def without_candidate(status: PolicyPromotionStatus, reason: str) -> PolicyPromotionDecision:
-        return PolicyPromotionDecision(
-            status=status,
-            candidate=None,
-            selected_policy_folds=selected_policy_folds,
-            supporting_fold_indexes=(),
-            validation_passed_fold_indexes=(),
-            validation_failed_fold_indexes=(),
-            consensus_fraction=None,
-            candidate_validation_pass_rate=None,
-            reasons=(reason,),
-        )
-
-    if walk_forward_status is not WalkForwardStatus.PASSED_STABILITY:
-        return without_candidate(
-            PolicyPromotionStatus.BLOCKED_WALK_FORWARD,
-            "walk-forward evidence did not pass temporal stability",
-        )
-    if decomposition_status is not DecompositionStatus.STABLE_BASELINE:
-        return without_candidate(
-            PolicyPromotionStatus.BLOCKED_DECOMPOSITION,
-            "stability decomposition is not a verified stable baseline",
-        )
-    if selected_policy_folds < guardrails.min_selected_policy_folds:
-        return without_candidate(
-            PolicyPromotionStatus.INSUFFICIENT_SELECTED_POLICIES,
-            "too few walk-forward calibration folds selected a policy",
-        )
-    if not support:
-        return without_candidate(
-            PolicyPromotionStatus.INSUFFICIENT_SELECTED_POLICIES,
-            "walk-forward evidence selected no calibration policy",
-        )
-
-    max_support = max(item.support_count for item in support)
-    winners = tuple(item for item in support if item.support_count == max_support)
-    if len(winners) != 1:
-        return without_candidate(
-            PolicyPromotionStatus.AMBIGUOUS_CALIBRATION_CONSENSUS,
-            "calibration-selected policy consensus has an exact support tie",
-        )
-
-    winner = winners[0]
-    consensus_fraction = winner.support_count / selected_policy_folds
-    decision_kwargs = {
-        "candidate": winner.candidate,
-        "selected_policy_folds": selected_policy_folds,
-        "supporting_fold_indexes": winner.fold_indexes,
-        "validation_passed_fold_indexes": winner.validation_passed_fold_indexes,
-        "validation_failed_fold_indexes": winner.validation_failed_fold_indexes,
-        "consensus_fraction": consensus_fraction,
-        "candidate_validation_pass_rate": winner.validation_pass_rate,
-    }
-    if winner.support_count < guardrails.min_candidate_supporting_folds:
-        return PolicyPromotionDecision(
-            status=PolicyPromotionStatus.INSUFFICIENT_CANDIDATE_SUPPORT,
-            reasons=("calibration-consensus candidate lacks the required fold support",),
-            **decision_kwargs,
-        )
-    if consensus_fraction < guardrails.min_consensus_fraction:
-        return PolicyPromotionDecision(
-            status=PolicyPromotionStatus.CONSENSUS_BELOW_FLOOR,
-            reasons=("calibration-consensus fraction is below the promotion floor",),
-            **decision_kwargs,
-        )
-    if winner.validation_pass_rate < guardrails.min_candidate_validation_pass_rate:
-        return PolicyPromotionDecision(
-            status=PolicyPromotionStatus.CANDIDATE_VALIDATION_BELOW_FLOOR,
-            reasons=(
-                "the calibration-consensus candidate failed the validation veto floor; no fallback candidate is selected",
-            ),
-            **decision_kwargs,
-        )
-    return PolicyPromotionDecision(
-        status=PolicyPromotionStatus.PROMOTED,
-        reasons=(
-            "calibration-only policy consensus passed temporal stability and validation veto guardrails",
-        ),
-        **decision_kwargs,
+        for key in sorted(grouped)
     )
 
 
@@ -409,27 +450,28 @@ def run_policy_promotion(
         bundle,
     )
     support = _build_candidate_support(walk_forward_report)
-    decision = _decision_for_support(
+    return PolicyPromotionReport(
+        bundle.sha256,
+        walk_forward_report.sha256,
+        decomposition_report.sha256,
+        walk_forward_report.policy_context.sha256,
         walk_forward_report.status,
         decomposition_report.status,
-        support,
         active,
-    )
-    return PolicyPromotionReport(
-        source_bundle_sha256=bundle.sha256,
-        walk_forward_report_sha256=walk_forward_report.sha256,
-        decomposition_report_sha256=decomposition_report.sha256,
-        policy_context_sha256=walk_forward_report.policy_context.sha256,
-        walk_forward_status=walk_forward_report.status,
-        decomposition_status=decomposition_report.status,
-        guardrails=active,
-        calibration_candidate_support=support,
-        decision=decision,
+        support,
+        _decision_for_support(
+            walk_forward_report.status,
+            decomposition_report.status,
+            support,
+            active,
+        ),
     )
 
 
-def _support_from_payload(payload: Mapping[str, Any]) -> CalibrationCandidateSupport:
-    expected_keys = {
+def _support_from_payload(payload: Any) -> CalibrationCandidateSupport:
+    if not isinstance(payload, Mapping):
+        raise ValueError("promotion candidate support must be an object")
+    expected = {
         "candidate",
         "fold_indexes",
         "validation_passed_fold_indexes",
@@ -437,20 +479,27 @@ def _support_from_payload(payload: Mapping[str, Any]) -> CalibrationCandidateSup
         "support_count",
         "validation_pass_rate",
     }
-    if set(payload) != expected_keys:
+    if set(payload) != expected:
         raise ValueError("promotion candidate support fields are not canonical")
     candidate_payload = payload["candidate"]
-    if not isinstance(candidate_payload, dict) or set(candidate_payload) != {
+    if not isinstance(candidate_payload, Mapping) or set(candidate_payload) != {
         "execute_net_edge_bps",
         "volatile_return_bps",
     }:
         raise ValueError("promotion candidate payload is invalid")
-    candidate = JointPolicyCandidate(**candidate_payload)
+    candidate = JointPolicyCandidate(**dict(candidate_payload))
+    for name in (
+        "fold_indexes",
+        "validation_passed_fold_indexes",
+        "validation_failed_fold_indexes",
+    ):
+        if not isinstance(payload[name], list):
+            raise ValueError(f"promotion candidate {name} must be a list")
     row = CalibrationCandidateSupport(
-        candidate=candidate,
-        fold_indexes=tuple(payload["fold_indexes"]),
-        validation_passed_fold_indexes=tuple(payload["validation_passed_fold_indexes"]),
-        validation_failed_fold_indexes=tuple(payload["validation_failed_fold_indexes"]),
+        candidate,
+        tuple(payload["fold_indexes"]),
+        tuple(payload["validation_passed_fold_indexes"]),
+        tuple(payload["validation_failed_fold_indexes"]),
     )
     if payload["support_count"] != row.support_count:
         raise ValueError("promotion candidate support_count does not match fold evidence")
@@ -462,6 +511,8 @@ def _support_from_payload(payload: Mapping[str, Any]) -> CalibrationCandidateSup
 def verify_policy_promotion_report_envelope(
     envelope: Mapping[str, Any],
 ) -> dict[str, Any]:
+    if not isinstance(envelope, Mapping):
+        raise ValueError("policy promotion envelope must be an object")
     try:
         payload = envelope["payload"]
         supplied_sha = envelope["sha256"]
@@ -469,7 +520,7 @@ def verify_policy_promotion_report_envelope(
         raise ValueError("policy promotion envelope is incomplete") from exc
     if not isinstance(payload, dict) or not isinstance(supplied_sha, str):
         raise ValueError("policy promotion envelope has invalid types")
-    expected_keys = {
+    expected = {
         "schema",
         "source_bundle_sha256",
         "walk_forward_report_sha256",
@@ -482,14 +533,13 @@ def verify_policy_promotion_report_envelope(
         "decision",
         "candidate_selection_source",
         "validation_can_only_veto",
+        "latest_calibration_must_match_consensus",
         "decomposition_never_selects_or_mutates_policy",
         "promotion_is_not_live_execution",
         "advisory_paper_only",
     }
-    if set(payload) != expected_keys:
-        raise ValueError("policy promotion payload fields are not canonical")
-    if payload.get("schema") != _PROMOTION_SCHEMA:
-        raise ValueError("unsupported policy promotion schema")
+    if set(payload) != expected or payload.get("schema") != _PROMOTION_SCHEMA:
+        raise ValueError("policy promotion payload is not canonical")
     for name in (
         "source_bundle_sha256",
         "walk_forward_report_sha256",
@@ -501,6 +551,7 @@ def verify_policy_promotion_report_envelope(
         raise ValueError("policy promotion candidate-selection source is invalid")
     for key in (
         "validation_can_only_veto",
+        "latest_calibration_must_match_consensus",
         "decomposition_never_selects_or_mutates_policy",
         "promotion_is_not_live_execution",
         "advisory_paper_only",
@@ -512,9 +563,15 @@ def verify_policy_promotion_report_envelope(
         decomposition_status = DecompositionStatus(payload["decomposition_status"])
     except ValueError as exc:
         raise ValueError("policy promotion upstream status is invalid") from exc
-    if not isinstance(payload.get("guardrails"), dict):
-        raise ValueError("policy promotion guardrails must be an object")
-    guardrails = PolicyPromotionGuardrails(**payload["guardrails"])
+    guardrail_payload = payload.get("guardrails")
+    if not isinstance(guardrail_payload, dict) or set(guardrail_payload) != {
+        "min_selected_policy_folds",
+        "min_candidate_supporting_folds",
+        "min_consensus_fraction",
+        "min_candidate_validation_pass_rate",
+    }:
+        raise ValueError("policy promotion guardrails are not canonical")
+    guardrails = PolicyPromotionGuardrails(**guardrail_payload)
     support_payload = payload.get("calibration_candidate_support")
     if not isinstance(support_payload, list):
         raise ValueError("policy promotion candidate support must be a list")
