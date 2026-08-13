@@ -12,6 +12,7 @@ from .observation import (
     classify_outcome,
     observation_from_evidence,
     verify_evidence_receipt,
+    verify_observation_evidence_binding,
 )
 from .quotes import CostAssumption, QuoteSnapshot, quote_to_trade_edges
 from .scanner import (
@@ -56,4 +57,5 @@ __all__ = [
     "quote_to_trade_edges",
     "scan_cycles",
     "verify_evidence_receipt",
+    "verify_observation_evidence_binding",
 ]
