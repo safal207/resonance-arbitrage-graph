@@ -24,6 +24,24 @@ _ALLOWED_MARKET_REGIMES = {
     "DISLOCATED",
     "UNKNOWN",
 }
+_GATE_KEYS = {
+    "schema",
+    "base_verdict",
+    "market_regime",
+    "action",
+    "final_verdict",
+    "policy_sha256",
+    "reasons",
+    "policy",
+}
+_GATE_POLICY_KEYS = {
+    "schema",
+    "normal",
+    "volatile",
+    "thin_liquidity",
+    "dislocated",
+    "unknown",
+}
 
 
 class OutcomeClass(str, Enum):
@@ -96,6 +114,10 @@ def _merge_gate_context_from_receipt(
         return dict(market_context)
     if not isinstance(gate_payload, dict):
         raise ValueError("evidence regime_execution_gate must be an object")
+    if set(gate_payload) != _GATE_KEYS:
+        raise ValueError("evidence regime gate fields are not canonical")
+    if gate_payload.get("schema") != "resonance.arbitrage.regime-gate-result/v0.1":
+        raise ValueError("unsupported regime gate result schema")
 
     base_verdict = gate_payload.get("base_verdict")
     final_verdict = gate_payload.get("final_verdict")
@@ -103,14 +125,19 @@ def _merge_gate_context_from_receipt(
     action = gate_payload.get("action")
     policy_sha256 = gate_payload.get("policy_sha256")
     policy_payload = gate_payload.get("policy")
+    reasons = gate_payload.get("reasons")
     if base_verdict not in _ALLOWED_VERDICTS or final_verdict not in _ALLOWED_VERDICTS:
         raise ValueError("evidence regime gate has invalid verdict")
     if regime not in _ALLOWED_MARKET_REGIMES:
         raise ValueError("evidence regime gate has invalid regime")
     if not isinstance(policy_sha256, str) or not _SHA256_RE.fullmatch(policy_sha256):
         raise ValueError("evidence regime gate has invalid policy SHA-256")
+    if not isinstance(reasons, list) or any(not isinstance(reason, str) or not reason for reason in reasons):
+        raise ValueError("evidence regime gate reasons are invalid")
     if not isinstance(policy_payload, dict):
         raise ValueError("evidence regime gate policy must be an object")
+    if set(policy_payload) != _GATE_POLICY_KEYS:
+        raise ValueError("evidence regime gate policy fields are not canonical")
     if policy_payload.get("schema") != "resonance.arbitrage.regime-execution-policy/v0.1":
         raise ValueError("unsupported regime execution policy schema")
 
@@ -134,6 +161,8 @@ def _merge_gate_context_from_receipt(
         raise ValueError("evidence regime gate policy digest is inconsistent")
     if recomputed.final_verdict.value != final_verdict or recomputed.action.value != action:
         raise ValueError("evidence regime gate decision is inconsistent with policy")
+    if list(recomputed.reasons) != reasons:
+        raise ValueError("evidence regime gate reasons are inconsistent with recomputed decision")
 
     expected = payload.get("expected")
     if not isinstance(expected, dict):
