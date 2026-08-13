@@ -52,9 +52,13 @@ def classify_outcome(
 
     if expected_verdict == "REJECT":
         return OutcomeClass.REJECTED
+    if expected_verdict != "EXECUTE_SIM":
+        return OutcomeClass.INDETERMINATE
     if expired:
+        if observed_edge_bps is not None:
+            raise ValueError("expired opportunity cannot have an observed paper outcome")
         return OutcomeClass.EXPIRED
-    if expected_verdict != "EXECUTE_SIM" or observed_edge_bps is None:
+    if observed_edge_bps is None:
         return OutcomeClass.INDETERMINATE
     if observed_edge_bps >= required_edge_bps:
         return OutcomeClass.TRUE_POSITIVE
