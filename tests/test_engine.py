@@ -1,4 +1,5 @@
 from dataclasses import replace
+import math
 
 import pytest
 
@@ -7,6 +8,7 @@ from resonance_arbitrage_graph import (
     MarketGraph,
     Node,
     PaperExecutor,
+    Policy,
     ReplayError,
     Verdict,
     evaluate_route,
@@ -112,3 +114,27 @@ def test_evidence_receipt_is_deterministic():
     assert first.canonical_json() == second.canonical_json()
     assert first.payload["paper_only"] is True
     assert first.payload["invariants"]["returns_to_start"] is True
+
+
+@pytest.mark.parametrize("amount", [math.inf, -math.inf, math.nan])
+def test_non_finite_capital_is_rejected(amount):
+    with pytest.raises(ValueError, match="finite and positive"):
+        evaluate_route(profitable_triangle(), amount)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"execute_net_edge": 0.0},
+        {"execute_net_edge": -0.01},
+        {"execute_net_edge": math.nan},
+        {"observe_net_edge": -0.01},
+        {"execute_net_edge": 0.001, "observe_net_edge": 0.001},
+        {"max_quote_age_ms": -1},
+        {"max_route_latency_ms": -1},
+        {"min_success_probability": 1.01},
+    ],
+)
+def test_invalid_policy_cannot_weaken_profitability_invariants(kwargs):
+    with pytest.raises(ValueError):
+        Policy(**kwargs)
