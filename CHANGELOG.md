@@ -3,13 +3,15 @@
 ## v0.10.0 (in development)
 
 - Add joint calibration of causally active `execute_net_edge_bps` and `volatile_return_bps` thresholds.
-- Add counterfactual causal-support accounting across baseline, execute-only, and joint candidate decisions.
+- Add symmetric 2×2 counterfactual causal-support accounting across baseline, execute-only, volatility-only, and joint candidate decisions.
+- Attribute execute support while holding candidate volatility fixed, and volatility support while holding candidate execute fixed.
 - Distinguish regime-label changes from actual final-verdict changes so label-only volatility effects cannot qualify a candidate.
 - Require explicit calibration/validation causal-support floors for execute and volatility dimensions.
 - Keep causal support as an eligibility guard rather than rewarding candidates merely for changing more decisions.
 - Preserve the chronological validation-selection firewall: validation can pass/fail only the calibration winner and cannot select a fallback.
 - Freeze all untuned engine/regime fields, full `RegimeExecutionPolicy`, rolling-window policy, and baseline tuned values across the corpus.
-- Add deterministic joint holdout report evidence with source/subset digests, candidate grid, causal-support counts, selected pair, and untouched validation result.
+- Recursively freeze joint policy context and independently verify its inner SHA-256 against forged measurement-context mutation.
+- Add deterministic joint holdout report evidence with source/subset digests, candidate grid, 2×2 result digests, causal-support counts, selected pair, and untouched validation result.
 - Add offline `resonance-joint-holdout-calibration` CLI and package version 0.10.0.
 
 ## v0.9.0
@@ -57,7 +59,7 @@
 ## v0.5.0
 
 - Add deterministic market regimes: NORMAL, VOLATILE, THIN_LIQUIDITY, DISLOCATED and fail-closed UNKNOWN.
-- Derive route-specific spread, capacity, freshness and cross-rate-dislocation features from exact quote provenance.
+- Derive route-specific spread, capacity ratio, freshness and cross-rate-dislocation features from exact quote provenance.
 - Add collision-safe regime market context and reject UNKNOWN in reliability ranking.
 - Bind regime features, feature provenance, classification reasons and RegimePolicy thresholds into SHA-256 evidence.
 - Emit derived regime from the public read-only live paper scanner.

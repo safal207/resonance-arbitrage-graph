@@ -183,6 +183,7 @@ class JointPolicyEvaluation:
     results_sha256: str
     baseline_results_sha256: str
     execute_only_results_sha256: str
+    volatility_only_results_sha256: str
     eligible: bool
     reasons: tuple[str, ...]
 
@@ -200,6 +201,7 @@ class JointPolicyEvaluation:
             "results_sha256": self.results_sha256,
             "baseline_results_sha256": self.baseline_results_sha256,
             "execute_only_results_sha256": self.execute_only_results_sha256,
+            "volatility_only_results_sha256": self.volatility_only_results_sha256,
             "eligible": self.eligible,
             "reasons": list(self.reasons),
         }
@@ -335,12 +337,15 @@ def _result_map(results: Sequence[ReplayResult]) -> dict[str, ReplayResult]:
 def _causal_support(
     baseline_results: Sequence[ReplayResult],
     execute_only_results: Sequence[ReplayResult],
+    volatility_only_results: Sequence[ReplayResult],
     candidate_results: Sequence[ReplayResult],
 ) -> CausalSupport:
     baseline = _result_map(baseline_results)
     execute_only = _result_map(execute_only_results)
+    volatility_only = _result_map(volatility_only_results)
     candidate = _result_map(candidate_results)
-    if set(baseline) != set(execute_only) or set(baseline) != set(candidate):
+    populations = (set(baseline), set(execute_only), set(volatility_only), set(candidate))
+    if any(population != populations[0] for population in populations[1:]):
         raise ValueError("causal support result populations do not match")
 
     execute_ids: list[str] = []
@@ -350,8 +355,13 @@ def _causal_support(
     for operation_id in sorted(baseline):
         base = baseline[operation_id]
         execute = execute_only[operation_id]
+        volatility = volatility_only[operation_id]
         final = candidate[operation_id]
-        if execute.expected_verdict is not base.expected_verdict:
+
+        # 2x2 counterfactual attribution:
+        # execute support holds candidate volatility fixed;
+        # volatility support holds candidate execute fixed.
+        if final.expected_verdict is not volatility.expected_verdict:
             execute_ids.append(operation_id)
         if final.regime is not execute.regime:
             label_changes += 1
@@ -391,13 +401,23 @@ def evaluate_joint_policy_candidate(
         execute_net_edge_bps=candidate.execute_net_edge_bps,
         volatile_return_bps=context.baseline_volatile_return_bps,
     )
+    volatility_only_results = _run_results(
+        bundle,
+        execute_net_edge_bps=context.baseline_execute_net_edge_bps,
+        volatile_return_bps=candidate.volatile_return_bps,
+    )
     results = _run_results(
         bundle,
         execute_net_edge_bps=candidate.execute_net_edge_bps,
         volatile_return_bps=candidate.volatile_return_bps,
     )
     metrics = calculate_replay_metrics(results)
-    support = _causal_support(baseline_results, execute_only_results, results)
+    support = _causal_support(
+        baseline_results,
+        execute_only_results,
+        volatility_only_results,
+        results,
+    )
     execute_sim_count = sum(result.expected_verdict is Verdict.EXECUTE_SIM for result in results)
     truth_events = metrics.true_positive + metrics.false_positive
     survival_events = truth_events + metrics.expired
@@ -439,6 +459,7 @@ def evaluate_joint_policy_candidate(
         results_sha256=_sha256([result.to_payload() for result in results]),
         baseline_results_sha256=_sha256([result.to_payload() for result in baseline_results]),
         execute_only_results_sha256=_sha256([result.to_payload() for result in execute_only_results]),
+        volatility_only_results_sha256=_sha256([result.to_payload() for result in volatility_only_results]),
         eligible=not reasons,
         reasons=tuple(reasons),
     )

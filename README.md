@@ -50,27 +50,33 @@ execute_net_edge_bps × volatile_return_bps
 
 The volatility threshold only became causally active after v0.9 introduced the regime execution gate.
 
-For every logical operation, v0.10 evaluates three counterfactual paths:
+For every logical operation, v0.10 evaluates a complete **2×2 counterfactual** on the same captured market bytes:
 
 ```text
-baseline
+baseline (00)
   = baseline execute + baseline volatility
 
-execute-only
+execute-only (10)
   = candidate execute + baseline volatility
 
-candidate
+volatility-only (01)
+  = baseline execute + candidate volatility
+
+joint (11)
   = candidate execute + candidate volatility
 ```
 
-This separates:
+This lets each dimension be judged while holding the other candidate dimension fixed:
 
-- execute-caused final-verdict changes;
-- volatility-caused regime-label changes;
-- volatility-caused **final-verdict** changes;
-- total final-verdict changes from the joint pair.
+```text
+execute causal support
+  = final verdict(11) != final verdict(01)
 
-A regime relabel is not enough. If changing the volatility threshold turns `NORMAL` into `VOLATILE` while the base verifier is already `OBSERVE`, the final decision remains `OBSERVE`; that produces label support but **zero volatility causal support** and cannot qualify the candidate.
+volatility causal support
+  = final verdict(11) != final verdict(10)
+```
+
+Additional diagnostics preserve volatility regime-label changes and total joint final-verdict changes versus baseline. A regime relabel is not enough. If changing the volatility threshold turns `NORMAL` into `VOLATILE` while the route is already `OBSERVE`, the final decision remains `OBSERVE`; that produces label support but **zero volatility causal support** and cannot qualify the candidate.
 
 Core v0.10 invariants:
 
@@ -82,6 +88,7 @@ Core v0.10 invariants:
 - joint volatility calibration requires `NORMAL -> ALLOW` and a suppressive `VOLATILE -> OBSERVE_ONLY/REJECT` gate;
 - causal-support counts are eligibility guardrails, not score rewards;
 - validation can explicitly fail for insufficient out-of-sample causal support;
+- `JointPolicyContext` is recursively immutable and its inner SHA is independently verified;
 - reports are canonical JSON + SHA-256 and remain advisory/paper-only.
 
 Offline joint holdout CLI:
@@ -338,7 +345,7 @@ base route evidence
   -> regime action + final verdict + gate-policy SHA
   -> replay bundle + calibration report SHA
   -> chronological holdout evidence
-  -> joint candidate + causal-support + untouched-validation evidence
+  -> joint candidate + 2x2 causal-support + untouched-validation evidence
 ```
 
 The observation layer recomputes evidence digests before admitting outcomes to memory and validates the evidence-bound regime gate against its policy. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context, explicit guardrails, calibration-only selection and untouched validation result into deterministic report envelopes.
@@ -353,7 +360,7 @@ Buying on venue A and selling on venue B does not return capital to the same ven
 pytest
 ```
 
-Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, monotonic regime-gate matrices, gate-policy evidence binding, final-verdict truth accounting, replay gate recomputation, gate-policy retry drift, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime/gate context, Wilson guardrails, joint execute/volatility counterfactual support, label-vs-action causal checks, out-of-sample causal-support gates and report tamper detection.
+Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, monotonic regime-gate matrices, gate-policy evidence binding, final-verdict truth accounting, replay gate recomputation, gate-policy retry drift, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime/gate context, Wilson guardrails, joint execute/volatility 2x2 counterfactual support, label-vs-action causal checks, immutable joint policy context, out-of-sample causal-support gates and report tamper detection.
 
 ## Safety boundary
 

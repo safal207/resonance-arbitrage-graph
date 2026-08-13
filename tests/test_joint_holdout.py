@@ -242,7 +242,7 @@ def test_regime_label_change_without_final_verdict_change_is_not_causal_support(
             min_survival_rate_lower_bound=0.0,
             confidence_z=0.0,
         ),
-        min_calibration_execute_causal_changes=1,
+        min_calibration_execute_causal_changes=0,
         min_calibration_volatility_causal_changes=1,
         min_validation_execute_causal_changes=0,
         min_validation_volatility_causal_changes=0,
@@ -253,11 +253,11 @@ def test_regime_label_change_without_final_verdict_change_is_not_causal_support(
         policy,
         context,
         min_truth_events=0,
-        min_execute_causal_changes=1,
+        min_execute_causal_changes=0,
         min_volatility_causal_changes=1,
     )
 
-    assert evaluation.causal_support.execute_final_verdict_changes == 1
+    assert evaluation.causal_support.execute_final_verdict_changes == 0
     assert evaluation.causal_support.volatility_regime_label_changes == 1
     assert evaluation.causal_support.volatility_final_verdict_changes == 0
     assert "INSUFFICIENT_VOLATILITY_CAUSAL_SUPPORT" in evaluation.reasons
