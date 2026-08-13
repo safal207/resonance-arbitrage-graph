@@ -7,6 +7,7 @@ from resonance_arbitrage_graph.engine import Policy
 from resonance_arbitrage_graph.observation import OutcomeClass
 from resonance_arbitrage_graph.quotes import CostAssumption, QuoteSnapshot
 from resonance_arbitrage_graph.regime import MarketRegime, RegimePolicy
+from resonance_arbitrage_graph.regime_gate import RegimeAction
 from resonance_arbitrage_graph.replay import (
     ReplayBundle,
     ReplayCase,
@@ -116,9 +117,11 @@ def test_replay_bundle_round_trip_and_report_are_deterministic():
 def test_replay_recomputes_executable_normal_regime_from_captured_state():
     result = replay_case(_case("op-normal"))
 
+    assert result.base_verdict.value == "EXECUTE_SIM"
     assert result.expected_verdict.value == "EXECUTE_SIM"
     assert result.expected_edge_bps == pytest.approx(36.0, abs=0.05)
     assert result.regime is MarketRegime.NORMAL
+    assert result.regime_action is RegimeAction.ALLOW
     assert result.outcome_class is OutcomeClass.TRUE_POSITIVE
 
 
@@ -170,7 +173,7 @@ def test_logical_retry_cannot_drift_market_decision_state():
         ReplayBundle(cases=(first, second))
 
 
-def test_incomplete_rolling_evidence_is_indeterminate_not_success():
+def test_incomplete_rolling_evidence_fails_closed_to_unknown_reject():
     case = _case("op-incomplete")
     key = market_key("fixture", "BTCUSDT")
     original = case.windows_by_market[key]
@@ -184,8 +187,9 @@ def test_incomplete_rolling_evidence_is_indeterminate_not_success():
 
     result = replay_case(case)
     assert result.regime is MarketRegime.UNKNOWN
-    assert result.outcome_class is OutcomeClass.INDETERMINATE
-    assert "REGIME_EVIDENCE_UNKNOWN" in result.reasons
+    assert result.regime_action is RegimeAction.REJECT
+    assert result.expected_verdict.value == "REJECT"
+    assert result.outcome_class is OutcomeClass.REJECTED
 
 
 def test_calibration_metrics_are_segmented_by_regime_and_route():

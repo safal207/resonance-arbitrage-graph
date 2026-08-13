@@ -1,6 +1,17 @@
 # Changelog
 
-## v0.8.0 (in development)
+## v0.9.0 (in development)
+
+- Add monotonic regime execution gate after the base verifier: derived market regime can preserve or downgrade a verdict, never upgrade it.
+- Add explicit `RegimeExecutionPolicy` with fail-closed `UNKNOWN -> REJECT` and default `VOLATILE/THIN_LIQUIDITY/DISLOCATED -> OBSERVE_ONLY` behavior.
+- Separate base verifier verdict from final post-gate verdict in paper evidence and live scan output.
+- Bind regime action, final verdict, gate policy and gate-policy SHA-256 into rolling market evidence.
+- Make observation memory validate the evidence-bound gate and classify outcomes from the final post-gate verdict.
+- Upgrade replay artifacts to schema v0.2, bind gate policy into the decision fingerprint, and recompute base verdict -> regime -> gate -> final verdict during replay.
+- Include regime execution policy in the holdout frozen policy context so incompatible gate semantics cannot be blended.
+- Add regression coverage for the full monotonic verdict matrix, gate-policy digest changes, memory truth-denominator behavior, replay gate recomputation and retry policy drift.
+
+## v0.8.0
 
 - Add strict chronological holdout splitting by logical operation, keeping retries on one side of the split.
 - Add calibration-only search for the causally active verifier execute threshold with untouched out-of-sample validation.

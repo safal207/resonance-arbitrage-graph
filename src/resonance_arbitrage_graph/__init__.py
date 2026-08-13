@@ -41,6 +41,12 @@ from .regime import (
 )
 from .regime_evidence import make_regime_market_evidence_receipt
 from .regime_features import derive_route_regime_features
+from .regime_gate import (
+    RegimeAction,
+    RegimeExecutionPolicy,
+    RegimeGateResult,
+    apply_regime_gate,
+)
 from .reliability import (
     RankingCandidate,
     RankingStatus,
@@ -115,8 +121,11 @@ __all__ = [
     "QuoteSnapshot",
     "RankingCandidate",
     "RankingStatus",
+    "RegimeAction",
     "RegimeClassification",
+    "RegimeExecutionPolicy",
     "RegimeFeatures",
+    "RegimeGateResult",
     "RegimePolicy",
     "ReliabilityAdjustedScore",
     "ReliabilityPolicy",
@@ -138,6 +147,7 @@ __all__ = [
     "SensitivityPoint",
     "Verdict",
     "WindowRegimeContext",
+    "apply_regime_gate",
     "benchmark_bundle",
     "bind_route_to_snapshots",
     "build_graph_from_quotes",

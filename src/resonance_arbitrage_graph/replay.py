@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from enum import Enum
 import hashlib
 import hmac
@@ -17,13 +17,14 @@ from .model import Edge, Verdict
 from .observation import OutcomeClass, classify_outcome
 from .quotes import CostAssumption, QuoteSnapshot, quote_to_trade_edges
 from .regime import MarketRegime, RegimePolicy
+from .regime_gate import RegimeAction, RegimeExecutionPolicy, apply_regime_gate
 from .rolling_state import RollingMarketSample, RollingMarketWindow, RollingWindowPolicy
 from .window_regime import derive_window_regime_context
 
 
-_REPLAY_CASE_SCHEMA = "resonance.arbitrage.replay-case/v0.1"
-_REPLAY_BUNDLE_SCHEMA = "resonance.arbitrage.replay-bundle/v0.1"
-_REPLAY_REPORT_SCHEMA = "resonance.arbitrage.replay-report/v0.1"
+_REPLAY_CASE_SCHEMA = "resonance.arbitrage.replay-case/v0.2"
+_REPLAY_BUNDLE_SCHEMA = "resonance.arbitrage.replay-bundle/v0.2"
+_REPLAY_REPORT_SCHEMA = "resonance.arbitrage.replay-report/v0.2"
 
 
 def _canonical_json(payload: Any) -> str:
@@ -100,6 +101,7 @@ class ReplayCase:
     engine_policy: Policy
     regime_policy: RegimePolicy
     outcome: ReplayOutcome
+    regime_execution_policy: RegimeExecutionPolicy = field(default_factory=RegimeExecutionPolicy)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "snapshots", tuple(self.snapshots))
@@ -126,6 +128,8 @@ class ReplayCase:
             raise ValueError("replay case requires snapshots and route legs")
         if not isinstance(self.engine_policy, Policy) or not isinstance(self.regime_policy, RegimePolicy):
             raise ValueError("replay policies have invalid types")
+        if not isinstance(self.regime_execution_policy, RegimeExecutionPolicy):
+            raise ValueError("regime_execution_policy has invalid type")
 
         for snapshot in self.snapshots:
             if not isinstance(snapshot, QuoteSnapshot):
@@ -207,6 +211,7 @@ class ReplayCase:
             "legs": [leg.to_payload() for leg in self.legs],
             "engine_policy": asdict(self.engine_policy),
             "regime_policy": asdict(self.regime_policy),
+            "regime_execution_policy": self.regime_execution_policy.canonical_payload(),
             "outcome": asdict(self.outcome),
         }
 
@@ -236,6 +241,16 @@ class ReplayCase:
                 )
                 for item in payload["legs"]
             )
+            gate_policy_payload = payload["regime_execution_policy"]
+            if gate_policy_payload.get("schema") != "resonance.arbitrage.regime-execution-policy/v0.1":
+                raise ValueError("unsupported regime execution policy schema in replay case")
+            gate_policy = RegimeExecutionPolicy(
+                normal=gate_policy_payload["normal"],
+                volatile=gate_policy_payload["volatile"],
+                thin_liquidity=gate_policy_payload["thin_liquidity"],
+                dislocated=gate_policy_payload["dislocated"],
+                unknown=gate_policy_payload["unknown"],
+            )
             case = cls(
                 case_id=payload["case_id"],
                 logical_operation_id=payload["logical_operation_id"],
@@ -248,6 +263,7 @@ class ReplayCase:
                 legs=legs,
                 engine_policy=Policy(**payload["engine_policy"]),
                 regime_policy=RegimePolicy(**payload["regime_policy"]),
+                regime_execution_policy=gate_policy,
                 outcome=ReplayOutcome(**payload["outcome"]),
             )
         except (KeyError, TypeError, ValueError) as exc:
@@ -347,6 +363,9 @@ class ReplayResult:
     route_id: str
     case_sha256: str
     regime: MarketRegime
+    regime_action: RegimeAction
+    gate_policy_sha256: str
+    base_verdict: Verdict
     expected_verdict: Verdict
     expected_edge_bps: float
     required_edge_bps: float
@@ -368,6 +387,9 @@ class ReplayResult:
             "route_id": self.route_id,
             "case_sha256": self.case_sha256,
             "regime": self.regime.value,
+            "regime_action": self.regime_action.value,
+            "gate_policy_sha256": self.gate_policy_sha256,
+            "base_verdict": self.base_verdict.value,
             "expected_verdict": self.expected_verdict.value,
             "expected_edge_bps": self.expected_edge_bps,
             "required_edge_bps": self.required_edge_bps,
@@ -383,11 +405,13 @@ def replay_case(
     *,
     engine_policy: Policy | None = None,
     regime_policy: RegimePolicy | None = None,
+    regime_execution_policy: RegimeExecutionPolicy | None = None,
 ) -> ReplayResult:
     active_engine_policy = engine_policy or case.engine_policy
     active_regime_policy = regime_policy or case.regime_policy
+    active_gate_policy = regime_execution_policy or case.regime_execution_policy
     route = case.build_route()
-    expected = evaluate_route(route, case.start_amount, policy=active_engine_policy)
+    base_expected = evaluate_route(route, case.start_amount, policy=active_engine_policy)
     context = derive_window_regime_context(
         route,
         case.snapshots,
@@ -396,19 +420,19 @@ def replay_case(
         start_amount=case.start_amount,
         regime_policy=active_regime_policy,
     )
+    gate = apply_regime_gate(
+        base_expected.verdict,
+        context.classification.regime,
+        policy=active_gate_policy,
+    )
     required_edge_bps = active_engine_policy.execute_net_edge * 10_000.0
-    reasons = list(expected.reasons)
-
-    if context.classification.regime is MarketRegime.UNKNOWN and expected.verdict is not Verdict.REJECT:
-        outcome_class = OutcomeClass.INDETERMINATE
-        reasons.append("REGIME_EVIDENCE_UNKNOWN")
-    else:
-        outcome_class = classify_outcome(
-            expected_verdict=expected.verdict.value,
-            observed_edge_bps=case.outcome.realized_net_edge_bps,
-            required_edge_bps=required_edge_bps,
-            expired=case.outcome.expired,
-        )
+    outcome_class = classify_outcome(
+        expected_verdict=gate.final_verdict.value,
+        observed_edge_bps=case.outcome.realized_net_edge_bps,
+        required_edge_bps=required_edge_bps,
+        expired=case.outcome.expired,
+    )
+    reasons = tuple(base_expected.reasons) + gate.reasons
 
     return ReplayResult(
         case_id=case.case_id,
@@ -417,12 +441,15 @@ def replay_case(
         route_id=case.route_id,
         case_sha256=case.sha256,
         regime=context.classification.regime,
-        expected_verdict=expected.verdict,
-        expected_edge_bps=expected.net_edge * 10_000.0,
+        regime_action=gate.action,
+        gate_policy_sha256=gate.policy_sha256,
+        base_verdict=base_expected.verdict,
+        expected_verdict=gate.final_verdict,
+        expected_edge_bps=base_expected.net_edge * 10_000.0,
         required_edge_bps=required_edge_bps,
         observed_edge_bps=case.outcome.realized_net_edge_bps,
         outcome_class=outcome_class,
-        reasons=tuple(reasons),
+        reasons=reasons,
     )
 
 

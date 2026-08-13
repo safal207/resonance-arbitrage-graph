@@ -10,6 +10,9 @@ import re
 from typing import Any
 
 from .evidence import EvidenceReceipt
+from .model import Verdict
+from .regime import MarketRegime
+from .regime_gate import RegimeExecutionPolicy, apply_regime_gate
 
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -81,6 +84,77 @@ def _merge_regime_context_from_receipt(
         json.dumps(context, sort_keys=True, ensure_ascii=False, allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise ValueError("evidence-bound market_context must be strict JSON") from exc
+    return context
+
+
+def _merge_gate_context_from_receipt(
+    payload: dict[str, Any],
+    market_context: dict[str, Any],
+) -> dict[str, Any]:
+    gate_payload = payload.get("regime_execution_gate")
+    if gate_payload is None:
+        return dict(market_context)
+    if not isinstance(gate_payload, dict):
+        raise ValueError("evidence regime_execution_gate must be an object")
+
+    base_verdict = gate_payload.get("base_verdict")
+    final_verdict = gate_payload.get("final_verdict")
+    regime = gate_payload.get("market_regime")
+    action = gate_payload.get("action")
+    policy_sha256 = gate_payload.get("policy_sha256")
+    policy_payload = gate_payload.get("policy")
+    if base_verdict not in _ALLOWED_VERDICTS or final_verdict not in _ALLOWED_VERDICTS:
+        raise ValueError("evidence regime gate has invalid verdict")
+    if regime not in _ALLOWED_MARKET_REGIMES:
+        raise ValueError("evidence regime gate has invalid regime")
+    if not isinstance(policy_sha256, str) or not _SHA256_RE.fullmatch(policy_sha256):
+        raise ValueError("evidence regime gate has invalid policy SHA-256")
+    if not isinstance(policy_payload, dict):
+        raise ValueError("evidence regime gate policy must be an object")
+    if policy_payload.get("schema") != "resonance.arbitrage.regime-execution-policy/v0.1":
+        raise ValueError("unsupported regime execution policy schema")
+
+    try:
+        policy = RegimeExecutionPolicy(
+            normal=policy_payload["normal"],
+            volatile=policy_payload["volatile"],
+            thin_liquidity=policy_payload["thin_liquidity"],
+            dislocated=policy_payload["dislocated"],
+            unknown=policy_payload["unknown"],
+        )
+        recomputed = apply_regime_gate(
+            Verdict(base_verdict),
+            MarketRegime(regime),
+            policy=policy,
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("invalid evidence-bound regime execution policy") from exc
+
+    if not hmac.compare_digest(policy.sha256, policy_sha256):
+        raise ValueError("evidence regime gate policy digest is inconsistent")
+    if recomputed.final_verdict.value != final_verdict or recomputed.action.value != action:
+        raise ValueError("evidence regime gate decision is inconsistent with policy")
+
+    expected = payload.get("expected")
+    if not isinstance(expected, dict):
+        raise ValueError("evidence receipt has no expected result")
+    if expected.get("base_verdict") != base_verdict or expected.get("verdict") != final_verdict:
+        raise ValueError("evidence expected verdicts conflict with regime gate")
+    regime_payload = payload.get("market_regime")
+    if not isinstance(regime_payload, dict) or regime_payload.get("regime") != regime:
+        raise ValueError("evidence market regime conflicts with regime gate")
+
+    context = dict(market_context)
+    derived = {
+        "base_verdict": base_verdict,
+        "final_verdict": final_verdict,
+        "regime_action": action,
+        "regime_execution_policy_sha256": policy_sha256,
+    }
+    for key, value in derived.items():
+        if key in context and context[key] != value:
+            raise ValueError(f"market_context conflicts with evidence-bound gate field: {key}")
+        context[key] = value
     return context
 
 
@@ -254,6 +328,7 @@ def observation_from_evidence(
         expired=expired,
     )
     bound_market_context = _merge_regime_context_from_receipt(payload, market_context)
+    bound_market_context = _merge_gate_context_from_receipt(payload, bound_market_context)
 
     return OpportunityObservation(
         logical_operation_id=logical_operation_id,

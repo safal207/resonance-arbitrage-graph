@@ -20,7 +20,7 @@ from .replay import (
 )
 
 
-_HOLDOUT_REPORT_SCHEMA = "resonance.arbitrage.holdout-report/v0.1"
+_HOLDOUT_REPORT_SCHEMA = "resonance.arbitrage.holdout-report/v0.2"
 _SELECTION_RULE = (
     "calibration_only:truth_lower_bound>survival_lower_bound>truth_events>"
     "lower_indeterminate>overprediction_penalty>higher_execute_threshold"
@@ -278,6 +278,7 @@ def _policy_context_payload(case: Any) -> dict[str, Any]:
     return {
         "engine_policy": engine,
         "regime_policy": asdict(case.regime_policy),
+        "regime_execution_policy": case.regime_execution_policy.canonical_payload(),
         "rolling_window_policy": _case_window_policy_payload(case),
     }
 
@@ -527,9 +528,6 @@ def run_holdout_calibration(
     selected_evaluation = sorted(eligible, key=_selection_key)[0]
     selected_candidate = selected_evaluation.candidate
 
-    # Anti-overfit firewall: validation sees only the already-selected
-    # calibration winner. It can fail that candidate, but it cannot trigger a
-    # search over alternative thresholds.
     validation_evaluation = evaluate_policy_candidate(
         split.validation,
         selected_candidate,

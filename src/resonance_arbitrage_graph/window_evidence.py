@@ -11,6 +11,7 @@ from .market_evidence import make_market_evidence_receipt
 from .model import Edge, RouteResult
 from .quotes import QuoteSnapshot
 from .regime import RegimePolicy
+from .regime_gate import RegimeExecutionPolicy, apply_regime_gate
 from .rolling_state import RollingMarketWindow
 from .window_regime import derive_window_regime_context
 
@@ -24,9 +25,11 @@ def make_window_regime_evidence_receipt(
     windows_by_market: Mapping[str, RollingMarketWindow],
     evaluation_time_ms: int,
     regime_policy: RegimePolicy | None = None,
+    regime_execution_policy: RegimeExecutionPolicy | None = None,
     execution: PaperExecution | None = None,
 ) -> EvidenceReceipt:
     active_policy = regime_policy or RegimePolicy()
+    active_gate_policy = regime_execution_policy or RegimeExecutionPolicy()
     context = derive_window_regime_context(
         edges,
         snapshots,
@@ -34,6 +37,11 @@ def make_window_regime_evidence_receipt(
         evaluation_time_ms=evaluation_time_ms,
         start_amount=result.start_amount,
         regime_policy=active_policy,
+    )
+    gate = apply_regime_gate(
+        result.verdict,
+        context.classification.regime,
+        policy=active_gate_policy,
     )
     receipt = make_market_evidence_receipt(
         operation_id,
@@ -50,6 +58,24 @@ def make_window_regime_evidence_receipt(
         else "rolling_window_incomplete"
     )
     payload = dict(receipt.payload)
+    payload["schema"] = "resonance.arbitrage.evidence/v0.2"
+    payload["causal_spine"] = [
+        "market_state",
+        "discrepancy",
+        "candidate_route",
+        "execution_constraints",
+        "rolling_market_state",
+        "market_regime",
+        "regime_execution_gate",
+        "state_transitions",
+        "settlement",
+        "paper_pnl",
+        "evidence",
+    ]
+    expected = dict(payload["expected"])
+    expected["base_verdict"] = result.verdict.value
+    expected["verdict"] = gate.final_verdict.value
+    payload["expected"] = expected
     payload["market_regime"] = {
         "regime": context.classification.regime.value,
         "features": context.classification.features.to_context(),
@@ -63,6 +89,10 @@ def make_window_regime_evidence_receipt(
         },
         "reasons": list(context.classification.reasons),
         "policy": asdict(active_policy),
+    }
+    payload["regime_execution_gate"] = {
+        **gate.to_payload(),
+        "policy": active_gate_policy.canonical_payload(),
     }
     payload["rolling_market_state"] = {
         "schema": "resonance.arbitrage.rolling-state-evidence/v0.1",
