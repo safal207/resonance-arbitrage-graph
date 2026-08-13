@@ -1,0 +1,11 @@
+# Example only. Fees/slippage are explicit modeling assumptions, not account-specific exchange facts.
+python -m resonance_arbitrage_graph.live_scan \
+  --venue binance \
+  --pair BTCUSDT:BTC:USDT \
+  --pair ETHBTC:ETH:BTC \
+  --pair ETHUSDT:ETH:USDT \
+  --start-asset USDT \
+  --amount 1000 \
+  --fee-bps 10 \
+  --slippage-bps 5 \
+  --max-hops 3

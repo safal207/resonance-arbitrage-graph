@@ -7,14 +7,16 @@ The project does **not** place live orders, sign transactions, hold exchange key
 ## Causal spine
 
 ```text
-market state
+public/fixture market state
+  -> normalized quote snapshot
+  -> verified pair metadata
   -> discrepancy
   -> candidate route
   -> execution constraints
   -> state transitions
-  -> settlement
+  -> settlement assumptions
   -> paper PnL
-  -> evidence
+  -> quote-bound evidence
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -28,7 +30,49 @@ AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 ```
 
-## v0.1 vertical slice
+## v0.2 — public read-only market data
+
+v0.2 connects real public quotes to the existing verifier while keeping execution strictly paper-only.
+
+- `QuoteSnapshot` normalizes venue, pair, best bid/ask, quantities, timestamps and source identity.
+- Binance Spot verifies pair metadata through public `exchangeInfo`, then consumes public `bookTicker` for best bid/ask.
+- Kraken Spot consumes public `PreTrade`, which supplies top-of-book data, pair metadata and publication timestamps.
+- Quote snapshots become buy/sell graph edges with top-of-book capacity.
+- Fee/slippage assumptions are explicit caller inputs; the engine does not guess a user's fee tier.
+- Single-venue triangular cycles can be evaluated with real public quotes.
+- Cross-venue gaps are deliberately classified `OBSERVE_ONLY_REBALANCE_UNMODELED` until transfer/rebalance/settlement edges exist.
+- Public quote provenance is bound into deterministic SHA-256 evidence by venue, pair, side, rate, capacity and freshness at evaluation time.
+
+### Live paper scan
+
+Install:
+
+```bash
+python -m pip install -e ".[test]"
+```
+
+Example Binance triangle:
+
+```bash
+resonance-live-scan \
+  --venue binance \
+  --pair BTCUSDT:BTC:USDT \
+  --pair ETHBTC:ETH:BTC \
+  --pair ETHUSDT:ETH:USDT \
+  --start-asset USDT \
+  --amount 1000 \
+  --fee-bps 10 \
+  --slippage-bps 5 \
+  --max-hops 3
+```
+
+`--fee-bps` and `--slippage-bps` are **paper-model assumptions**, not claims about your actual exchange account.
+
+Each surfaced cycle includes a logical operation ID, deterministic evidence SHA-256 and explicit edge-to-snapshot market bindings.
+
+Kraken uses the same CLI shape; pair symbols may contain `/`, for example `BTC/USDT:BTC:USDT`.
+
+## v0.1 — verification core
 
 - `Node` and `Edge` market graph model
 - Edge costs: fee, slippage, gas
@@ -43,44 +87,9 @@ AND modeled execution/settlement confidence is acceptable
 - ProofPath-style deterministic evidence receipt with SHA-256
 - Adversarial acceptance tests
 
-## Quick example
-
-```python
-from resonance_arbitrage_graph import Edge, MarketGraph, Node, evaluate_route
-
-usdt = Node("CEX", "USDT")
-btc = Node("CEX", "BTC")
-eth = Node("CEX", "ETH")
-
-route = [
-    Edge(usdt, btc, rate=1 / 80_000, fee_bps=5, slippage_bps=5),
-    Edge(btc, eth, rate=20.0, fee_bps=5, slippage_bps=5),
-    Edge(eth, usdt, rate=4_050, fee_bps=5, slippage_bps=5),
-]
-
-graph = MarketGraph(route)
-cycle = graph.find_cycles(usdt, max_hops=3)[0]
-result = evaluate_route(cycle, 10_000)
-
-print(result.verdict.value)
-print(result.net_edge)
-```
-
-## Why causal verification matters
-
-A normal spread scanner can observe:
-
-```text
-buy ETH: 4,000
-sell ETH: 4,030
-gross spread: +0.75%
-```
-
-But after fees and slippage the route can be net-negative. RESONANCE keeps the gross signal and the executable state transition separate, so a positive spread can correctly produce `REJECT`.
-
 ## Evidence
 
-Each evaluated route can produce a canonical JSON receipt containing:
+The base evidence receipt contains:
 
 - logical operation ID
 - route edges and execution assumptions
@@ -90,36 +99,52 @@ Each evaluated route can produce a canonical JSON receipt containing:
 - optional observed paper-execution outcome
 - SHA-256 of the canonical payload
 
-This gives later CML-style calibration a stable record of what the system believed before execution and what happened in simulation.
+`make_market_evidence_receipt(...)` additionally binds the public quote snapshots and evaluation time used for the decision. It refuses to produce a receipt if an edge cannot be derived from exactly one supplied snapshot using the expected venue, asset direction, price, top-of-book capacity and quote age.
+
+## Why cross-venue is observe-only in v0.2
+
+Buying on venue A and selling on venue B does not return capital to the same venue state. Calling that an executable cycle without modeling inventory/rebalance would hide a real state transition.
+
+A later version can add explicit transfer/rebalance edges with:
+
+```text
+withdraw/deposit availability
+fees
+latency
+capacity
+chain/bridge state
+settlement probability
+```
+
+Until those edges exist, cross-venue gaps are observations, not `EXECUTE_SIM` routes.
 
 ## Tests
 
 ```bash
-python -m pip install -e ".[test]"
 pytest
 ```
 
-Current acceptance coverage includes:
+Coverage includes the original verifier/replay/evidence tests plus:
 
-1. profitable cycle discovery
-2. positive gross spread becoming negative after costs
-3. stale quote rejection
-4. insufficient capacity rejection
-5. route-latency rejection
-6. extra-slippage prediction error
-7. replay protection
-8. deterministic evidence hashing
+- normalized quote and timestamp-provenance validation
+- top-of-book capacity mapping
+- conservative freshness timestamps
+- mocked Binance metadata + market-data adapter flow
+- caller/exchange pair-metadata mismatch rejection
+- mocked Kraken public pre-trade adapter
+- live-shaped triangular quote graph
+- fail-closed missing cost assumptions
+- cross-venue observe-only boundary
+- route-edge ↔ quote-price/capacity/freshness provenance binding
+- tampered quote and forged quote-age rejection
+- CLI pair parsing
 
 ## Safety boundary
 
-v0.1 intentionally has no connector for exchange private APIs and no live execution path. Public market-data adapters can be added later, while execution remains paper-only until the verification model is calibrated and separately reviewed.
+The market-data layer implements GET-only public data. There is no private API-key handling, signing, account endpoint, order endpoint, wallet interaction, or fund-transfer path.
 
-## Next
+See:
 
-- public market-data adapters (CEX first, then DEX)
-- quote snapshots with explicit timestamps/source identity
-- richer partial-fill and price-impact model
-- expected-vs-observed history and Opportunity Truth Rate
-- cross-venue and cross-chain route modeling
-
-Tracked in Issue #1: **MVP: causal paper-arbitrage verification engine**.
+- `docs/market-data-contracts.md`
+- `docs/v0.2-design.md`
+- Issue #3 — v0.2 public read-only market feeds and live paper scan
