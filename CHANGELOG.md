@@ -1,6 +1,16 @@
 # Changelog
 
-## v0.5.0 (in development)
+## v0.6.0 (in development)
+
+- Add deterministic evidence-bound rolling market windows for public quote samples.
+- Preserve quote source/timestamp provenance and reject reordered or duplicate samples.
+- Derive short-window return volatility from rolling mid-price returns instead of caller input.
+- Require every rolling window tail to equal the exact current route snapshot.
+- Bind rolling-window canonical payloads, summaries and SHA-256 digests into regime evidence.
+- Make incomplete rolling evidence fail closed to UNKNOWN.
+- Update the public live paper scanner to collect rolling samples synchronously before evaluation.
+
+## v0.5.0
 
 - Add deterministic market regimes: NORMAL, VOLATILE, THIN_LIQUIDITY, DISLOCATED and fail-closed UNKNOWN.
 - Derive route-specific spread, capacity, freshness and cross-rate-dislocation features from exact quote provenance.
