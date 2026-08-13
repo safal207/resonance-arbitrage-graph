@@ -41,7 +41,7 @@ def test_release_supersede_and_full_binding():
 def test_duplicate_and_revocation_are_terminal():
     first = _binding()
     registry = PolicyRegistry.create(first.promotion_report)
-    with pytest.raises(ValueError, match="already exists"):
+    with pytest.raises(ValueError, match="own predecessor"):
         registry.supersede(first.promotion_report, reason="duplicate")
     registry = registry.revoke(reason="safety stop", evidence_sha256="1" * 64)
     assert registry.current_release_id is None
