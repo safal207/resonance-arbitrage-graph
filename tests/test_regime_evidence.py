@@ -4,7 +4,7 @@ import pytest
 
 from resonance_arbitrage_graph.engine import evaluate_route
 from resonance_arbitrage_graph.quotes import CostAssumption, QuoteSnapshot, quote_to_trade_edges
-from resonance_arbitrage_graph.regime import RegimeFeatures, classify_market_regime
+from resonance_arbitrage_graph.regime import MarketRegime, classify_market_regime
 from resonance_arbitrage_graph.regime_evidence import make_regime_market_evidence_receipt
 from resonance_arbitrage_graph.regime_features import derive_route_regime_features
 
@@ -39,7 +39,7 @@ def _fixture():
     return quote, route, result, classification
 
 
-def test_regime_receipt_binds_features_reasons_and_policy():
+def test_regime_receipt_binds_features_reasons_policy_and_provenance():
     quote, route, result, classification = _fixture()
     receipt = make_regime_market_evidence_receipt(
         "op-regime",
@@ -55,6 +55,8 @@ def test_regime_receipt_binds_features_reasons_and_policy():
     assert regime["features"] == classification.features.to_context()
     assert regime["reasons"] == list(classification.reasons)
     assert regime["policy"]["volatile_return_bps"] == 75.0
+    assert regime["feature_provenance"]["cross_rate_dislocation_bps"] == "route_bound_raw_edge_rates"
+    assert regime["feature_provenance"]["short_window_return_volatility_bps"] == "caller_supplied_explicit_feature"
     assert len(receipt.sha256) == 64
 
 
@@ -77,19 +79,15 @@ def test_regime_receipt_rejects_feature_tampering():
         )
 
 
-def test_regime_receipt_rejects_classification_tampering():
+def test_regime_receipt_rejects_regime_label_tampering():
     quote, route, result, classification = _fixture()
-    wrong_features = RegimeFeatures(
-        normalized_spread_bps=classification.features.normalized_spread_bps,
-        top_of_book_capacity_ratio=classification.features.top_of_book_capacity_ratio,
-        quote_age_ms=classification.features.quote_age_ms,
-        quote_age_dispersion_ms=classification.features.quote_age_dispersion_ms,
-        cross_rate_dislocation_bps=100.0,
-        short_window_return_volatility_bps=20.0,
+    wrong = replace(
+        classification,
+        regime=MarketRegime.VOLATILE,
+        reasons=("return_volatility",),
     )
-    wrong = replace(classification, features=wrong_features)
 
-    with pytest.raises(ValueError, match="features do not match"):
+    with pytest.raises(ValueError, match="classification does not match"):
         make_regime_market_evidence_receipt(
             "op-regime",
             route,
