@@ -86,6 +86,25 @@ class RegimeClassification:
         }
 
 
+def merge_regime_context(
+    base_context: dict[str, Any],
+    classification: RegimeClassification,
+) -> dict[str, Any]:
+    """Attach derived regime context without allowing caller override/drift."""
+
+    context = dict(base_context)
+    derived = classification.to_market_context()
+    for key, value in derived.items():
+        if key in context and context[key] != value:
+            raise ValueError(f"market_context conflicts with derived regime field: {key}")
+        context[key] = value
+    try:
+        json.dumps(context, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("merged market_context must be strict JSON") from exc
+    return context
+
+
 def classify_market_regime(
     features: RegimeFeatures,
     *,
