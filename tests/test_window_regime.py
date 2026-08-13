@@ -49,18 +49,20 @@ def _route():
     return edges, snapshots, evaluate_route(edges, 100.0)
 
 
-def test_complete_windows_drive_regime_without_caller_volatility():
-    edges, snapshots, result = _route()
-    windows = {
+def _complete_windows():
+    return {
         market_key("binance", "BTCUSDT"): _window("BTCUSDT", "BTC", "USDT", [100, 100.1, 99.9, 100.2, 100.0]),
         market_key("binance", "ETHBTC"): _window("ETHBTC", "ETH", "BTC", [0.5, 0.501, 0.499, 0.502, 0.5]),
         market_key("binance", "ETHUSDT"): _window("ETHUSDT", "ETH", "USDT", [50, 50.1, 49.9, 50.2, 50.0]),
     }
 
+
+def test_complete_windows_drive_regime_without_caller_volatility():
+    edges, snapshots, result = _route()
     context = derive_window_regime_context(
         edges,
         snapshots,
-        windows_by_market=windows,
+        windows_by_market=_complete_windows(),
         evaluation_time_ms=60_000,
         start_amount=result.start_amount,
     )
@@ -82,19 +84,32 @@ def test_missing_window_fails_closed():
         )
 
 
+def test_window_tail_must_equal_current_route_snapshot():
+    edges, snapshots, result = _route()
+    windows = _complete_windows()
+    windows[market_key("binance", "ETHBTC")] = _window(
+        "ETHBTC", "ETH", "BTC", [0.5, 0.501, 0.499, 0.502, 0.501]
+    )
+
+    with pytest.raises(ValueError, match="tail does not match"):
+        derive_window_regime_context(
+            edges,
+            snapshots,
+            windows_by_market=windows,
+            evaluation_time_ms=60_000,
+            start_amount=result.start_amount,
+        )
+
+
 def test_incomplete_window_yields_unknown():
     edges, snapshots, result = _route()
-    complete = _window("BTCUSDT", "BTC", "USDT", [100, 100.1, 99.9, 100.2, 100.0])
     incomplete = RollingMarketWindow.from_quotes(
-        [_quote("ETHBTC", "ETH", "BTC", 50_000, 0.5), _quote("ETHBTC", "ETH", "BTC", 60_000, 0.501)],
+        [_quote("ETHBTC", "ETH", "BTC", 50_000, 0.5), _quote("ETHBTC", "ETH", "BTC", 60_000, 0.5)],
         policy=RollingWindowPolicy(horizon_ms=60_000, min_samples=5, min_coverage_ratio=0.8),
         end_ms=60_000,
     )
-    windows = {
-        market_key("binance", "BTCUSDT"): complete,
-        market_key("binance", "ETHBTC"): incomplete,
-        market_key("binance", "ETHUSDT"): _window("ETHUSDT", "ETH", "USDT", [50, 50.1, 49.9, 50.2, 50.0]),
-    }
+    windows = _complete_windows()
+    windows[market_key("binance", "ETHBTC")] = incomplete
 
     context = derive_window_regime_context(
         edges,
