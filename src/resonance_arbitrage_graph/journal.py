@@ -4,7 +4,8 @@ import json
 import os
 from pathlib import Path
 
-from .observation import OpportunityObservation
+from .evidence import EvidenceReceipt
+from .observation import OpportunityObservation, verify_observation_evidence_binding
 
 
 class JournalError(ValueError):
@@ -36,7 +37,17 @@ class ObservationJournal:
                     raise JournalError(f"invalid journal row {line_number}: {exc}") from exc
         return observations
 
-    def append(self, observation: OpportunityObservation) -> None:
+    def append(
+        self,
+        observation: OpportunityObservation,
+        *,
+        receipt: EvidenceReceipt,
+    ) -> None:
+        try:
+            verify_observation_evidence_binding(observation, receipt)
+        except ValueError as exc:
+            raise JournalError(f"evidence binding failed: {exc}") from exc
+
         existing = self.load()
 
         if any(item.execution_id == observation.execution_id for item in existing):
