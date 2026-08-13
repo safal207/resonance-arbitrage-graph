@@ -2,6 +2,22 @@ from .adapters import BinanceBookTickerAdapter, KrakenPreTradeAdapter
 from .engine import PaperExecution, PaperExecutor, Policy, ReplayError, evaluate_route
 from .evidence import EvidenceReceipt, make_evidence_receipt
 from .graph import MarketGraph
+from .holdout import (
+    CandidateGrid,
+    HoldoutPolicy,
+    HoldoutReport,
+    HoldoutSplit,
+    HoldoutSplitError,
+    HoldoutSplitSummary,
+    HoldoutStatus,
+    PolicyCandidate,
+    PolicyEvaluation,
+    evaluate_policy_candidate,
+    run_holdout_calibration,
+    split_replay_bundle,
+    verify_holdout_report_envelope,
+    wilson_lower_bound,
+)
 from .journal import JournalError, ObservationJournal, collapse_operations
 from .market_evidence import bind_route_to_snapshots, make_market_evidence_receipt
 from .metrics import ObservationMetrics, calculate_metrics
@@ -71,10 +87,17 @@ __all__ = [
     "BinanceBookTickerAdapter",
     "CalibrationReport",
     "CalibrationSlice",
+    "CandidateGrid",
     "CostAssumption",
     "CrossVenueObservation",
     "Edge",
     "EvidenceReceipt",
+    "HoldoutPolicy",
+    "HoldoutReport",
+    "HoldoutSplit",
+    "HoldoutSplitError",
+    "HoldoutSplitSummary",
+    "HoldoutStatus",
     "JournalError",
     "KrakenPreTradeAdapter",
     "MarketGraph",
@@ -87,6 +110,8 @@ __all__ = [
     "PaperExecution",
     "PaperExecutor",
     "Policy",
+    "PolicyCandidate",
+    "PolicyEvaluation",
     "QuoteSnapshot",
     "RankingCandidate",
     "RankingStatus",
@@ -124,6 +149,7 @@ __all__ = [
     "collapse_operations",
     "derive_route_regime_features",
     "derive_window_regime_context",
+    "evaluate_policy_candidate",
     "evaluate_route",
     "make_evidence_receipt",
     "make_market_evidence_receipt",
@@ -136,9 +162,13 @@ __all__ = [
     "quote_to_trade_edges",
     "rank_candidates",
     "replay_case",
+    "run_holdout_calibration",
     "scan_cycles",
     "score_candidate",
+    "split_replay_bundle",
     "threshold_sensitivity",
     "verify_evidence_receipt",
+    "verify_holdout_report_envelope",
     "verify_observation_evidence_binding",
+    "wilson_lower_bound",
 ]
