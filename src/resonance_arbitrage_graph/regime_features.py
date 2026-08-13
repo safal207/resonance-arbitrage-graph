@@ -47,6 +47,10 @@ def derive_route_regime_features(
     )
 
     route_snapshots = [snapshots[item["snapshot_index"]] for item in bindings]
+    for snapshot in route_snapshots:
+        if snapshot.freshness_reference_ms > evaluation_time_ms:
+            raise ValueError("quote freshness reference cannot be in the future")
+
     spreads = [_spread_bps(snapshot) for snapshot in route_snapshots]
     ages = [snapshot.age_ms(evaluation_time_ms) for snapshot in route_snapshots]
 
