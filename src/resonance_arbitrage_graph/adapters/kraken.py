@@ -67,4 +67,5 @@ class KrakenPreTradeAdapter:
             source_url=url,
             timestamp_class="exchange_published" if source_timestamp_ms is not None else "client_observed",
             source_timestamp_ms=source_timestamp_ms,
+            metadata_url=url,
         )
