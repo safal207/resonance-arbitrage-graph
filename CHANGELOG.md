@@ -1,6 +1,15 @@
 # Changelog
 
-## v0.3.0 (in development)
+## v0.4.0 (in development)
+
+- Add route/context-segmented reliability profiles from v0.3 logical observations.
+- Add Bayesian-smoothed Opportunity Truth Rate and Route Survival Rate.
+- Apply historical prediction error as a negative-only edge calibration; history cannot manufacture positive edge.
+- Add explicit history-confidence and minimum-evidence guards.
+- Add deterministic reliability-adjusted ranking with stable tie-breaking.
+- Keep non-`EXECUTE_SIM`, non-positive and cross-venue observe-only candidates ineligible.
+
+## v0.3.0
 
 - Add evidence-bound `OpportunityObservation` records.
 - Add append-only deterministic JSONL observation journal.

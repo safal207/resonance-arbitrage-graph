@@ -2,7 +2,7 @@
 
 A paper-only causal verification engine for crypto-arbitrage opportunities.
 
-The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, and settlement risk — and to emit deterministic evidence and outcome memory for that decision.
+The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, settlement risk and historical signal reliability — and to emit deterministic evidence and outcome memory for that decision.
 
 ## Causal spine
 
@@ -19,6 +19,7 @@ public/fixture market state
   -> quote-bound evidence
   -> opportunity observation
   -> truth metrics
+  -> reliability-adjusted ranking
 ```
 
 A price difference is not treated as an opportunity by itself. The core invariant is:
@@ -31,6 +32,32 @@ AND capacity is sufficient
 AND route latency is within policy
 AND modeled execution/settlement confidence is acceptable
 ```
+
+## v0.4 — Reliability-Adjusted Ranking
+
+v0.4 uses v0.3 outcome memory to rank new paper-only opportunities by observed reliability rather than raw spread alone.
+
+- `ReliabilityProfile` collapses retries by `logical_operation_id` and segments history by exact `route_id` plus caller-selected market context (default: `venue`, `regime`).
+- Opportunity Truth Rate and Route Survival Rate use Bayesian Beta priors so tiny samples cannot imply extreme confidence.
+- Historical prediction error may only reduce the current edge: positive historical error never increases a new signal.
+- `history_confidence` grows with matching evidence and is capped at 1.0.
+- `ReliabilityAdjustedScore` exposes raw edge, bias penalty, bias-adjusted edge, truth probability, survival probability, history confidence, provisional score and final score.
+- `INSUFFICIENT_HISTORY` candidates remain observable but do not receive a trusted final ranking score.
+- A positive verifier signal can be `SUPPRESSED_BY_HISTORY` when historical overprediction consumes its edge.
+- Non-positive raw edge and any verifier verdict other than `EXECUTE_SIM` remain `INELIGIBLE`.
+- Cross-venue `OBSERVE_ONLY_REBALANCE_UNMODELED` is never promoted by historical reliability.
+
+Default score for sufficiently evidenced candidates:
+
+```text
+adjusted_score_bps
+  = bias_adjusted_edge_bps
+    * smoothed_truth_rate
+    * smoothed_survival_rate
+    * history_confidence
+```
+
+This is an advisory paper-ranking score, not realized PnL and not a live-trading instruction.
 
 ## v0.3 — Opportunity Memory & Truth Metrics
 
@@ -134,7 +161,7 @@ The base evidence receipt contains:
 
 `make_market_evidence_receipt(...)` additionally binds the public quote snapshots and evaluation time used for the decision. It refuses to produce a receipt if an edge cannot be derived from exactly one supplied snapshot using the expected venue, asset direction, price, top-of-book capacity and quote age.
 
-v0.3 does not accept the receipt digest at face value: the observation layer recomputes the SHA-256 over canonical receipt JSON before admitting it to memory.
+The observation layer recomputes the SHA-256 over canonical receipt JSON before admitting it to memory. The reliability layer consumes validated, collapsed observations rather than raw retry rows.
 
 ## Why cross-venue is observe-only
 
@@ -151,7 +178,7 @@ chain/bridge state
 settlement probability
 ```
 
-Until those edges exist, cross-venue gaps are observations, not `EXECUTE_SIM` routes.
+Until those edges exist, cross-venue gaps are observations, not `EXECUTE_SIM` routes, and reliability history cannot promote them.
 
 ## Tests
 
@@ -174,6 +201,11 @@ Coverage includes:
 - duplicate execution and attempt-gap rejection
 - terminal-state replay rejection
 - canonical JSONL journal round-trip
+- Bayesian low-sample reliability shrinkage
+- negative-edge non-promotion
+- historical prediction-bias suppression
+- route/context segment isolation
+- deterministic reliability ranking
 
 ## Safety boundary
 
@@ -184,4 +216,5 @@ See:
 - `docs/market-data-contracts.md`
 - `docs/v0.2-design.md`
 - `docs/v0.3-design.md`
-- Issue #5 — v0.3 Opportunity Memory & Truth Metrics
+- `docs/v0.4-design.md`
+- Issue #7 — v0.4 Reliability-Adjusted Ranking
