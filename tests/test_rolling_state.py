@@ -56,22 +56,37 @@ def test_same_ordered_samples_produce_same_digest_and_volatility():
     assert first.summary().short_window_return_volatility_bps > 0.0
 
 
-def test_duplicate_timestamp_is_rejected():
-    with pytest.raises(ValueError, match="duplicate"):
+def test_duplicate_or_reordered_timestamps_are_rejected():
+    with pytest.raises(ValueError, match="strictly timestamp ordered"):
         RollingMarketWindow.from_quotes(
             [_quote(1_000, 100.0), _quote(1_000, 100.1)],
             policy=RollingWindowPolicy(horizon_ms=1_000, min_samples=2),
             end_ms=1_000,
         )
 
+    with pytest.raises(ValueError, match="strictly timestamp ordered"):
+        RollingMarketWindow.from_quotes(
+            [_quote(2_000, 100.0), _quote(1_000, 100.1)],
+            policy=RollingWindowPolicy(horizon_ms=2_000, min_samples=2),
+            end_ms=2_000,
+        )
 
-def test_window_digest_changes_when_sample_is_tampered():
+
+def test_window_digest_changes_when_sample_or_provenance_is_tampered():
     original = _window()
     samples = list(original.samples)
     samples[2] = replace(samples[2], bid_price=samples[2].bid_price + 0.01)
-    tampered = RollingMarketWindow(policy=original.policy, samples=tuple(samples))
+    tampered_price = RollingMarketWindow(policy=original.policy, samples=tuple(samples))
 
-    assert original.sha256 != tampered.sha256
+    provenance_samples = list(original.samples)
+    provenance_samples[2] = replace(provenance_samples[2], source_url="fixture:other")
+    tampered_provenance = RollingMarketWindow(
+        policy=original.policy,
+        samples=tuple(provenance_samples),
+    )
+
+    assert original.sha256 != tampered_price.sha256
+    assert original.sha256 != tampered_provenance.sha256
 
 
 def test_insufficient_samples_or_coverage_fail_closed_in_summary():
