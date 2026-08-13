@@ -89,6 +89,16 @@ def test_window_digest_changes_when_sample_or_provenance_is_tampered():
     assert original.sha256 != tampered_provenance.sha256
 
 
+def test_sample_timestamp_provenance_cannot_drift():
+    sample = _window().samples[0]
+
+    with pytest.raises(ValueError, match="freshness_reference_ms"):
+        replace(sample, freshness_reference_ms=sample.freshness_reference_ms + 1)
+
+    with pytest.raises(ValueError, match="exchange_published"):
+        replace(sample, timestamp_class="exchange_published")
+
+
 def test_insufficient_samples_or_coverage_fail_closed_in_summary():
     window = RollingMarketWindow.from_quotes(
         [_quote(50_000, 100.0), _quote(60_000, 100.1)],
