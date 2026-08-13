@@ -44,6 +44,11 @@ def make_window_regime_evidence_receipt(
         execution=execution,
     )
 
+    volatility_provenance = (
+        "derived_from_rolling_window"
+        if context.classification.features.short_window_return_volatility_bps is not None
+        else "rolling_window_incomplete"
+    )
     payload = dict(receipt.payload)
     payload["market_regime"] = {
         "regime": context.classification.regime.value,
@@ -54,7 +59,7 @@ def make_window_regime_evidence_receipt(
             "quote_age_ms": "route_bound_public_quotes",
             "quote_age_dispersion_ms": "route_bound_public_quotes",
             "cross_rate_dislocation_bps": "route_bound_raw_edge_rates",
-            "short_window_return_volatility_bps": "derived_from_rolling_window",
+            "short_window_return_volatility_bps": volatility_provenance,
         },
         "reasons": list(context.classification.reasons),
         "policy": asdict(active_policy),
@@ -70,7 +75,7 @@ def make_window_regime_evidence_receipt(
             for key in sorted(context.window_sha256_by_market)
         },
         "feature_binding": {
-            "short_window_return_volatility_bps": "derived_from_rolling_window",
+            "short_window_return_volatility_bps": volatility_provenance,
             "route_aggregation": "max_bound_market_volatility",
             "tail_binding": "latest_window_sample_equals_current_route_snapshot",
         },
