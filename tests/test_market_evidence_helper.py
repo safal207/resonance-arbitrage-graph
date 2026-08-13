@@ -28,7 +28,19 @@ def test_market_evidence_digest_changes_with_quote_source():
     )
     result = evaluate_route(route, 1_000)
 
-    first = make_market_evidence_receipt("live-001", route, result, snapshots=[first_snapshot])
-    second = make_market_evidence_receipt("live-001", route, result, snapshots=[second_snapshot])
+    first = make_market_evidence_receipt(
+        "live-001",
+        route,
+        result,
+        snapshots=[first_snapshot],
+        evaluation_time_ms=123456,
+    )
+    second = make_market_evidence_receipt(
+        "live-001",
+        route,
+        result,
+        snapshots=[second_snapshot],
+        evaluation_time_ms=123456,
+    )
 
     assert first.sha256 != second.sha256
