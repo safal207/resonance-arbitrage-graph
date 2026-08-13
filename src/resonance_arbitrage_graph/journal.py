@@ -12,6 +12,36 @@ class JournalError(ValueError):
     pass
 
 
+def validate_observation_sequence(
+    observations: list[OpportunityObservation],
+) -> None:
+    seen_execution_ids: set[str] = set()
+    latest_by_operation: dict[str, OpportunityObservation] = {}
+
+    for observation in observations:
+        if observation.execution_id in seen_execution_ids:
+            raise JournalError("duplicate execution_id")
+        seen_execution_ids.add(observation.execution_id)
+
+        latest = latest_by_operation.get(observation.logical_operation_id)
+        if latest is None:
+            if observation.attempt != 1:
+                raise JournalError("first attempt must be 1")
+        else:
+            if latest.outcome_class.terminal:
+                raise JournalError("logical operation already has a terminal outcome")
+            if observation.attempt != latest.attempt + 1:
+                raise JournalError("attempt must increment by exactly one")
+            if observation.opportunity_id != latest.opportunity_id:
+                raise JournalError("retry changed opportunity_id")
+            if observation.route_id != latest.route_id:
+                raise JournalError("retry changed route_id")
+            if observation.detected_at_ms != latest.detected_at_ms:
+                raise JournalError("retry changed detected_at_ms")
+
+        latest_by_operation[observation.logical_operation_id] = observation
+
+
 class ObservationJournal:
     """Single-writer append-only JSONL journal for causal opportunity outcomes."""
 
@@ -35,6 +65,8 @@ class ObservationJournal:
                     observations.append(OpportunityObservation.from_dict(payload))
                 except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
                     raise JournalError(f"invalid journal row {line_number}: {exc}") from exc
+
+        validate_observation_sequence(observations)
         return observations
 
     def append(
@@ -49,31 +81,7 @@ class ObservationJournal:
             raise JournalError(f"evidence binding failed: {exc}") from exc
 
         existing = self.load()
-
-        if any(item.execution_id == observation.execution_id for item in existing):
-            raise JournalError("duplicate execution_id")
-
-        same_operation = [
-            item
-            for item in existing
-            if item.logical_operation_id == observation.logical_operation_id
-        ]
-
-        if same_operation:
-            if any(item.outcome_class.terminal for item in same_operation):
-                raise JournalError("logical operation already has a terminal outcome")
-
-            latest = max(same_operation, key=lambda item: item.attempt)
-            if observation.attempt != latest.attempt + 1:
-                raise JournalError("attempt must increment by exactly one")
-            if observation.opportunity_id != latest.opportunity_id:
-                raise JournalError("retry changed opportunity_id")
-            if observation.route_id != latest.route_id:
-                raise JournalError("retry changed route_id")
-            if observation.detected_at_ms != latest.detected_at_ms:
-                raise JournalError("retry changed detected_at_ms")
-        elif observation.attempt != 1:
-            raise JournalError("first attempt must be 1")
+        validate_observation_sequence([*existing, observation])
 
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8", newline="\n") as handle:
@@ -86,9 +94,8 @@ class ObservationJournal:
 def collapse_operations(
     observations: list[OpportunityObservation],
 ) -> list[OpportunityObservation]:
+    validate_observation_sequence(observations)
     latest: dict[str, OpportunityObservation] = {}
     for observation in observations:
-        current = latest.get(observation.logical_operation_id)
-        if current is None or observation.attempt > current.attempt:
-            latest[observation.logical_operation_id] = observation
+        latest[observation.logical_operation_id] = observation
     return [latest[key] for key in sorted(latest)]
