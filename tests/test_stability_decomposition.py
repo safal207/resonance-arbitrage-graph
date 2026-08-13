@@ -109,6 +109,55 @@ def test_failed_truth_fold_is_attributed_to_prediction_bias_when_other_threshold
     assert report.status in {DecompositionStatus.DECOMPOSED_INSTABILITY, DecompositionStatus.PARTIALLY_DECOMPOSED}
 
 
+def test_sparse_selected_policy_is_preserved_as_insufficient_diagnostic_evidence():
+    bundle = _bundle(bad_validation_truth=True)
+    walk = run_walk_forward_stability(bundle, _grid(), _policy(min_pass_rate=1.0))
+    report = run_stability_decomposition(
+        bundle,
+        walk,
+        StabilityDecompositionPolicy(min_operations_per_side=10),
+    )
+
+    sparse = [fold for fold in report.folds if fold.selected_candidate is not None and fold.metrics is None]
+    assert sparse
+    assert any(not fold.validation_passed for fold in sparse)
+    for fold in sparse:
+        assert fold.reasons == ("fold population is below decomposition minimum",)
+        assert fold.observed_drivers == ()
+        if fold.validation_passed:
+            assert fold.attributed_drivers == ()
+            assert fold.primary_driver is None
+        else:
+            assert fold.attributed_drivers == (InstabilityDriver.INSUFFICIENT_DIAGNOSTIC_EVIDENCE,)
+            assert fold.primary_driver is InstabilityDriver.INSUFFICIENT_DIAGNOSTIC_EVIDENCE
+
+    assert report.metrics.failed_folds == walk.metrics.failed_folds
+    assert report.metrics.diagnosable_failed_folds == 0
+    assert report.status is DecompositionStatus.INSUFFICIENT_EVIDENCE
+    assert verify_stability_decomposition_bundle_binding(report, walk, bundle) is True
+
+
+def test_sparse_selected_policy_reason_tamper_is_rejected_even_with_recomputed_sha():
+    bundle = _bundle(bad_validation_truth=True)
+    walk = run_walk_forward_stability(bundle, _grid(), _policy(min_pass_rate=1.0))
+    report = run_stability_decomposition(
+        bundle,
+        walk,
+        StabilityDecompositionPolicy(min_operations_per_side=10),
+    )
+    envelope = deepcopy(report.to_envelope())
+    sparse = next(
+        fold
+        for fold in envelope["payload"]["folds"]
+        if fold["selected_candidate"] is not None and fold["metrics"] is None
+    )
+    sparse["reasons"] = ["forged sparse evidence"]
+    envelope["sha256"] = _canonical_sha(envelope["payload"])
+
+    with pytest.raises(ValueError, match="explicit sparse diagnostic evidence"):
+        verify_stability_decomposition_report_envelope(envelope)
+
+
 def test_semantic_driver_tamper_is_rejected_even_with_recomputed_outer_sha():
     bundle = _bundle()
     walk = run_walk_forward_stability(bundle, _grid(), _policy())
