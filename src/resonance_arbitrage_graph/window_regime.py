@@ -54,6 +54,7 @@ def derive_window_regime_context(
     summaries: dict[str, RollingWindowSummary] = {}
     digests: dict[str, str] = {}
     volatilities: list[float] = []
+    incomplete_reasons: list[str] = []
 
     for key in sorted(indices_by_market):
         try:
@@ -75,23 +76,27 @@ def derive_window_regime_context(
         summaries[key] = summary
         digests[key] = window.sha256
         if not summary.complete or summary.short_window_return_volatility_bps is None:
-            features = derive_route_regime_features(
-                edges,
-                snapshots,
-                evaluation_time_ms=evaluation_time_ms,
-                start_amount=start_amount,
-                short_window_return_volatility_bps=None,
-            )
-            return WindowRegimeContext(
-                classification=RegimeClassification(
-                    regime=MarketRegime.UNKNOWN,
-                    features=features,
-                    reasons=("rolling_window_incomplete", *summary.reasons),
-                ),
-                window_sha256_by_market=digests,
-                window_summary_by_market=summaries,
-            )
-        volatilities.append(summary.short_window_return_volatility_bps)
+            incomplete_reasons.extend(f"{key}:{reason}" for reason in summary.reasons)
+        else:
+            volatilities.append(summary.short_window_return_volatility_bps)
+
+    if incomplete_reasons:
+        features = derive_route_regime_features(
+            edges,
+            snapshots,
+            evaluation_time_ms=evaluation_time_ms,
+            start_amount=start_amount,
+            short_window_return_volatility_bps=None,
+        )
+        return WindowRegimeContext(
+            classification=RegimeClassification(
+                regime=MarketRegime.UNKNOWN,
+                features=features,
+                reasons=("rolling_window_incomplete", *incomplete_reasons),
+            ),
+            window_sha256_by_market=digests,
+            window_summary_by_market=summaries,
+        )
 
     if not volatilities or any(not math.isfinite(value) for value in volatilities):
         raise ValueError("rolling windows did not produce finite volatility")
