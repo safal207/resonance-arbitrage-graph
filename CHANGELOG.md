@@ -1,6 +1,16 @@
 # Changelog
 
-## v0.6.0 (in development)
+## v0.7.0 (in development)
+
+- Add deterministic offline replay bundles for captured quote snapshots and rolling windows.
+- Recompute route verdicts and market regimes during replay instead of trusting stored labels.
+- Add replay-bundle and calibration-report SHA-256 envelopes with tamper detection.
+- Collapse retry attempts by logical operation and reject decision-state drift or retry after terminal outcomes.
+- Add per-regime and per-route truth/survival/prediction-error calibration reports.
+- Add advisory verifier/regime threshold sensitivity analysis.
+- Add offline `resonance-replay-benchmark` CLI with no network or live execution path.
+
+## v0.6.0
 
 - Add deterministic evidence-bound rolling market windows for public quote samples.
 - Preserve quote source/timestamp provenance and reject reordered or duplicate samples.

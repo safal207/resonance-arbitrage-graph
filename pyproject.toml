@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "resonance-arbitrage-graph"
-version = "0.6.0"
+version = "0.7.0"
 description = "Paper-only causal verification engine for crypto arbitrage opportunities"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -17,6 +17,7 @@ test = ["pytest>=8.0"]
 
 [project.scripts]
 resonance-live-scan = "resonance_arbitrage_graph.live_scan:main"
+resonance-replay-benchmark = "resonance_arbitrage_graph.replay_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
