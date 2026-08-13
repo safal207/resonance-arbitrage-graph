@@ -126,7 +126,11 @@ def _matches_segment(
 ) -> bool:
     if observation.route_id != route_id:
         return False
-    return all(observation.market_context.get(key) == value for key, value in segment.items())
+    return all(
+        key in observation.market_context
+        and observation.market_context[key] == value
+        for key, value in segment.items()
+    )
 
 
 def build_reliability_profile(
