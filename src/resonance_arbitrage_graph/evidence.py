@@ -57,6 +57,12 @@ def make_evidence_receipt(
     if not operation_id:
         raise ValueError("operation_id must be non-empty")
 
+    if execution is not None:
+        if execution.operation_id != operation_id:
+            raise ValueError("execution operation_id does not match evidence operation_id")
+        if execution.expected != result:
+            raise ValueError("execution expected result does not match evidence result")
+
     payload: dict[str, Any] = {
         "schema": "resonance.arbitrage.evidence/v0.1",
         "paper_only": True,
