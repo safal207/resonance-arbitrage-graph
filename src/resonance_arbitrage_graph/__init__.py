@@ -3,7 +3,7 @@ from .engine import PaperExecution, PaperExecutor, Policy, ReplayError, evaluate
 from .evidence import EvidenceReceipt, make_evidence_receipt
 from .graph import MarketGraph
 from .journal import JournalError, ObservationJournal, collapse_operations
-from .market_evidence import make_market_evidence_receipt
+from .market_evidence import bind_route_to_snapshots, make_market_evidence_receipt
 from .metrics import ObservationMetrics, calculate_metrics
 from .model import Edge, Node, RouteResult, Verdict
 from .observation import (
@@ -15,6 +15,16 @@ from .observation import (
     verify_observation_evidence_binding,
 )
 from .quotes import CostAssumption, QuoteSnapshot, quote_to_trade_edges
+from .regime import (
+    MarketRegime,
+    RegimeClassification,
+    RegimeFeatures,
+    RegimePolicy,
+    classify_market_regime,
+    merge_regime_context,
+)
+from .regime_evidence import make_regime_market_evidence_receipt
+from .regime_features import derive_route_regime_features
 from .reliability import (
     RankingCandidate,
     RankingStatus,
@@ -42,6 +52,7 @@ __all__ = [
     "JournalError",
     "KrakenPreTradeAdapter",
     "MarketGraph",
+    "MarketRegime",
     "Node",
     "ObservationJournal",
     "ObservationMetrics",
@@ -53,6 +64,9 @@ __all__ = [
     "QuoteSnapshot",
     "RankingCandidate",
     "RankingStatus",
+    "RegimeClassification",
+    "RegimeFeatures",
+    "RegimePolicy",
     "ReliabilityAdjustedScore",
     "ReliabilityPolicy",
     "ReliabilityProfile",
@@ -60,14 +74,19 @@ __all__ = [
     "RouteResult",
     "ScannedOpportunity",
     "Verdict",
+    "bind_route_to_snapshots",
     "build_graph_from_quotes",
     "build_reliability_profile",
     "calculate_metrics",
+    "classify_market_regime",
     "classify_outcome",
     "collapse_operations",
+    "derive_route_regime_features",
     "evaluate_route",
     "make_evidence_receipt",
     "make_market_evidence_receipt",
+    "make_regime_market_evidence_receipt",
+    "merge_regime_context",
     "observation_from_evidence",
     "observe_cross_venue_spreads",
     "quote_to_trade_edges",
