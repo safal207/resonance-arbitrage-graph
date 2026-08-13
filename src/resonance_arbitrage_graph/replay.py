@@ -9,6 +9,7 @@ import hmac
 import json
 import math
 from statistics import mean
+from types import MappingProxyType
 from typing import Any
 
 from .engine import Policy, evaluate_route
@@ -101,6 +102,14 @@ class ReplayCase:
     outcome: ReplayOutcome
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "snapshots", tuple(self.snapshots))
+        object.__setattr__(self, "legs", tuple(self.legs))
+        object.__setattr__(
+            self,
+            "windows_by_market",
+            MappingProxyType(dict(self.windows_by_market)),
+        )
+
         if not self.case_id or not self.logical_operation_id:
             raise ValueError("case_id and logical_operation_id must be non-empty")
         if self.attempt < 1:
@@ -119,6 +128,8 @@ class ReplayCase:
             raise ValueError("replay policies have invalid types")
 
         for snapshot in self.snapshots:
+            if not isinstance(snapshot, QuoteSnapshot):
+                raise ValueError("snapshots must contain QuoteSnapshot values")
             if snapshot.observed_at_ms > self.evaluation_time_ms:
                 raise ValueError("future quote observation cannot enter replay decision")
             if snapshot.freshness_reference_ms > self.evaluation_time_ms:
@@ -133,10 +144,11 @@ class ReplayCase:
                 raise ValueError("future rolling provenance cannot enter replay decision")
 
         for leg in self.legs:
+            if not isinstance(leg, ReplayLeg):
+                raise ValueError("legs must contain ReplayLeg values")
             if leg.snapshot_index >= len(self.snapshots):
                 raise ValueError("route leg snapshot_index is out of range")
 
-        # Construction also proves route continuity now, not only when benchmarked.
         self.build_route()
         _canonical_json(self.canonical_payload())
 
@@ -212,11 +224,10 @@ class ReplayCase:
             for key, raw_window in payload["windows_by_market"].items():
                 if raw_window.get("schema") != "resonance.arbitrage.rolling-window/v0.1":
                     raise ValueError("unsupported rolling-window schema in replay case")
-                window = RollingMarketWindow(
+                windows[key] = RollingMarketWindow(
                     policy=RollingWindowPolicy(**raw_window["policy"]),
                     samples=tuple(RollingMarketSample(**sample) for sample in raw_window["samples"]),
                 )
-                windows[key] = window
             legs = tuple(
                 ReplayLeg(
                     snapshot_index=item["snapshot_index"],
@@ -251,11 +262,14 @@ class ReplayBundle:
     cases: tuple[ReplayCase, ...]
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "cases", tuple(self.cases))
         if not self.cases:
             raise ValueError("replay bundle requires at least one case")
         case_ids: set[str] = set()
         grouped: dict[str, list[ReplayCase]] = defaultdict(list)
         for case in self.cases:
+            if not isinstance(case, ReplayCase):
+                raise ValueError("replay bundle cases must be ReplayCase values")
             if case.case_id in case_ids:
                 raise ValueError("duplicate replay case_id")
             case_ids.add(case.case_id)
