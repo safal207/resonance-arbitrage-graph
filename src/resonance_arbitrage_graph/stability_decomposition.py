@@ -23,6 +23,7 @@ from .window_regime import derive_window_regime_context
 
 
 _DECOMPOSITION_SCHEMA = "resonance.arbitrage.stability-decomposition-report/v0.1"
+_SPARSE_DIAGNOSTIC_REASON = "fold population is below decomposition minimum"
 
 
 def _canonical_json(payload: Any) -> str:
@@ -121,7 +122,16 @@ class FoldDecomposition:
         if self.fold_index < 1:
             raise ValueError("fold_index must be >= 1")
         if self.metrics is None and self.selected_candidate is not None:
-            raise ValueError("selected fold decomposition requires metrics")
+            if self.reasons != (_SPARSE_DIAGNOSTIC_REASON,):
+                raise ValueError("selected fold without metrics requires explicit sparse diagnostic evidence")
+            if self.observed_drivers:
+                raise ValueError("sparse selected fold cannot claim observed drift drivers")
+            expected_attributed = () if self.validation_passed else (InstabilityDriver.INSUFFICIENT_DIAGNOSTIC_EVIDENCE,)
+            if self.attributed_drivers != expected_attributed:
+                raise ValueError("sparse selected fold has invalid attributed drivers")
+            expected_primary = expected_attributed[0] if expected_attributed else None
+            if self.primary_driver is not expected_primary:
+                raise ValueError("sparse selected fold has invalid primary driver")
         if self.primary_driver is not None and self.primary_driver not in self.attributed_drivers:
             raise ValueError("primary driver must be one of attributed drivers")
 
@@ -318,7 +328,7 @@ def _fold_decomposition(bundle: ReplayBundle, fold: WalkForwardFold, policy: Sta
     validation_cases = _subset_cases(bundle, fold.plan.validation_operation_ids)
     if len(calibration_cases) < policy.min_operations_per_side or len(validation_cases) < policy.min_operations_per_side:
         attributed = () if fold.passed else (InstabilityDriver.INSUFFICIENT_DIAGNOSTIC_EVIDENCE,)
-        return FoldDecomposition(fold.plan.index, fold.passed, candidate, None, (), attributed, attributed[0] if attributed else None, ("fold population is below decomposition minimum",))
+        return FoldDecomposition(fold.plan.index, fold.passed, candidate, None, (), attributed, attributed[0] if attributed else None, (_SPARSE_DIAGNOSTIC_REASON,))
     calibration = tuple(_diagnose_case(case, candidate) for case in calibration_cases)
     validation = tuple(_diagnose_case(case, candidate) for case in validation_cases)
     cal_results = tuple(item.result for item in calibration)
@@ -456,6 +466,11 @@ def verify_stability_decomposition_report_envelope(envelope: Mapping[str, Any]) 
         expected_fold_keys = {"fold_index", "validation_passed", "selected_candidate", "metrics", "observed_drivers", "attributed_drivers", "primary_driver", "reasons"}
         if set(fold) != expected_fold_keys or fold["fold_index"] != expected_index:
             raise ValueError("stability decomposition fold fields are not canonical")
+        selected = fold["selected_candidate"]
+        if selected is not None and not isinstance(selected, dict):
+            raise ValueError("stability decomposition selected candidate must be an object or null")
+        if fold["metrics"] is None and selected is not None and fold["reasons"] != [_SPARSE_DIAGNOSTIC_REASON]:
+            raise ValueError("selected fold without metrics lacks explicit sparse diagnostic evidence")
         observed, attributed, primary = _expected_fold_drivers(fold["metrics"], bool(fold["validation_passed"]), policy)
         if fold["observed_drivers"] != observed:
             raise ValueError("stability decomposition observed drivers do not match metrics")
