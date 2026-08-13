@@ -38,6 +38,9 @@ def derive_route_regime_features(
         raise ValueError("evaluation_time_ms must be non-negative")
     if not math.isfinite(start_amount) or start_amount <= 0:
         raise ValueError("start_amount must be finite and positive")
+    for previous, current in zip(edges, edges[1:]):
+        if previous.dst != current.src:
+            raise ValueError("regime feature route must be continuous")
     if edges[-1].dst != edges[0].src:
         raise ValueError("regime dislocation requires a cycle returning to the start node")
 
