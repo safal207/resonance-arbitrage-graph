@@ -112,7 +112,13 @@ class OpportunityObservation:
         )
         if derived is not self.outcome_class:
             raise ValueError("outcome_class is inconsistent with observation inputs")
-        object.__setattr__(self, "market_context", dict(self.market_context))
+
+        context = dict(self.market_context)
+        try:
+            json.dumps(context, sort_keys=True, allow_nan=False)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("market_context must be strict JSON") from exc
+        object.__setattr__(self, "market_context", context)
 
     @property
     def prediction_error_bps(self) -> float | None:
@@ -209,3 +215,23 @@ def observation_from_evidence(
         evidence_sha256=receipt.sha256,
         market_context=market_context or {},
     )
+
+
+def verify_observation_evidence_binding(
+    observation: OpportunityObservation,
+    receipt: EvidenceReceipt,
+) -> None:
+    rebuilt = observation_from_evidence(
+        receipt,
+        execution_id=observation.execution_id,
+        attempt=observation.attempt,
+        opportunity_id=observation.opportunity_id,
+        route_id=observation.route_id,
+        detected_at_ms=observation.detected_at_ms,
+        observed_at_ms=observation.observed_at_ms,
+        required_edge_bps=observation.required_edge_bps,
+        expired=observation.outcome_class is OutcomeClass.EXPIRED,
+        market_context=observation.market_context,
+    )
+    if rebuilt != observation:
+        raise ValueError("observation fields do not match supplied evidence receipt")
