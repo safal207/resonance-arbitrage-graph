@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import json
 import math
@@ -9,6 +9,11 @@ from pathlib import Path
 import time
 from typing import Any
 
+from .corpus_quality import (
+    CorpusQualityPolicy,
+    CorpusQualityReport,
+    build_corpus_quality_report,
+)
 from .engine import Policy
 from .live_scan import _collect_rolling_quotes, _fetch_round
 from .model import Node
@@ -29,7 +34,7 @@ from .scanner import scan_cycles
 
 
 _RUN_RECEIPT_SCHEMA = "resonance.arbitrage.corpus-runner-receipt/v0.1"
-_RESEARCH_REPORT_SCHEMA = "resonance.arbitrage.corpus-research-report/v0.1"
+_RESEARCH_REPORT_SCHEMA = "resonance.arbitrage.corpus-research-report/v0.2"
 
 
 def _canonical_json(payload: Any) -> str:
@@ -71,6 +76,7 @@ class CorpusRunnerConfig:
     rolling_min_coverage_ratio: float = 0.8
     min_terminal_operations: int = 100
     min_training_rows: int = 20
+    quality_policy: CorpusQualityPolicy = field(default_factory=CorpusQualityPolicy)
     benchmark_when_ready: bool = False
 
     def __post_init__(self) -> None:
@@ -94,6 +100,8 @@ class CorpusRunnerConfig:
             raise ValueError("min_terminal_operations must be >= 1")
         if self.min_training_rows < 2:
             raise ValueError("min_training_rows must be >= 2")
+        if not isinstance(self.quality_policy, CorpusQualityPolicy):
+            raise ValueError("quality_policy must be CorpusQualityPolicy")
 
     @property
     def required_terminal_operations(self) -> int:
@@ -110,6 +118,8 @@ class CorpusResearchReport:
     benchmark_executed: bool
     corpus_sha256: str
     replay_bundle_sha256: str
+    quality_report_sha256: str
+    quality_report_payload: Mapping[str, Any]
     comparison_sha256: str | None = None
     comparison_payload: Mapping[str, Any] | None = None
     reason: str | None = None
@@ -135,6 +145,14 @@ class CorpusResearchReport:
             raise ValueError("research report must remain public-data paper-only")
         if self.automatic_promotion is not False:
             raise ValueError("research report cannot enable automatic promotion")
+        if not isinstance(self.quality_report_payload, Mapping):
+            raise ValueError("research report requires corpus quality evidence")
+        if _sha256(self.quality_report_payload) != self.quality_report_sha256:
+            raise ValueError("corpus quality report SHA-256 does not match payload")
+        if self.quality_report_payload.get("corpus_sha256") != self.corpus_sha256:
+            raise ValueError("corpus quality report is bound to a different corpus")
+        if self.status != "NOT_READY" and self.quality_report_payload.get("quality_ready") is not True:
+            raise ValueError("research-ready status requires a passing corpus quality gate")
         if self.benchmark_executed:
             if self.status != "BENCHMARK_COMPLETE":
                 raise ValueError("executed benchmark must have BENCHMARK_COMPLETE status")
@@ -153,6 +171,8 @@ class CorpusResearchReport:
             "benchmark_executed": self.benchmark_executed,
             "corpus_sha256": self.corpus_sha256,
             "replay_bundle_sha256": self.replay_bundle_sha256,
+            "quality_report_sha256": self.quality_report_sha256,
+            "quality_report_payload": dict(self.quality_report_payload),
             "comparison_sha256": self.comparison_sha256,
             "comparison_payload": (
                 dict(self.comparison_payload)
@@ -187,6 +207,13 @@ def _default_benchmark(bundle: ReplayBundle, min_training_rows: int) -> tuple[Ma
     return comparison.to_payload(), comparison.sha256
 
 
+def _quality_fields(report: CorpusQualityReport) -> dict[str, Any]:
+    return {
+        "quality_report_sha256": report.sha256,
+        "quality_report_payload": report.to_payload(),
+    }
+
+
 def build_research_report(
     corpus: RealMarketReplayCorpus,
     *,
@@ -196,7 +223,19 @@ def build_research_report(
     bundle = corpus.to_replay_bundle()
     terminal_count = terminal_operation_count(corpus)
     required = config.required_terminal_operations
+    quality = build_corpus_quality_report(corpus, policy=config.quality_policy)
+    quality_fields = _quality_fields(quality)
+
+    readiness_failures: list[str] = []
     if terminal_count < required:
+        readiness_failures.append(
+            f"need {required - terminal_count} more terminal operations"
+        )
+    if not quality.quality_ready:
+        readiness_failures.append(
+            "quality gate failed: " + ", ".join(quality.failed_dimensions)
+        )
+    if readiness_failures:
         return CorpusResearchReport(
             status="NOT_READY",
             terminal_operation_count=terminal_count,
@@ -205,7 +244,8 @@ def build_research_report(
             benchmark_executed=False,
             corpus_sha256=corpus.sha256,
             replay_bundle_sha256=bundle.sha256,
-            reason=f"need {required - terminal_count} more terminal operations",
+            reason="; ".join(readiness_failures),
+            **quality_fields,
         )
 
     if not config.benchmark_when_ready:
@@ -217,7 +257,8 @@ def build_research_report(
             benchmark_executed=False,
             corpus_sha256=corpus.sha256,
             replay_bundle_sha256=bundle.sha256,
-            reason="corpus threshold reached; benchmark was not requested",
+            reason="quantity and corpus-quality gates passed; benchmark was not requested",
+            **quality_fields,
         )
 
     runner = benchmark_fn or _default_benchmark
@@ -236,6 +277,7 @@ def build_research_report(
             corpus_sha256=corpus.sha256,
             replay_bundle_sha256=bundle.sha256,
             reason=str(exc),
+            **quality_fields,
         )
     except ValueError as exc:
         return CorpusResearchReport(
@@ -247,6 +289,7 @@ def build_research_report(
             corpus_sha256=corpus.sha256,
             replay_bundle_sha256=bundle.sha256,
             reason=str(exc),
+            **quality_fields,
         )
 
     expected_comparison_sha256 = _sha256(comparison_payload)
@@ -263,6 +306,7 @@ def build_research_report(
         replay_bundle_sha256=bundle.sha256,
         comparison_sha256=comparison_sha256,
         comparison_payload=comparison_payload,
+        **quality_fields,
     )
 
 
