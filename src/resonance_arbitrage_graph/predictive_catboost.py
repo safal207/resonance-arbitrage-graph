@@ -26,6 +26,7 @@ from .predictive import (
 )
 
 _ENCODER_VERSION = "catboost-tabular/v0.1"
+_MODEL_EVIDENCE_NORMALIZATION = "drop-model-guid-and-train-finish-time/v0.1"
 
 _NUMERIC_FEATURES = (
     "start_amount",
@@ -196,7 +197,25 @@ def _common_model_params(config: CatBoostResearchConfig) -> dict[str, Any]:
     }
 
 
+def _strip_nondeterministic_model_metadata(model: Any) -> None:
+    """Remove CatBoost wall-clock/random metadata before evidence hashing.
+
+    CatBoost adds a random ``model_guid`` and a wall-clock ``train_finish_time``
+    to every trained model. They are useful operational metadata, but they make
+    two otherwise identical model binaries hash differently. The predictive
+    training manifest already carries the causal training bounds, so these two
+    fields are excluded from the evidence serialization rather than allowed to
+    redefine the content-addressed model identity.
+    """
+
+    metadata = model.get_metadata()
+    for key in ("model_guid", "train_finish_time"):
+        if key in metadata:
+            del metadata[key]
+
+
 def _model_sha256(model: Any) -> str:
+    _strip_nondeterministic_model_metadata(model)
     with TemporaryDirectory(prefix="resonance-catboost-") as directory:
         path = Path(directory) / "model.cbm"
         model.save_model(str(path), format="cbm")
@@ -314,6 +333,7 @@ def fit_catboost_predictive_model(
         model_family="catboost_multihead",
         model_config={
             "adapter_version": _ENCODER_VERSION,
+            "model_evidence_normalization": _MODEL_EVIDENCE_NORMALIZATION,
             "catboost_version": catboost_version,
             "feature_names": list(_FEATURE_NAMES),
             "categorical_feature_indices": list(_CATEGORICAL_INDICES),
@@ -362,6 +382,7 @@ def fit_catboost_predictive_model(
         training_manifest_sha256=manifest.sha256,
         parameters={
             "adapter_version": _ENCODER_VERSION,
+            "model_evidence_normalization": _MODEL_EVIDENCE_NORMALIZATION,
             "catboost_version": catboost_version,
             "regressor_sha256": regressor_sha256,
             "survival_head": _head_identity(survival_head),
