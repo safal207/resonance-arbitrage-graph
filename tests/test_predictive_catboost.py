@@ -117,6 +117,16 @@ def _config() -> CatBoostResearchConfig:
     )
 
 
+def _training_rows() -> tuple[PredictiveRow, ...]:
+    dataset = _dataset()
+    return tuple(
+        row
+        for row in dataset.rows[:6]
+        if row.targets.target_available_at_ms is not None
+        and row.targets.target_available_at_ms <= dataset.rows[6].decision_at_ms
+    )
+
+
 def test_catboost_encoder_is_feature_only_and_shape_stable():
     vector = _vector(1)
     encoded = encode_feature_vector(vector)
@@ -129,13 +139,7 @@ def test_catboost_encoder_is_feature_only_and_shape_stable():
 
 def test_catboost_model_binds_artifact_and_prediction_receipts():
     dataset = _dataset()
-    training = tuple(
-        row
-        for row in dataset.rows[:6]
-        if row.targets.target_available_at_ms is not None
-        and row.targets.target_available_at_ms <= dataset.rows[6].decision_at_ms
-    )
-    model = fit_catboost_predictive_model(training, config=_config())
+    model = fit_catboost_predictive_model(_training_rows(), config=_config())
     prediction = predict_with_catboost(model, (dataset.rows[6],))[0]
 
     assert model.model_id.startswith("pmo_")
@@ -147,6 +151,19 @@ def test_catboost_model_binds_artifact_and_prediction_receipts():
 
     for receipt in prediction.receipts:
         verify_predictive_receipt_binding(receipt, dataset.rows[6], model)
+
+
+def test_catboost_model_identity_is_deterministic_for_same_training_context():
+    training = _training_rows()
+    first = fit_catboost_predictive_model(training, config=_config())
+    second = fit_catboost_predictive_model(training, config=_config())
+
+    assert first.manifest.sha256 == second.manifest.sha256
+    assert first.artifact.sha256 == second.artifact.sha256
+    assert first.model_id == second.model_id
+    assert first.artifact.parameters["regressor_sha256"] == second.artifact.parameters["regressor_sha256"]
+    assert first.artifact.parameters["survival_head"] == second.artifact.parameters["survival_head"]
+    assert first.artifact.parameters["positive_pnl_head"] == second.artifact.parameters["positive_pnl_head"]
 
 
 def test_walk_forward_compares_same_rows_and_exposes_late_target_exclusion():
