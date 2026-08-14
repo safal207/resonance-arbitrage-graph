@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Mapping
 from dataclasses import dataclass
 import hashlib
 import json
 import math
+from types import MappingProxyType
 from typing import Any
 
 from .real_market_corpus import RealMarketReplayCorpus
@@ -138,11 +140,38 @@ class CorpusQualityPolicy:
     def sha256(self) -> str:
         return _sha256(self.to_payload())
 
+    @classmethod
+    def from_payload(cls, payload: Mapping[str, Any]) -> "CorpusQualityPolicy":
+        if payload.get("schema") != _POLICY_SCHEMA:
+            raise ValueError("unsupported corpus quality policy schema")
+        if payload.get("interpretation") != "RESEARCH_READINESS_ONLY":
+            raise ValueError("invalid corpus quality policy interpretation")
+        try:
+            policy = cls(
+                min_decision_batches=payload["min_decision_batches"],
+                min_effective_decision_batches=payload[
+                    "min_effective_decision_batches"
+                ],
+                min_temporal_span_ms=payload["min_temporal_span_ms"],
+                min_distinct_routes=payload["min_distinct_routes"],
+                min_effective_routes=payload["min_effective_routes"],
+                min_distinct_route_markets=payload[
+                    "min_distinct_route_markets"
+                ],
+                min_distinct_regimes=payload["min_distinct_regimes"],
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("invalid corpus quality policy payload") from exc
+        if policy.to_payload() != dict(payload):
+            raise ValueError("corpus quality policy payload is not canonical")
+        return policy
+
 
 @dataclass(frozen=True, slots=True)
 class CorpusQualityReport:
     corpus_sha256: str
     policy_sha256: str
+    policy_payload: Mapping[str, Any]
     terminal_operation_count: int
     decision_batch_counts: tuple[tuple[int, int], ...]
     effective_decision_batches: float
@@ -159,6 +188,14 @@ class CorpusQualityReport:
     public_market_data_only: bool = True
 
     def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "policy_payload",
+            MappingProxyType(dict(self.policy_payload)),
+        )
+        policy = CorpusQualityPolicy.from_payload(self.policy_payload)
+        if policy.sha256 != self.policy_sha256:
+            raise ValueError("corpus quality policy SHA-256 does not match payload")
         if self.terminal_operation_count < 0:
             raise ValueError("terminal_operation_count cannot be negative")
         if self.temporal_span_ms < 0:
@@ -204,6 +241,7 @@ class CorpusQualityReport:
             "schema": _REPORT_SCHEMA,
             "corpus_sha256": self.corpus_sha256,
             "policy_sha256": self.policy_sha256,
+            "policy_payload": dict(self.policy_payload),
             "terminal_operation_count": self.terminal_operation_count,
             "decision_batch_counts": [
                 {"evaluation_time_ms": at_ms, "terminal_operations": count}
@@ -286,6 +324,7 @@ def build_corpus_quality_report(
     return CorpusQualityReport(
         corpus_sha256=corpus.sha256,
         policy_sha256=policy.sha256,
+        policy_payload=policy.to_payload(),
         terminal_operation_count=len(terminal),
         decision_batch_counts=tuple(sorted(batch_counts.items())),
         effective_decision_batches=effective_batches,
