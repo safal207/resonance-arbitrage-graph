@@ -5,6 +5,7 @@ import json
 
 import pytest
 
+from resonance_arbitrage_graph.corpus_quality import CorpusQualityPolicy
 from resonance_arbitrage_graph.corpus_runner import (
     CorpusRunnerConfig,
     run_one_shot,
@@ -118,6 +119,18 @@ def _fetcher(clock: FakeClock):
     return fetch
 
 
+def _permissive_quality() -> CorpusQualityPolicy:
+    return CorpusQualityPolicy(
+        min_decision_batches=1,
+        min_effective_decision_batches=1.0,
+        min_temporal_span_ms=0,
+        min_distinct_routes=1,
+        min_effective_routes=1.0,
+        min_distinct_route_markets=3,
+        min_distinct_regimes=1,
+    )
+
+
 def _config(**overrides) -> CorpusRunnerConfig:
     values = {
         "horizon_ms": 1_000,
@@ -129,6 +142,7 @@ def _config(**overrides) -> CorpusRunnerConfig:
         "rolling_min_coverage_ratio": 1.0,
         "min_terminal_operations": 100,
         "min_training_rows": 20,
+        "quality_policy": _permissive_quality(),
         "benchmark_when_ready": False,
     }
     values.update(overrides)
@@ -177,6 +191,7 @@ def test_one_shot_appends_terminal_pair_and_reports_not_ready(tmp_path):
     assert result.research_report.status == "NOT_READY"
     assert result.research_report.terminal_operation_count == 1
     assert result.research_report.required_terminal_operations == 100
+    assert result.research_report.quality_report_payload["quality_ready"] is True
     assert result.receipt.captured_operation_ids == result.receipt.resolved_operation_ids
     assert result.receipt.outcome_observed_at_ms >= result.receipt.outcome_not_before_ms
     assert result.receipt.post_corpus_sha256 == corpus.sha256
@@ -253,6 +268,43 @@ def test_ready_corpus_runs_bound_benchmark_only_after_threshold(tmp_path):
         third.research_report.comparison_payload
     )
     assert terminal_operation_count(load_corpus(tmp_path / "corpus.json")) == 3
+
+
+def test_quantity_threshold_cannot_bypass_corpus_quality_gate(tmp_path):
+    clock = FakeClock()
+    calls = []
+
+    def benchmark(_bundle, _min_training_rows):
+        calls.append(True)
+        raise AssertionError("quality failure must block benchmark execution")
+
+    quality = CorpusQualityPolicy(
+        min_decision_batches=3,
+        min_effective_decision_batches=3.0,
+        min_temporal_span_ms=10_000,
+        min_distinct_routes=1,
+        min_effective_routes=1.0,
+        min_distinct_route_markets=3,
+        min_distinct_regimes=1,
+    )
+    config = _config(
+        min_terminal_operations=3,
+        min_training_rows=2,
+        quality_policy=quality,
+        benchmark_when_ready=True,
+    )
+
+    _run(tmp_path, clock, config=config, benchmark_fn=benchmark)
+    _run(tmp_path, clock, config=config, benchmark_fn=benchmark)
+    third = _run(tmp_path, clock, config=config, benchmark_fn=benchmark)
+
+    assert third.research_report.terminal_operation_count == 3
+    assert third.research_report.status == "NOT_READY"
+    assert third.research_report.benchmark_executed is False
+    assert "temporal_span_ms" in third.research_report.quality_report_payload[
+        "failed_dimensions"
+    ]
+    assert calls == []
 
 
 def test_new_one_shot_does_not_resolve_an_old_pending_operation(tmp_path):

@@ -17,8 +17,30 @@ class _FakeCorpus:
         return _FakeBundle()
 
 
+class _PassingQuality:
+    quality_ready = True
+    failed_dimensions = ()
+
+    def to_payload(self):
+        return {
+            "schema": "test.corpus-quality/v0.1",
+            "corpus_sha256": "b" * 64,
+            "quality_ready": True,
+            "failed_dimensions": [],
+        }
+
+    @property
+    def sha256(self):
+        return corpus_runner._sha256(self.to_payload())
+
+
 def test_benchmark_payload_must_match_supplied_comparison_sha(monkeypatch):
     monkeypatch.setattr(corpus_runner, "terminal_operation_count", lambda _corpus: 3)
+    monkeypatch.setattr(
+        corpus_runner,
+        "build_corpus_quality_report",
+        lambda _corpus, policy: _PassingQuality(),
+    )
     config = CorpusRunnerConfig(
         min_terminal_operations=3,
         min_training_rows=2,
