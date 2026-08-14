@@ -65,10 +65,12 @@ def _windows(at_ms: int) -> dict[str, RollingMarketWindow]:
         min_coverage_ratio=0.5,
     )
     history: dict[str, list[QuoteSnapshot]] = {}
+    # The final sample must be byte-for-byte equivalent to the current decision
+    # quote. Volatility lives only in prior samples so replay evidence stays bound.
     for sample_at, multiplier in (
         (at_ms - 200, 0.999),
-        (at_ms - 100, 1.0),
-        (at_ms, 1.001),
+        (at_ms - 100, 1.001),
+        (at_ms, 1.0),
     ):
         for quote in _quotes(sample_at):
             adjusted = replace(
