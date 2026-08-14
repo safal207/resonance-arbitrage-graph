@@ -8,6 +8,8 @@ from typing import Any
 from .policy_authority import (
     PolicyAuthorityAction,
     PolicyAuthorityLedger,
+    PolicyAuthorityRegistryReceipt,
+    PolicyAuthorizationBinding,
     PolicyAuthorizationReceipt,
     authorize_registry_event,
     make_policy_authority_registry_receipt,
@@ -16,6 +18,7 @@ from .policy_authority import (
     verify_policy_authorization_receipt_envelope,
 )
 from .policy_authority_verification import (
+    verify_policy_authority_registry_full_binding,
     verify_policy_authority_registry_receipt_envelope,
 )
 from .policy_registry import PolicyRegistry
@@ -44,6 +47,16 @@ def _actions(value: str) -> tuple[PolicyAuthorityAction, ...]:
         return tuple(PolicyAuthorityAction(item.upper()) for item in raw)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("actions must be RELEASE,SUPERSEDE,REVOKE") from exc
+
+
+def _authority_registry_receipt(path: str) -> PolicyAuthorityRegistryReceipt:
+    payload = verify_policy_authority_registry_receipt_envelope(_load(path))
+    return PolicyAuthorityRegistryReceipt(
+        payload["policy_registry_sha256"],
+        tuple(payload["event_sequences"]),
+        tuple(payload["registry_event_sha256s"]),
+        tuple(payload["authorization_sha256s"]),
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -102,6 +115,12 @@ def _parser() -> argparse.ArgumentParser:
 
     verify_receipt = sub.add_parser("verify-registry-receipt")
     verify_receipt.add_argument("--receipt", required=True)
+
+    verify_full = sub.add_parser("verify-registry-full")
+    verify_full.add_argument("--receipt", required=True)
+    verify_full.add_argument("--registry", required=True)
+    verify_full.add_argument("--authorization", action="append", required=True)
+    verify_full.add_argument("--ledger", action="append", required=True)
 
     return parser
 
@@ -185,7 +204,23 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "verify-registry-receipt":
         verify_policy_authority_registry_receipt_envelope(_load(args.receipt))
-        print("OK")
+        print("STRUCTURAL_OK")
+        return 0
+
+    if args.command == "verify-registry-full":
+        if len(args.authorization) != len(args.ledger):
+            raise ValueError("--authorization and --ledger counts must match")
+        registry = PolicyRegistry.from_envelope(_load(args.registry))
+        receipt = _authority_registry_receipt(args.receipt)
+        bindings = tuple(
+            PolicyAuthorizationBinding(
+                PolicyAuthorizationReceipt.from_envelope(_load(auth_path)),
+                PolicyAuthorityLedger.from_envelope(_load(ledger_path)),
+            )
+            for auth_path, ledger_path in zip(args.authorization, args.ledger, strict=True)
+        )
+        verify_policy_authority_registry_full_binding(receipt, registry, bindings)
+        print("FULL_OK")
         return 0
 
     raise RuntimeError("unreachable command")
