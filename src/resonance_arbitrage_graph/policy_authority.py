@@ -856,6 +856,9 @@ class PolicyAuthorityRegistryReceipt:
         object.__setattr__(self, "authorization_sha256s", tuple(self.authorization_sha256s))
         if not self.event_sequences:
             raise ValueError("authorized registry receipt requires event coverage")
+        for value in self.event_sequences:
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError("authorized registry event sequences must be integers >= 1")
         if self.event_sequences != tuple(range(1, len(self.event_sequences) + 1)):
             raise ValueError("authorized registry event coverage must be contiguous from 1")
         if len(self.registry_event_sha256s) != len(self.event_sequences) or len(self.authorization_sha256s) != len(self.event_sequences):
@@ -903,7 +906,10 @@ def make_policy_authority_registry_receipt(
         if receipt.registry_event_sequence in by_sequence:
             raise ValueError("duplicate authorization for registry event sequence")
         by_sequence[receipt.registry_event_sequence] = receipt
-    ordered = tuple(by_sequence[index] for index in range(1, len(registry.events) + 1))
+    try:
+        ordered = tuple(by_sequence[index] for index in range(1, len(registry.events) + 1))
+    except KeyError as exc:
+        raise ValueError("authorization receipts must cover each registry event sequence once") from exc
     for event, receipt in zip(registry.events, ordered, strict=True):
         if receipt.registry_event_sha256 != event.sha256:
             raise ValueError("authorization receipt binds wrong registry event SHA")
