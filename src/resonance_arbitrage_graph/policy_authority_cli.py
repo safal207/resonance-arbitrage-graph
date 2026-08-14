@@ -12,9 +12,11 @@ from .policy_authority import (
     authorize_registry_event,
     make_policy_authority_registry_receipt,
     verify_policy_authority_ledger_envelope,
-    verify_policy_authority_registry_receipt_envelope,
     verify_policy_authorization_binding,
     verify_policy_authorization_receipt_envelope,
+)
+from .policy_authority_verification import (
+    verify_policy_authority_registry_receipt_envelope,
 )
 from .policy_registry import PolicyRegistry
 
