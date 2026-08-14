@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import hashlib
 import json
 import math
@@ -249,11 +249,9 @@ def build_research_report(
             reason=str(exc),
         )
 
-    if _sha256(comparison_payload) == comparison_sha256:
-        # Some comparison types use the canonical payload digest directly.
-        pass
-    elif not isinstance(comparison_sha256, str) or len(comparison_sha256) != 64:
-        raise ValueError("benchmark comparison SHA-256 is invalid")
+    expected_comparison_sha256 = _sha256(comparison_payload)
+    if comparison_sha256 != expected_comparison_sha256:
+        raise ValueError("benchmark comparison SHA-256 does not match payload")
 
     return CorpusResearchReport(
         status="BENCHMARK_COMPLETE",
