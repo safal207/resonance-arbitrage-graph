@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
 from typing import Any
 
 from .opportunity_truth_benchmark import (
@@ -35,10 +36,16 @@ def _load_bundle(path: str) -> tuple[ReplayBundle, str]:
     raise ValueError("input must be a replay bundle or real-market replay corpus")
 
 
+def _write_text(path: str, content: str) -> None:
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(content, encoding="utf-8")
+
+
 def _write_json(payload: dict[str, Any], path: str | None) -> None:
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if path:
-        Path(path).write_text(rendered, encoding="utf-8")
+        _write_text(path, rendered)
     else:
         print(rendered, end="")
 
@@ -75,13 +82,14 @@ def main(argv: list[str] | None = None) -> int:
         envelope = report.to_envelope()
         _write_json(envelope, args.output)
         if args.markdown_output:
-            Path(args.markdown_output).write_text(
+            _write_text(
+                args.markdown_output,
                 render_opportunity_truth_markdown(report),
-                encoding="utf-8",
             )
         print(
             f"benchmark_status={report.status.value} source={source_kind} "
             f"truth_population={report.truth_population} sha256={report.sha256}",
+            file=sys.stderr,
         )
         return 0
 
