@@ -1,14 +1,14 @@
-# Product 0.1 — Opportunity Truth Benchmark Protocol
+# Product 0.1.1 — Opportunity Truth Benchmark v0.2
 
-This document defines how RESONANCE Verify turns captured paper-market evidence into a product claim without mixing fixtures, future information or cherry-picked outcomes into the headline metric.
+This document defines how RESONANCE Verify turns captured paper-market evidence into an **internal product-evidence status** without mixing fixtures, future information, correlated market moments or incompatible PnL units into a headline metric.
+
+The benchmark is not a profitability guarantee and automated readiness is not permission to publish a claim.
 
 ## Product hypothesis
 
 A visible arbitrage signal often overstates executable opportunity quality.
 
-RESONANCE Verify should create measurable value if its `EXECUTE_SIM` population has materially better later paper outcomes than the raw candidate population and if the system can explain why rejected/downgraded candidates failed.
-
-The benchmark exists to test that hypothesis. It is not a profitability guarantee.
+RESONANCE Verify creates measurable value if its `EXECUTE_SIM` population has stronger later paper outcomes than the raw candidate population and if the system can explain why downgraded or rejected candidates failed.
 
 ## Unit of analysis
 
@@ -22,25 +22,38 @@ candidate detection
 → one benchmark row
 ```
 
-Retries therefore cannot inflate TP/FP counts.
+Retries cannot inflate TP/FP counts.
 
 ## Evidence source classes
 
-### Allowed for public product claims
+### Real-market corpus
 
-- captured public real-market corpus;
-- deterministic replay bundle exported from that corpus;
-- later public outcome snapshots bound to the same logical operation.
+A `RealMarketReplayCorpus` contains append-only public-market decision and outcome records. It is the only source class eligible for automated internal evidence readiness.
 
-### Not allowed for public product claims
+### Replay bundle
 
-- unit-test fixtures;
-- synthetic cases;
-- hand-edited replay rows;
-- reports missing reproducible source evidence;
-- exploratory threshold sweeps evaluated on the same outcomes used to select them.
+A `ReplayBundle` remains valid for software tests, fixtures and deterministic diagnostics. Its claim status is always:
 
-Synthetic and fixture data remain valid for software testing, only not for marketing claims.
+```text
+UNASSESSED_REPLAY_SOURCE
+```
+
+A large synthetic replay population does not become a real-market claim merely because it passes a sample-size threshold.
+
+## Decision funnel
+
+```text
+candidate
+├─ EXECUTE_SIM
+│  ├─ TRUE_POSITIVE
+│  ├─ FALSE_POSITIVE
+│  ├─ EXPIRED
+│  └─ INDETERMINATE
+├─ OBSERVE
+└─ REJECT
+```
+
+`REJECT` is not a false positive because the verifier never claimed that route was executable. `OBSERVE` and unresolved outcomes do not enter the Opportunity Truth Rate denominator.
 
 ## Primary metrics
 
@@ -49,8 +62,6 @@ Synthetic and fixture data remain valid for software testing, only not for marke
 ```text
 OTR = TRUE_POSITIVE / (TRUE_POSITIVE + FALSE_POSITIVE)
 ```
-
-This answers: among determinate opportunities that the active deterministic policy allowed as `EXECUTE_SIM`, how often did the later observed edge still clear the required threshold?
 
 ### False Opportunity Rate
 
@@ -64,114 +75,186 @@ FOR = FALSE_POSITIVE / (TRUE_POSITIVE + FALSE_POSITIVE)
 Route Survival = (TP + FP) / (TP + FP + EXPIRED)
 ```
 
-Expiration is not silently folded into false positive because it is a different failure mode.
+Expiration remains a separate failure mode.
 
-## Paper PnL metric
-
-For an `EXECUTE_SIM` decision with a later observed edge:
+### Truth coverage
 
 ```text
-paper_pnl = start_amount * observed_edge_bps / 10_000
+Truth Coverage = (TP + FP) / EXECUTE_SIM
 ```
 
-Aggregate paper PnL is calculated only for evaluated `EXECUTE_SIM` decisions with a realized edge. Rejected or observed candidates are not retroactively counted as if they had been executed.
+A high OTR with low truth coverage is not strong product evidence. The report exposes both.
 
-The report also publishes evaluated capital so the PnL number cannot be read without its denominator.
-
-## Sample-size gate
-
-Default:
+### Edge decay
 
 ```text
-min_truth_population = 30
+Edge Decay = mean(expected_edge_bps) - mean(observed_edge_bps)
 ```
 
-where:
+Edge means are calculated only for determinate TP/FP outcomes.
+
+## Unit-safe paper PnL
+
+For one determinate `EXECUTE_SIM` operation:
 
 ```text
-truth_population = TP + FP
+expected_pnl_units = start_amount × expected_edge_bps / 10,000
+observed_pnl_units = start_amount × observed_edge_bps / 10,000
 ```
 
-Below the gate, the report status is:
+The units belong to the exact starting state:
 
 ```text
-INSUFFICIENT_TRUTH_POPULATION
+venue:asset
 ```
 
-At or above the gate:
+Therefore the v0.2 report groups PnL separately, for example:
 
 ```text
-READY
+binance:USDT
+kraken:EUR
+fixture:BTC
 ```
 
-`READY` means only that this explicit minimum sample-size guardrail passed. It does not establish statistical significance, economic profitability or future performance.
+It never adds BTC, ETH, USDT, EUR or balances on different venues into one fake global total. The v0.1 aggregate PnL remains embedded only as legacy evidence and is explicitly not used as the v0.2 product metric.
 
-## Required segmentation
+## Claim policy
 
-The report preserves:
+Default internal-readiness guardrails:
 
-- overall metrics;
-- market-regime slices;
-- semantic route slices;
-- downgrade/rejection reason counts.
+```text
+min_terminal_operations = 100
+min_truth_events = 30
+require_corpus_quality = true
+```
 
-A strong overall number must not hide one route or regime that performs badly.
+`terminal_operations` and `truth_events` are different gates. A corpus can contain many terminal rejections or expirations without enough determinate TP/FP outcomes.
 
-## Claim ladder
+## Corpus quality gate
 
-Product messaging should mature in this order.
+Sample size alone is insufficient. Thirty nearly identical observations captured in one market moment do not provide the same evidence as diverse chronological observations.
 
-### Level 0 — capability claim
+The v0.2 report binds the existing `CorpusQualityPolicy` and `CorpusQualityReport`, including:
 
-> RESONANCE Verify checks whether a candidate route still satisfies explicit execution constraints and emits deterministic evidence.
+- distinct decision batches;
+- effective decision-batch count;
+- temporal span;
+- distinct route topologies;
+- effective route count;
+- distinct route markets;
+- distinct derived regimes;
+- concentration diagnostics;
+- failed quality dimensions;
+- exact corpus SHA-256.
 
-This is supported by software behavior and tests.
+A corpus can pass terminal and truth counts while still receiving `NOT_READY` because evidence is too concentrated.
 
-### Level 1 — benchmark-process claim
+## Statuses
 
-> RESONANCE measures later TP/FP/expired outcomes on a hash-bound public-market corpus.
+```text
+NOT_READY
+```
 
-This is supported once the real-market capture and benchmark pipeline is running.
+A real-market corpus exists, but one or more quantity, truth-population or quality guardrails fail.
 
-### Level 2 — measured product claim
+```text
+INTERNAL_EVIDENCE_READY
+```
 
-Example form only:
+The automated real-market quantity and quality checks pass. This means the evidence is ready for internal product review. It does **not** mean:
 
-> Across N determinate `EXECUTE_SIM` outcomes in corpus SHA X, Opportunity Truth Rate was Y%.
+- publication is approved;
+- profitability is proven;
+- statistical significance is established;
+- live fills were observed;
+- future performance is guaranteed;
+- a policy may be activated.
 
-This may be published only when the exact number is generated from the real-market corpus and the report is reproducible.
+```text
+UNASSESSED_REPLAY_SOURCE
+```
 
-### Level 3 — comparative claim
+The report was produced from a replay bundle without real-market corpus provenance.
 
-Example:
+## Canonical evidence
 
-> RESONANCE reduced false opportunities versus baseline scanner B by X%.
+The v0.2 envelope binds:
 
-This requires a separately defined baseline evaluated on the same chronological corpus. Product 0.1 does not invent this baseline.
+- evidence source class;
+- source SHA-256;
+- replay-bundle SHA-256;
+- exact sorted logical-operation membership;
+- the complete verified v0.1 benchmark payload and SHA;
+- claim policy and SHA;
+- corpus-quality payload and SHA when applicable;
+- terminal and truth populations;
+- truth coverage;
+- expected/observed edge and edge decay;
+- unit-safe paper PnL slices;
+- explicit paper-only and non-publication flags.
+
+Structural verification checks canonical form, semantic invariants and hashes. Full verification rebuilds the complete v0.2 report from the supplied corpus or replay bundle.
+
+## CLI
+
+Build JSON and Markdown:
+
+```bash
+resonance-opportunity-truth-benchmark build real-market-corpus.json \
+  --output opportunity-truth-v0.2.json \
+  --markdown-output opportunity-truth-v0.2.md
+```
+
+Useful explicit guardrails:
+
+```bash
+resonance-opportunity-truth-benchmark build real-market-corpus.json \
+  --min-terminal-operations 100 \
+  --min-truth-population 30 \
+  --min-decision-batches 20 \
+  --min-effective-decision-batches 10 \
+  --min-temporal-span-ms 3600000 \
+  --min-distinct-routes 3 \
+  --min-effective-routes 2 \
+  --min-distinct-route-markets 3 \
+  --min-distinct-regimes 2 \
+  --output benchmark.json
+```
+
+Full source-bound verification:
+
+```bash
+resonance-opportunity-truth-benchmark verify \
+  real-market-corpus.json \
+  benchmark.json
+```
+
+Render an already verified envelope:
+
+```bash
+resonance-opportunity-truth-benchmark render \
+  benchmark.json \
+  --output benchmark.md
+```
+
+## Publication rule
+
+Do not copy a favorable number into marketing material without preserving and reviewing:
+
+- report SHA;
+- source corpus SHA;
+- claim status and blockers;
+- terminal and truth populations;
+- truth coverage;
+- corpus-quality evidence;
+- route/regime segmentation from the bound legacy benchmark;
+- unit identity for every PnL number;
+- paper-only interpretation.
 
 ## Design-partner question
 
-The first outreach should start with the operational problem, not the architecture:
+Start with the operational gap rather than the architecture:
 
 > **When your trading agent sees an opportunity, how do you verify it is still executable before letting it act?**
 
-Follow-up discovery should identify:
-
-- what produces the candidate;
-- what currently sits between signal and execution;
-- which false-positive modes cost the most time or money;
-- whether they need a synchronous verifier, offline replay, or both;
-- which evidence they need for incident review or governance;
-- what latency budget a verifier must meet.
-
-Do not lead with policy lineage, hash chains or ML unless the customer pulls the conversation there.
-
-## Product success criteria
-
-Product 0.1 is successful when all of the following are true:
-
-1. a new visitor understands the problem and verdict in under 30 seconds;
-2. a real-market corpus can be turned into a deterministic benchmark report with one command;
-3. the report refuses to imply readiness below its sample-size gate;
-4. at least one design partner confirms the signal-to-execution verification gap is real;
-5. the next engineering investment is selected from observed customer demand rather than version sequence.
+Product 0.1.1 is successful when real evidence can answer that question with a reproducible verdict, an honest readiness status and metrics that cannot silently mix incompatible units.
