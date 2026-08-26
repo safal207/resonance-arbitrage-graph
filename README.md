@@ -1,10 +1,10 @@
 # RESONANCE Verify
 
-**Pre-trade verification for autonomous financial agents.**
+**Evidence-bound pre-trade verification for autonomous financial agents.**
 
 A visible spread is not the same thing as an executable opportunity.
 
-RESONANCE Verify takes a candidate market route and asks a stricter question:
+RESONANCE Verify takes a proposed market route and asks a stricter question:
 
 > **After fees, slippage, liquidity, freshness, latency, market regime and historical reliability — is this opportunity still real enough to act on?**
 
@@ -22,7 +22,7 @@ agent / scanner proposes an opportunity
         truth / reliability
 ```
 
-The repository is still named `resonance-arbitrage-graph` because arbitrage is the first verification domain. The product surface is **RESONANCE Verify**.
+The repository remains named `resonance-arbitrage-graph` because arbitrage is the first verification domain. The product surface is **RESONANCE Verify**.
 
 ## The problem
 
@@ -34,7 +34,7 @@ price discrepancy
 → trade candidate
 ```
 
-But the candidate can disappear after real constraints are applied:
+But that candidate can disappear after real constraints are applied:
 
 - fees and slippage;
 - insufficient depth;
@@ -70,7 +70,7 @@ Required execution edge:      +30 bps
 Market regime:                VOLATILE
 Regime action:                OBSERVE_ONLY
 
-Freshness:                    verified from captured quote provenance
+Freshness:                    verified from quote provenance
 Liquidity/capacity:           checked by route verifier
 Costs:                        explicit fee + slippage assumptions
 Historical outcome class:     tracked after later observation
@@ -83,11 +83,11 @@ Evidence SHA-256:
 <deterministic receipt digest>
 ```
 
-The exact internal receipt contains substantially more information. The point of the product layer is that a caller should not need to understand the whole research stack to use the verdict.
+The exact receipt contains more provenance. The product layer exists so a caller does not have to understand the whole research stack to use the verdict.
 
 ## Current interface
 
-Today the project exposes a Python library and offline/read-only CLIs. An HTTP `POST /verify` product API is a future packaging step; it is **not claimed as shipped yet**.
+The project currently exposes a Python library and offline/read-only CLIs. An HTTP `POST /verify` API is a future packaging step; it is **not claimed as shipped**.
 
 Install for local development:
 
@@ -116,13 +116,13 @@ resonance-live-scan \
 
 These values are examples, not trading recommendations.
 
-## Opportunity Truth Benchmark
+## Opportunity Truth Benchmark v0.2
 
-The core product claim must be proven with observed outcomes, not marketing copy.
+The product claim must be proven with observed outcomes, not marketing copy.
 
 The benchmark asks:
 
-> **Of the opportunities that RESONANCE marked `EXECUTE_SIM`, how many actually survived long enough to clear the required paper edge?**
+> **Of the opportunities that RESONANCE marked `EXECUTE_SIM`, how many later survived and still cleared the required paper edge?**
 
 Primary metrics:
 
@@ -130,46 +130,104 @@ Primary metrics:
 Opportunity Truth Rate = TP / (TP + FP)
 False Opportunity Rate = FP / (TP + FP)
 Route Survival Rate    = (TP + FP) / (TP + FP + EXPIRED)
+Truth Coverage         = (TP + FP) / EXECUTE_SIM
+Edge Decay             = mean(expected edge) - mean(observed edge)
 ```
 
-Product 0.1 also reports:
+The report also preserves:
 
-- total candidate opportunities;
-- `EXECUTE_SIM / OBSERVE / REJECT` counts;
+- total candidate and `EXECUTE_SIM / OBSERVE / REJECT` counts;
 - true positives, false positives, expired, rejected and indeterminate outcomes;
-- expected-vs-realized edge error;
-- capital-weighted realized **paper** PnL for evaluated `EXECUTE_SIM` decisions;
-- regime and route segmentation;
-- downgrade / rejection reason counts.
+- expected and observed edge for determinate truth events;
+- exact route and market-regime slices through the embedded v0.1 report;
+- downgrade and rejection reason counts;
+- paper PnL grouped by exact starting `venue:asset` state;
+- corpus quantity, diversity and concentration evidence;
+- exact logical-operation membership and source hashes.
+
+### Honest outcome accounting
+
+- `REJECT` is not a false positive because the verifier never claimed the route was executable.
+- `OBSERVE` and unresolved outcomes do not enter OTR.
+- Retries collapse to one logical operation.
+- A high OTR with low truth coverage remains weak evidence.
+- BTC, ETH, USDT, EUR or balances on different venues are never added into one fake PnL total.
+
+For one determinate operation:
+
+```text
+expected_pnl_units = start_amount × expected_edge_bps / 10,000
+observed_pnl_units = start_amount × observed_edge_bps / 10,000
+```
+
+Those units remain attached to the exact starting state, for example `binance:USDT` or `fixture:BTC`.
 
 ### No invented benchmark number
 
 There is intentionally **no headline percentage in this README yet**.
 
-Fixture or synthetic replay results are useful for tests, but they are not a product claim. Public benchmark claims must come from a captured real-market corpus.
-
-The benchmark enforces a configurable sample-size gate. The default requires at least 30 determinate `TP + FP` outcomes before the report changes from:
+Fixture and synthetic replays remain useful for tests, but their claim status is:
 
 ```text
-INSUFFICIENT_TRUTH_POPULATION
+UNASSESSED_REPLAY_SOURCE
 ```
 
-to:
+Only an append-only public `RealMarketReplayCorpus` can become eligible for automated internal evidence review.
+
+### Claim-readiness statuses
 
 ```text
-READY
+NOT_READY
 ```
 
-`READY` means the minimum sample-size guardrail passed. It does **not** by itself prove profitability or statistical significance.
+A real-market corpus exists, but one or more terminal-count, truth-population or corpus-quality gates fail.
 
-### Build a benchmark
+```text
+INTERNAL_EVIDENCE_READY
+```
 
-From a captured real-market corpus or replay bundle:
+The configured quantity and corpus-quality checks pass. This is **internal evidence readiness only**. It is not publication approval, proof of profitability, statistical significance, a live-fill result, future-performance assurance or permission to activate a policy.
+
+```text
+UNASSESSED_REPLAY_SOURCE
+```
+
+The report came from a `ReplayBundle` without real-market corpus claim provenance.
+
+Default internal-readiness gates include:
+
+```text
+minimum terminal operations: 100
+minimum determinate truth events: 30
+corpus quality required: true
+```
+
+The bound corpus-quality report checks independent decision batches, effective batch count, temporal span, route diversity, market diversity, regime diversity and concentration. A hundred correlated routes from one market moment do not earn a trustworthy product claim.
+
+### Build, render and verify
+
+Build JSON and Markdown from a captured corpus:
 
 ```bash
 resonance-opportunity-truth-benchmark build real-market-corpus.json \
-  --output opportunity-truth-report.json \
-  --markdown-output opportunity-truth-report.md
+  --output opportunity-truth-v0.2.json \
+  --markdown-output opportunity-truth-v0.2.md
+```
+
+Example explicit guardrails:
+
+```bash
+resonance-opportunity-truth-benchmark build real-market-corpus.json \
+  --min-terminal-operations 100 \
+  --min-truth-population 30 \
+  --min-decision-batches 20 \
+  --min-effective-decision-batches 10 \
+  --min-temporal-span-ms 3600000 \
+  --min-distinct-routes 3 \
+  --min-effective-routes 2 \
+  --min-distinct-route-markets 3 \
+  --min-distinct-regimes 2 \
+  --output benchmark.json
 ```
 
 Verify the report by reproducing it from the same evidence:
@@ -177,25 +235,39 @@ Verify the report by reproducing it from the same evidence:
 ```bash
 resonance-opportunity-truth-benchmark verify \
   real-market-corpus.json \
-  opportunity-truth-report.json
+  opportunity-truth-v0.2.json
 ```
 
-The report is canonical JSON + SHA-256 and is rebuilt from replay evidence during verification rather than trusting the outer digest alone.
+A successful full check prints:
 
-## Existing real-market evidence pipeline
+```text
+FULL_OK
+```
+
+Render an existing envelope:
+
+```bash
+resonance-opportunity-truth-benchmark render \
+  opportunity-truth-v0.2.json \
+  --output opportunity-truth-v0.2.md
+```
+
+## Real-market evidence pipeline
 
 The repository already contains a public-market corpus path:
 
 ```text
 public market snapshots
 → decision-time capture
-→ hash-chained real-market corpus
+→ persist before waiting
 → later public outcome capture
+→ append-only hash-chained corpus
 → replay bundle
+→ quantity + diversity gates
 → deterministic benchmark
 ```
 
-Relevant CLIs include:
+Relevant CLIs:
 
 ```text
 resonance-real-market-corpus
@@ -204,11 +276,7 @@ resonance-replay-benchmark
 resonance-opportunity-truth-benchmark
 ```
 
-This means Product 0.1 is not waiting for a future data model: the benchmark can sit on top of the evidence pipeline that already exists.
-
 ## Who this is for
-
-The first design-partner profiles are deliberately narrow.
 
 ### 1. Agentic trading builders
 
@@ -217,18 +285,17 @@ Systems where an agent proposes a financial action before another component exec
 ```text
 agent proposes trade
 → RESONANCE Verify
-→ allow paper execution / observe / reject
+→ EXECUTE_SIM / OBSERVE / REJECT
+→ existing risk or execution stack
 ```
 
-The product question is:
+The discovery question is:
 
 > **When your trading agent sees an opportunity, how do you verify it is still executable before letting it act?**
 
-### 2. Quant / trading infrastructure teams
+### 2. Quant and trading-infrastructure teams
 
-Teams that want an independent replay and pre-trade verification layer without handing over strategy ownership.
-
-RESONANCE can verify the candidate while the team keeps its own alpha logic private.
+Teams that want an independent replay and pre-trade verification layer without handing over strategy ownership. RESONANCE verifies the candidate while the team keeps its alpha logic private.
 
 ### 3. Financial-agent infrastructure
 
@@ -237,8 +304,6 @@ Programmable-wallet, treasury, payment and autonomous-finance systems where an a
 Arbitrage is the first domain, not the limit of the verification model.
 
 ## Why this is more than a spread scanner
-
-The causal model is:
 
 ```text
 market state
@@ -252,19 +317,16 @@ market state
 → later truth
 ```
 
-A route can only reach `EXECUTE_SIM` after the deterministic verifier and the monotonic regime gate allow it. A later outcome is then recorded and used to measure whether that confidence was deserved.
+A route reaches `EXECUTE_SIM` only after the deterministic verifier and monotonic regime gate allow it. A later outcome measures whether that confidence was deserved.
 
-The verifier cannot upgrade a failed base decision through history or prediction.
+The verifier and shadow prediction layers cannot upgrade a failed deterministic decision:
 
 ```text
 REJECT < OBSERVE < EXECUTE_SIM
-
 final_verdict <= base_verdict
 ```
 
-## Trust infrastructure already underneath the product
-
-The product-facing verdict sits on a deeper research core:
+## Trust infrastructure underneath the product
 
 ```text
 public market evidence
@@ -285,7 +347,7 @@ public market evidence
 → policy authority / delegation
 ```
 
-Those layers exist so the product can answer more than “the number looked good.” They provide provenance for what was observed, which policy was active, why it was allowed, how it performed later and whether the governing policy itself was valid.
+These layers preserve what was observed, which policy was active, why a decision was allowed, how it performed later and whether the governing policy itself was valid.
 
 ## Safety boundary
 
@@ -298,47 +360,50 @@ It does not:
 - store exchange or wallet private keys;
 - initiate transfers or bridges;
 - allocate live capital;
-- provide copy-trading automation.
+- provide copy-trading automation;
+- guarantee profit;
+- treat future public top-of-book prices as executable fills.
 
-Public market adapters use read-only market data. Replay, calibration, governance and benchmark layers operate on local evidence artifacts.
+Public market adapters use read-only data. Replay, calibration, governance and benchmark layers operate on local evidence artifacts.
 
 ## Product roadmap
 
-The next product decisions are intentionally evidence-driven rather than version-number-driven.
+The next product decision is evidence-driven rather than version-driven.
 
 ```text
-if users need better ranking
-→ predictive shadow scoring
-
-if users need an integration point
+if partners need a synchronous integration
 → Verify API / SDK
 
-if users need wallet-signal copyability
+if partners value replay most
+→ Replay / Benchmark as a service
+
+if real corpus proves predictive value
+→ predictive shadow ranking
+
+if wallet-copyability demand is validated
 → Wallet Intelligence
 
-if enterprises need authenticated governance identity
+if enterprise identity assurance is required
 → cryptographic authority attestation
-
-if quant teams value replay most
-→ Replay / Benchmark as a service
 ```
 
 The market should choose the next deep research layer.
 
 ## Technical documentation
 
-Research and design details live under `docs/` rather than at the top of the product page.
+Research details live under `docs/` rather than in the first 30 seconds of the product page.
 
-Key documents include:
+Key documents:
 
 - `docs/market-data-contracts.md`
-- `docs/v0.2-design.md` through the later versioned design notes
+- `docs/product-0.1-opportunity-truth-benchmark.md`
 - `docs/v0.12-design.md` — stability decomposition
 - `docs/v0.13-design.md` — policy promotion
-- `docs/v0.14-design.md` — canonical policy lineage and revocation
+- `docs/v0.14-design.md` — policy lineage and revocation
 - `docs/v0.15-design.md` — authority and delegation
-
-The implementation also contains experimental predictive and real-market corpus tooling. Predictive research is advisory/shadow work and does not bypass the deterministic verification chain.
+- `docs/v0.16.2-design.md` — append-only real-market corpus
+- `docs/v0.16.3-design.md` — corpus runner
+- `docs/v0.16.4-design.md` — corpus quality gate
 
 ## Tests
 
@@ -346,7 +411,7 @@ The implementation also contains experimental predictive and real-market corpus 
 pytest
 ```
 
-Coverage spans route verification, quote provenance, retry identity, outcome truth accounting, replay determinism, anti-lookahead constraints, calibration/validation firewalls, walk-forward stability, governance receipts, tamper rejection and benchmark reproduction.
+Coverage spans route verification, quote provenance, retry identity, truth accounting, replay determinism, anti-lookahead constraints, calibration/validation firewalls, walk-forward stability, governance receipts, corpus quality, unit-safe PnL, tamper rejection and full benchmark reproduction.
 
 ---
 
