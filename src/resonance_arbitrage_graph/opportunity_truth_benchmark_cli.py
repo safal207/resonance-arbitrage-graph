@@ -7,9 +7,12 @@ import sys
 from typing import Any
 
 from .corpus_quality import CorpusQualityPolicy
+from .opportunity_truth_benchmark import OpportunityTruthEvidenceSource
 from .opportunity_truth_benchmark_v2 import (
     OpportunityTruthBenchmarkV2Report,
     OpportunityTruthClaimPolicy,
+    OpportunityTruthClaimStatus,
+    OpportunityTruthPnlSlice,
     build_opportunity_truth_benchmark_v2,
     render_opportunity_truth_benchmark_v2_markdown,
     verify_opportunity_truth_benchmark_v2_envelope,
@@ -123,6 +126,38 @@ def _quality_policy(args: argparse.Namespace) -> CorpusQualityPolicy:
     )
 
 
+def _report_from_payload(
+    payload: dict[str, Any]
+) -> OpportunityTruthBenchmarkV2Report:
+    return OpportunityTruthBenchmarkV2Report(
+        evidence_source=OpportunityTruthEvidenceSource(
+            payload["evidence_source"]
+        ),
+        source_sha256=payload["source_sha256"],
+        replay_bundle_sha256=payload["replay_bundle_sha256"],
+        operation_ids=tuple(payload["operation_ids"]),
+        legacy_benchmark=payload["legacy_benchmark"],
+        legacy_benchmark_sha256=payload["legacy_benchmark_sha256"],
+        claim_policy=OpportunityTruthClaimPolicy.from_payload(
+            payload["claim_policy"]
+        ),
+        claim_status=OpportunityTruthClaimStatus(payload["claim_status"]),
+        claim_reasons=tuple(payload["claim_reasons"]),
+        corpus_quality=payload["corpus_quality"],
+        corpus_quality_sha256=payload["corpus_quality_sha256"],
+        terminal_operations=payload["terminal_operations"],
+        truth_population=payload["truth_population"],
+        truth_coverage=payload["truth_coverage"],
+        mean_expected_edge_bps=payload["mean_expected_edge_bps"],
+        mean_observed_edge_bps=payload["mean_observed_edge_bps"],
+        mean_edge_decay_bps=payload["mean_edge_decay_bps"],
+        paper_pnl_by_start_state=tuple(
+            OpportunityTruthPnlSlice.from_payload(item)
+            for item in payload["paper_pnl_by_start_state"]
+        ),
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
 
@@ -174,41 +209,9 @@ def main(argv: list[str] | None = None) -> int:
         payload = verify_opportunity_truth_benchmark_v2_envelope(
             _load_json(args.report)
         )
-        report = OpportunityTruthBenchmarkV2Report(
-            evidence_source=__import__(
-                "resonance_arbitrage_graph.opportunity_truth_benchmark",
-                fromlist=["OpportunityTruthEvidenceSource"],
-            ).OpportunityTruthEvidenceSource(payload["evidence_source"]),
-            source_sha256=payload["source_sha256"],
-            replay_bundle_sha256=payload["replay_bundle_sha256"],
-            operation_ids=tuple(payload["operation_ids"]),
-            legacy_benchmark=payload["legacy_benchmark"],
-            legacy_benchmark_sha256=payload["legacy_benchmark_sha256"],
-            claim_policy=OpportunityTruthClaimPolicy.from_payload(
-                payload["claim_policy"]
-            ),
-            claim_status=__import__(
-                "resonance_arbitrage_graph.opportunity_truth_benchmark_v2",
-                fromlist=["OpportunityTruthClaimStatus"],
-            ).OpportunityTruthClaimStatus(payload["claim_status"]),
-            claim_reasons=tuple(payload["claim_reasons"]),
-            corpus_quality=payload["corpus_quality"],
-            corpus_quality_sha256=payload["corpus_quality_sha256"],
-            terminal_operations=payload["terminal_operations"],
-            truth_population=payload["truth_population"],
-            truth_coverage=payload["truth_coverage"],
-            mean_expected_edge_bps=payload["mean_expected_edge_bps"],
-            mean_observed_edge_bps=payload["mean_observed_edge_bps"],
-            mean_edge_decay_bps=payload["mean_edge_decay_bps"],
-            paper_pnl_by_start_state=tuple(
-                __import__(
-                    "resonance_arbitrage_graph.opportunity_truth_benchmark_v2",
-                    fromlist=["OpportunityTruthPnlSlice"],
-                ).OpportunityTruthPnlSlice.from_payload(item)
-                for item in payload["paper_pnl_by_start_state"]
-            ),
+        rendered = render_opportunity_truth_benchmark_v2_markdown(
+            _report_from_payload(payload)
         )
-        rendered = render_opportunity_truth_benchmark_v2_markdown(report)
         if args.output:
             _write_text(args.output, rendered)
         else:
