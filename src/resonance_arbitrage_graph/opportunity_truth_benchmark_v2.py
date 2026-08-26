@@ -14,17 +14,16 @@ from typing import Any
 from .corpus_quality import CorpusQualityPolicy, build_corpus_quality_report
 from .observation import OutcomeClass
 from .opportunity_truth_benchmark import (
-    OpportunityTruthBenchmarkReport,
     OpportunityTruthEvidenceSource,
     build_opportunity_truth_benchmark,
     build_opportunity_truth_benchmark_from_corpus,
-    verify_opportunity_truth_benchmark_envelope,
 )
 from .real_market_corpus import RealMarketReplayCorpus
 from .replay import ReplayBundle, ReplayResult, benchmark_bundle
 
 _SCHEMA = "resonance.verify.opportunity-truth-benchmark/v0.2"
 _POLICY_SCHEMA = "resonance.verify.opportunity-truth-claim-policy/v0.1"
+_LEGACY_SCHEMA = "resonance.verify.opportunity-truth-benchmark/v0.1"
 
 
 def _json(value: Any) -> str:
@@ -53,7 +52,7 @@ def _sha(value: Any, name: str) -> str:
     return value
 
 
-def _int(value: Any, name: str, *, minimum: int = 0) -> int:
+def _integer(value: Any, name: str, *, minimum: int = 0) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
         raise ValueError(f"{name} must be an integer >= {minimum}")
     return value
@@ -62,10 +61,10 @@ def _int(value: Any, name: str, *, minimum: int = 0) -> int:
 def _number(value: Any, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{name} must be numeric")
-    value = float(value)
-    if not math.isfinite(value):
+    result = float(value)
+    if not math.isfinite(result):
         raise ValueError(f"{name} must be finite")
-    return value
+    return result
 
 
 def _same(left: float, right: float) -> bool:
@@ -85,8 +84,12 @@ class OpportunityTruthClaimPolicy:
     require_corpus_quality: bool = True
 
     def __post_init__(self) -> None:
-        _int(self.min_terminal_operations, "min_terminal_operations", minimum=1)
-        _int(self.min_truth_events, "min_truth_events", minimum=1)
+        _integer(
+            self.min_terminal_operations,
+            "min_terminal_operations",
+            minimum=1,
+        )
+        _integer(self.min_truth_events, "min_truth_events", minimum=1)
         if not isinstance(self.require_corpus_quality, bool):
             raise ValueError("require_corpus_quality must be boolean")
 
@@ -134,12 +137,11 @@ class OpportunityTruthPnlSlice:
     def __post_init__(self) -> None:
         if not isinstance(self.start_state, str) or not self.start_state:
             raise ValueError("start_state must be non-empty")
-        _int(self.truth_events, "truth_events", minimum=1)
-        _number(self.capital_units, "capital_units")
+        _integer(self.truth_events, "truth_events", minimum=1)
+        if _number(self.capital_units, "capital_units") <= 0:
+            raise ValueError("capital_units must be positive")
         _number(self.expected_pnl_units, "expected_pnl_units")
         _number(self.observed_pnl_units, "observed_pnl_units")
-        if self.capital_units <= 0:
-            raise ValueError("capital_units must be positive")
 
     @property
     def pnl_delta_units(self) -> float:
@@ -171,14 +173,19 @@ class OpportunityTruthPnlSlice:
             expected_pnl_units=payload.get("expected_pnl_units"),
             observed_pnl_units=payload.get("observed_pnl_units"),
         )
-        if (
-            set(payload) != set(row.to_payload())
-            or not _same(payload.get("pnl_delta_units"), row.pnl_delta_units)
-            or not _same(
-                payload.get("observed_return_bps"), row.observed_return_bps
-            )
+        if set(payload) != set(row.to_payload()):
+            raise ValueError("paper PnL slice fields are not canonical")
+        if not _same(
+            _number(payload.get("pnl_delta_units"), "pnl_delta_units"),
+            row.pnl_delta_units,
+        ) or not _same(
+            _number(
+                payload.get("observed_return_bps"),
+                "observed_return_bps",
+            ),
+            row.observed_return_bps,
         ):
-            raise ValueError("paper PnL slice is not canonical")
+            raise ValueError("paper PnL slice derived fields are inconsistent")
         return row
 
 
@@ -201,7 +208,7 @@ def _claim_status(
         reasons.append("terminal_operations")
     if truth < policy.min_truth_events:
         reasons.append("truth_events")
-    if policy.require_corpus_quality and not quality.get("quality_ready"):
+    if policy.require_corpus_quality and quality.get("quality_ready") is not True:
         reasons.extend(
             f"corpus_quality:{item}"
             for item in quality.get("failed_dimensions", [])
@@ -238,21 +245,28 @@ class OpportunityTruthBenchmarkV2Report:
         _sha(self.source_sha256, "source_sha256")
         _sha(self.replay_bundle_sha256, "replay_bundle_sha256")
         _sha(self.legacy_benchmark_sha256, "legacy_benchmark_sha256")
+
         object.__setattr__(self, "operation_ids", tuple(self.operation_ids))
         if self.operation_ids != tuple(sorted(set(self.operation_ids))):
             raise ValueError("operation_ids must be sorted and unique")
 
         legacy = dict(self.legacy_benchmark)
         object.__setattr__(self, "legacy_benchmark", legacy)
-        verify_opportunity_truth_benchmark_envelope(
-            {
-                "payload": legacy,
-                "sha256": self.legacy_benchmark_sha256,
-            }
-        )
+        if legacy.get("schema") != _LEGACY_SCHEMA:
+            raise ValueError("embedded legacy benchmark schema is invalid")
+        if not hmac.compare_digest(
+            _digest(legacy), self.legacy_benchmark_sha256
+        ):
+            raise ValueError("embedded legacy benchmark SHA differs")
+        for flag in (
+            "marketing_claims_must_use_real_corpus_only",
+            "paper_only",
+        ):
+            if legacy.get(flag) is not True:
+                raise ValueError(f"embedded legacy invariant is invalid: {flag}")
         if (
-            legacy["source_bundle_sha256"] != self.replay_bundle_sha256
-            or legacy["evidence_source"] != self.evidence_source.value
+            legacy.get("source_bundle_sha256") != self.replay_bundle_sha256
+            or legacy.get("evidence_source") != self.evidence_source.value
         ):
             raise ValueError("legacy benchmark binding differs")
         expected_corpus = (
@@ -261,23 +275,30 @@ class OpportunityTruthBenchmarkV2Report:
             is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS
             else None
         )
-        if legacy["source_corpus_sha256"] != expected_corpus:
+        if legacy.get("source_corpus_sha256") != expected_corpus:
             raise ValueError("legacy corpus binding differs")
-        if len(self.operation_ids) != legacy["candidate_opportunities"]:
+        candidate_count = _integer(
+            legacy.get("candidate_opportunities"),
+            "legacy candidate_opportunities",
+        )
+        if len(self.operation_ids) != candidate_count:
             raise ValueError("operation membership differs from candidate count")
 
-        if (
-            not isinstance(self.claim_policy, OpportunityTruthClaimPolicy)
-            or not isinstance(self.claim_status, OpportunityTruthClaimStatus)
-        ):
-            raise ValueError("claim policy/status has invalid type")
+        if not isinstance(self.claim_policy, OpportunityTruthClaimPolicy):
+            raise ValueError("claim policy has invalid type")
+        if not isinstance(self.claim_status, OpportunityTruthClaimStatus):
+            raise ValueError("claim status has invalid type")
         object.__setattr__(self, "claim_reasons", tuple(self.claim_reasons))
-        _int(self.terminal_operations, "terminal_operations")
-        _int(self.truth_population, "truth_population")
-        if self.truth_population != legacy["truth_population"]:
+
+        _integer(self.terminal_operations, "terminal_operations")
+        _integer(self.truth_population, "truth_population")
+        if self.truth_population != legacy.get("truth_population"):
             raise ValueError("truth population differs from legacy benchmark")
 
-        execute_sim = legacy["execute_sim_decisions"]
+        execute_sim = _integer(
+            legacy.get("execute_sim_decisions"),
+            "legacy execute_sim_decisions",
+        )
         expected_coverage = (
             self.truth_population / execute_sim if execute_sim else None
         )
@@ -323,14 +344,13 @@ class OpportunityTruthBenchmarkV2Report:
         quality = None if self.corpus_quality is None else dict(self.corpus_quality)
         object.__setattr__(self, "corpus_quality", quality)
         if quality is None:
+            if self.corpus_quality_sha256 is not None:
+                raise ValueError("quality SHA cannot exist without quality payload")
             if (
-                self.corpus_quality_sha256 is not None
-                or self.evidence_source
+                self.evidence_source
                 is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS
             ):
-                raise ValueError(
-                    "real-market source requires corpus quality payload and SHA"
-                )
+                raise ValueError("real-market source requires corpus quality")
         else:
             _sha(self.corpus_quality_sha256, "corpus_quality_sha256")
             if not hmac.compare_digest(
@@ -343,9 +363,10 @@ class OpportunityTruthBenchmarkV2Report:
                 != self.terminal_operations
             ):
                 raise ValueError("corpus quality source/count differs")
-            if quality.get("quality_ready") is not (
-                not quality.get("failed_dimensions")
-            ):
+            failed = quality.get("failed_dimensions")
+            if not isinstance(failed, list):
+                raise ValueError("corpus quality failed_dimensions is invalid")
+            if quality.get("quality_ready") is not (not failed):
                 raise ValueError("corpus quality readiness is inconsistent")
 
         expected_status, expected_reasons = _claim_status(
@@ -369,14 +390,13 @@ class OpportunityTruthBenchmarkV2Report:
         states = tuple(
             item.start_state for item in self.paper_pnl_by_start_state
         )
+        if states != tuple(sorted(set(states))):
+            raise ValueError("paper PnL states must be sorted and unique")
         if (
-            states != tuple(sorted(set(states)))
-            or sum(
-                item.truth_events for item in self.paper_pnl_by_start_state
-            )
+            sum(item.truth_events for item in self.paper_pnl_by_start_state)
             != self.truth_population
         ):
-            raise ValueError("paper PnL state/truth coverage is inconsistent")
+            raise ValueError("paper PnL truth coverage is inconsistent")
 
     @property
     def internal_evidence_ready(self) -> bool:
@@ -407,8 +427,7 @@ class OpportunityTruthBenchmarkV2Report:
             "mean_observed_edge_bps": self.mean_observed_edge_bps,
             "mean_edge_decay_bps": self.mean_edge_decay_bps,
             "paper_pnl_by_start_state": [
-                item.to_payload()
-                for item in self.paper_pnl_by_start_state
+                item.to_payload() for item in self.paper_pnl_by_start_state
             ],
             "internal_evidence_ready": self.internal_evidence_ready,
             "automated_readiness_is_not_publication_approval": True,
@@ -500,9 +519,7 @@ def build_opportunity_truth_benchmark_v2(
 
     calibration = benchmark_bundle(bundle)
     truth = _truth(calibration.results)
-    expected = (
-        mean(item.expected_edge_bps for item in truth) if truth else None
-    )
+    expected = mean(item.expected_edge_bps for item in truth) if truth else None
     observed = (
         mean(
             item.observed_edge_bps
@@ -530,8 +547,7 @@ def build_opportunity_truth_benchmark_v2(
         replay_bundle_sha256=bundle.sha256,
         operation_ids=tuple(
             sorted(
-                case.logical_operation_id
-                for case in bundle.collapsed_cases()
+                case.logical_operation_id for case in bundle.collapsed_cases()
             )
         ),
         legacy_benchmark=legacy.canonical_payload(),
@@ -695,9 +711,7 @@ def render_opportunity_truth_benchmark_v2_markdown(
     if report.claim_reasons:
         lines += [
             "**Readiness blockers:** "
-            + ", ".join(
-                f"`{item}`" for item in report.claim_reasons
-            ),
+            + ", ".join(f"`{item}`" for item in report.claim_reasons),
             "",
         ]
     if report.paper_pnl_by_start_state:
