@@ -10,7 +10,6 @@ import json
 from typing import Any
 
 from .model import Verdict
-from .observation import OutcomeClass
 from .replay import ReplayBundle, ReplayMetrics, ReplayResult, benchmark_bundle
 
 
@@ -37,9 +36,26 @@ def _positive_int(value: Any, name: str) -> int:
     return value
 
 
+def _sha256_text(value: Any, name: str) -> str:
+    if not isinstance(value, str) or len(value) != 64:
+        raise ValueError(f"{name} must be a 64-character SHA-256 hex digest")
+    try:
+        int(value, 16)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be hexadecimal") from exc
+    if value.lower() != value:
+        raise ValueError(f"{name} must be lowercase")
+    return value
+
+
 class OpportunityTruthBenchmarkStatus(str, Enum):
     READY = "READY"
     INSUFFICIENT_TRUTH_POPULATION = "INSUFFICIENT_TRUTH_POPULATION"
+
+
+class OpportunityTruthEvidenceSource(str, Enum):
+    REPLAY_BUNDLE = "REPLAY_BUNDLE"
+    REAL_MARKET_CORPUS = "REAL_MARKET_CORPUS"
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,10 +70,12 @@ class OpportunityTruthBenchmarkSlice:
     def __post_init__(self) -> None:
         if not isinstance(self.key, str) or not self.key:
             raise ValueError("benchmark slice key must be non-empty")
-        if isinstance(self.logical_operations, bool) or self.logical_operations < 0:
-            raise ValueError("logical_operations must be a non-negative integer")
-        if isinstance(self.execute_sim_decisions, bool) or self.execute_sim_decisions < 0:
-            raise ValueError("execute_sim_decisions must be a non-negative integer")
+        for name in ("logical_operations", "execute_sim_decisions"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{name} must be a non-negative integer")
+        if not isinstance(self.metrics, ReplayMetrics):
+            raise ValueError("benchmark slice metrics must be ReplayMetrics")
         if self.execute_sim_decisions > self.logical_operations:
             raise ValueError("execute_sim_decisions cannot exceed logical_operations")
 
@@ -82,6 +100,8 @@ class OpportunityTruthBenchmarkSlice:
 @dataclass(frozen=True, slots=True)
 class OpportunityTruthBenchmarkReport:
     source_bundle_sha256: str
+    evidence_source: OpportunityTruthEvidenceSource
+    source_corpus_sha256: str | None
     min_truth_population: int
     status: OpportunityTruthBenchmarkStatus
     candidate_opportunities: int
@@ -97,9 +117,18 @@ class OpportunityTruthBenchmarkReport:
     by_route: tuple[OpportunityTruthBenchmarkSlice, ...]
 
     def __post_init__(self) -> None:
+        _sha256_text(self.source_bundle_sha256, "source_bundle_sha256")
+        if not isinstance(self.evidence_source, OpportunityTruthEvidenceSource):
+            raise ValueError("evidence_source has invalid type")
+        if self.evidence_source is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS:
+            _sha256_text(self.source_corpus_sha256, "source_corpus_sha256")
+        elif self.source_corpus_sha256 is not None:
+            raise ValueError("replay-bundle source cannot claim a real-market corpus digest")
         _positive_int(self.min_truth_population, "min_truth_population")
         if not isinstance(self.status, OpportunityTruthBenchmarkStatus):
             raise ValueError("benchmark status has invalid type")
+        if not isinstance(self.metrics, ReplayMetrics):
+            raise ValueError("benchmark metrics must be ReplayMetrics")
         for name in (
             "candidate_opportunities",
             "execute_sim_decisions",
@@ -140,10 +169,20 @@ class OpportunityTruthBenchmarkReport:
     def sample_size_gate_passed(self) -> bool:
         return self.status is OpportunityTruthBenchmarkStatus.READY
 
+    @property
+    def public_claim_eligible(self) -> bool:
+        return (
+            self.sample_size_gate_passed
+            and self.evidence_source is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS
+            and self.source_corpus_sha256 is not None
+        )
+
     def canonical_payload(self) -> dict[str, Any]:
         return {
             "schema": _SCHEMA,
             "source_bundle_sha256": self.source_bundle_sha256,
+            "evidence_source": self.evidence_source.value,
+            "source_corpus_sha256": self.source_corpus_sha256,
             "min_truth_population": self.min_truth_population,
             "status": self.status.value,
             "candidate_opportunities": self.candidate_opportunities,
@@ -162,6 +201,7 @@ class OpportunityTruthBenchmarkReport:
             "by_regime": [item.to_payload() for item in self.by_regime],
             "by_route": [item.to_payload() for item in self.by_route],
             "sample_size_gate_passed": self.sample_size_gate_passed,
+            "public_claim_eligible": self.public_claim_eligible,
             "marketing_claims_must_use_real_corpus_only": True,
             "paper_only": True,
         }
@@ -214,9 +254,17 @@ def build_opportunity_truth_benchmark(
     bundle: ReplayBundle,
     *,
     min_truth_population: int = 30,
+    evidence_source: OpportunityTruthEvidenceSource = OpportunityTruthEvidenceSource.REPLAY_BUNDLE,
+    source_corpus_sha256: str | None = None,
 ) -> OpportunityTruthBenchmarkReport:
     if not isinstance(bundle, ReplayBundle):
         raise ValueError("benchmark requires ReplayBundle")
+    if not isinstance(evidence_source, OpportunityTruthEvidenceSource):
+        raise ValueError("evidence_source has invalid type")
+    if evidence_source is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS:
+        _sha256_text(source_corpus_sha256, "source_corpus_sha256")
+    elif source_corpus_sha256 is not None:
+        raise ValueError("replay-bundle source cannot bind a corpus digest")
     _positive_int(min_truth_population, "min_truth_population")
 
     calibration = benchmark_bundle(bundle)
@@ -247,6 +295,8 @@ def build_opportunity_truth_benchmark(
 
     return OpportunityTruthBenchmarkReport(
         source_bundle_sha256=bundle.sha256,
+        evidence_source=evidence_source,
+        source_corpus_sha256=source_corpus_sha256,
         min_truth_population=min_truth_population,
         status=(
             OpportunityTruthBenchmarkStatus.READY
@@ -280,16 +330,20 @@ def render_opportunity_truth_markdown(report: OpportunityTruthBenchmarkReport) -
     def num(value: float | None, suffix: str = "") -> str:
         return "n/a" if value is None else f"{value:.2f}{suffix}"
 
-    readiness = (
-        "READY FOR SAMPLE-SIZE-GATED REPORTING"
-        if report.sample_size_gate_passed
-        else "NOT READY — INSUFFICIENT DETERMINATE EXECUTE_SIM OUTCOMES"
-    )
+    if not report.sample_size_gate_passed:
+        readiness = "NOT READY — INSUFFICIENT DETERMINATE EXECUTE_SIM OUTCOMES"
+    elif not report.public_claim_eligible:
+        readiness = "SAMPLE READY — NOT ELIGIBLE FOR PUBLIC CLAIMS (NON-CORPUS SOURCE)"
+    else:
+        readiness = "READY — REAL-MARKET SOURCE + SAMPLE-SIZE GATE PASSED"
+
     lines = [
         "# RESONANCE Verify — Opportunity Truth Benchmark",
         "",
         f"**Status:** {readiness}",
         "",
+        f"- Evidence source: **{report.evidence_source.value}**",
+        f"- Source corpus SHA-256: **{report.source_corpus_sha256 or 'n/a'}**",
         f"- Candidate opportunities: **{report.candidate_opportunities}**",
         f"- EXECUTE_SIM decisions: **{report.execute_sim_decisions}**",
         f"- Truth population (TP + FP): **{report.truth_population}** / required **{report.min_truth_population}**",
@@ -300,6 +354,7 @@ def render_opportunity_truth_markdown(report: OpportunityTruthBenchmarkReport) -
         f"- Realized paper PnL for evaluated EXECUTE_SIM decisions: **{num(report.realized_paper_pnl)}**",
         f"- Capital evaluated for that paper PnL: **{num(report.evaluated_execute_sim_capital)}**",
         f"- Capital-weighted realized paper return: **{num(report.realized_paper_return_bps, ' bps')}**",
+        f"- Public claim eligible: **{str(report.public_claim_eligible).lower()}**",
         "",
         "## Outcome counts",
         "",
@@ -311,7 +366,7 @@ def render_opportunity_truth_markdown(report: OpportunityTruthBenchmarkReport) -
         "",
         "## Product-proof boundary",
         "",
-        "This report is paper-only. A sample-size gate passing does not by itself establish profitability or statistical significance. Public marketing claims must be generated from a captured real-market corpus, not fixtures or synthetic replay data.",
+        "This report is paper-only. A sample-size gate passing does not by itself establish profitability or statistical significance. Public claims require evidence_source=REAL_MARKET_CORPUS and the bound source corpus SHA-256.",
         "",
         f"Evidence SHA-256: `{report.sha256}`",
     ]
@@ -329,6 +384,8 @@ def verify_opportunity_truth_benchmark_envelope(
     envelope: Mapping[str, Any],
     *,
     bundle: ReplayBundle,
+    evidence_source: OpportunityTruthEvidenceSource = OpportunityTruthEvidenceSource.REPLAY_BUNDLE,
+    source_corpus_sha256: str | None = None,
 ) -> bool:
     if not isinstance(envelope, Mapping) or set(envelope) != {"payload", "sha256"}:
         raise ValueError("benchmark envelope is not canonical")
@@ -342,9 +399,11 @@ def verify_opportunity_truth_benchmark_envelope(
     rebuilt = build_opportunity_truth_benchmark(
         bundle,
         min_truth_population=min_truth_population,
+        evidence_source=evidence_source,
+        source_corpus_sha256=source_corpus_sha256,
     )
     if rebuilt.canonical_payload() != payload:
-        raise ValueError("benchmark report does not reproduce from replay evidence")
+        raise ValueError("benchmark report does not reproduce from supplied source evidence")
     if not hmac.compare_digest(rebuilt.sha256, supplied_sha):
         raise ValueError("benchmark digest differs after reproduction")
     return True
