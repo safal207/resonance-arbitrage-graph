@@ -23,7 +23,6 @@ from resonance_arbitrage_graph.real_market_corpus import (
 )
 from resonance_arbitrage_graph.replay import ReplayBundle, ReplayOutcome
 from test_corpus_quality import _decision
-from test_real_market_corpus import _decision_case, _outcome_quotes
 from test_walk_forward import _bundle, _case
 
 
@@ -59,23 +58,49 @@ def _clone(decision, suffix: str):
     )
 
 
+def _future_snapshots(decision):
+    observed_at_ms = decision.evaluation_time_ms + 1_000
+    return tuple(
+        replace(
+            snapshot,
+            observed_at_ms=observed_at_ms,
+            source_url=f"{snapshot.source_url}#outcome-{observed_at_ms}",
+        )
+        for snapshot in decision.snapshots
+    )
+
+
 def _real_corpus(count: int = 1) -> RealMarketReplayCorpus:
-    base = _decision_case()
+    terminal_fixture = _case(
+        "product-real-market",
+        1,
+        volatility="low",
+        edge_bps=32.0,
+        realized_edge_bps=32.0,
+    )
+    base = replace(
+        terminal_fixture,
+        outcome=ReplayOutcome(
+            observed_at_ms=terminal_fixture.evaluation_time_ms
+        ),
+    )
     decisions = tuple(_clone(base, str(index)) for index in range(count))
     corpus = RealMarketReplayCorpus().append_decisions(
         decisions,
         captured_at_ms=base.evaluation_time_ms,
     )
     for decision in decisions:
+        snapshots = _future_snapshots(decision)
+        observed_at_ms = snapshots[0].observed_at_ms
         terminal = resolve_replay_case(
             decision,
-            _outcome_quotes(),
-            observed_at_ms=2_000,
+            snapshots,
+            observed_at_ms=observed_at_ms,
         )
         corpus = corpus.append_outcome(
             terminal,
-            _outcome_quotes(),
-            captured_at_ms=2_000,
+            snapshots,
+            captured_at_ms=observed_at_ms,
         )
     return corpus
 
@@ -111,9 +136,7 @@ def test_v2_is_deterministic_quality_bound_and_source_reproducible():
     assert verify_opportunity_truth_benchmark_v2_envelope(
         first.to_envelope()
     )
-    assert verify_opportunity_truth_benchmark_v2_source_binding(
-        first, corpus
-    )
+    assert verify_opportunity_truth_benchmark_v2_source_binding(first, corpus)
 
 
 def test_sample_and_terminal_gates_can_pass_while_quality_still_blocks_readiness():
@@ -188,8 +211,7 @@ def test_mixed_start_assets_are_never_summed_into_one_pnl_total():
     states = {row.start_state for row in report.paper_pnl_by_start_state}
     assert states == {"fixture:BTC", "fixture:USDT"}
     assert all(
-        row.capital_units > 0
-        for row in report.paper_pnl_by_start_state
+        row.capital_units > 0 for row in report.paper_pnl_by_start_state
     )
     assert (
         report.canonical_payload()["legacy_cross_unit_pnl_is_not_used"]
@@ -216,9 +238,7 @@ def test_full_binding_rejects_a_different_source():
     other = _real_corpus().to_replay_bundle()
 
     with pytest.raises(ValueError, match="does not reproduce"):
-        verify_opportunity_truth_benchmark_v2_source_binding(
-            report, other
-        )
+        verify_opportunity_truth_benchmark_v2_source_binding(report, other)
 
 
 def test_markdown_states_internal_not_publication_boundary():
