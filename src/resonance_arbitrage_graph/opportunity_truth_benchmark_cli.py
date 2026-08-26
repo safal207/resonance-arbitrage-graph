@@ -6,12 +6,14 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from .opportunity_truth_benchmark import (
-    OpportunityTruthBenchmarkReport,
-    build_opportunity_truth_benchmark,
-    build_opportunity_truth_benchmark_from_corpus,
-    render_opportunity_truth_markdown,
-    verify_opportunity_truth_benchmark_envelope,
+from .corpus_quality import CorpusQualityPolicy
+from .opportunity_truth_benchmark_v2 import (
+    OpportunityTruthBenchmarkV2Report,
+    OpportunityTruthClaimPolicy,
+    build_opportunity_truth_benchmark_v2,
+    render_opportunity_truth_benchmark_v2_markdown,
+    verify_opportunity_truth_benchmark_v2_envelope,
+    verify_opportunity_truth_benchmark_v2_source_binding,
 )
 from .real_market_corpus import RealMarketReplayCorpus
 from .replay import ReplayBundle
@@ -44,23 +46,57 @@ def _write_text(path: str, content: str) -> None:
 
 
 def _write_json(payload: dict[str, Any], path: str | None) -> None:
-    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    rendered = (
+        json.dumps(
+            payload,
+            indent=2,
+            sort_keys=True,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n"
+    )
     if path:
         _write_text(path, rendered)
     else:
         print(rendered, end="")
 
 
+def _add_quality_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--min-decision-batches", type=int, default=20)
+    parser.add_argument(
+        "--min-effective-decision-batches", type=float, default=10.0
+    )
+    parser.add_argument("--min-temporal-span-ms", type=int, default=3_600_000)
+    parser.add_argument("--min-distinct-routes", type=int, default=3)
+    parser.add_argument("--min-effective-routes", type=float, default=2.0)
+    parser.add_argument("--min-distinct-route-markets", type=int, default=3)
+    parser.add_argument("--min-distinct-regimes", type=int, default=2)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="resonance-opportunity-truth-benchmark",
-        description="Build or verify the paper-only RESONANCE Verify Opportunity Truth Benchmark.",
+        description=(
+            "Build or verify the paper-only RESONANCE Verify "
+            "Opportunity Truth Benchmark v0.2."
+        ),
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
     build = sub.add_parser("build")
     build.add_argument("input")
+    build.add_argument("--min-terminal-operations", type=int, default=100)
     build.add_argument("--min-truth-population", type=int, default=30)
+    build.add_argument(
+        "--ignore-corpus-quality",
+        action="store_true",
+        help=(
+            "allow internal readiness without the real-market "
+            "corpus-quality gate"
+        ),
+    )
+    _add_quality_arguments(build)
     build.add_argument("--output")
     build.add_argument("--markdown-output")
 
@@ -68,22 +104,22 @@ def _parser() -> argparse.ArgumentParser:
     verify.add_argument("input")
     verify.add_argument("report")
 
+    render = sub.add_parser("render")
+    render.add_argument("report")
+    render.add_argument("--output")
+
     return parser
 
 
-def _build_report(
-    source: ReplayBundle | RealMarketReplayCorpus,
-    *,
-    min_truth_population: int,
-) -> OpportunityTruthBenchmarkReport:
-    if isinstance(source, RealMarketReplayCorpus):
-        return build_opportunity_truth_benchmark_from_corpus(
-            source,
-            min_truth_population=min_truth_population,
-        )
-    return build_opportunity_truth_benchmark(
-        source,
-        min_truth_population=min_truth_population,
+def _quality_policy(args: argparse.Namespace) -> CorpusQualityPolicy:
+    return CorpusQualityPolicy(
+        min_decision_batches=args.min_decision_batches,
+        min_effective_decision_batches=args.min_effective_decision_batches,
+        min_temporal_span_ms=args.min_temporal_span_ms,
+        min_distinct_routes=args.min_distinct_routes,
+        min_effective_routes=args.min_effective_routes,
+        min_distinct_route_markets=args.min_distinct_route_markets,
+        min_distinct_regimes=args.min_distinct_regimes,
     )
 
 
@@ -92,20 +128,32 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "build":
         source = _load_source(args.input)
-        report = _build_report(
+        report = build_opportunity_truth_benchmark_v2(
             source,
-            min_truth_population=args.min_truth_population,
+            claim_policy=OpportunityTruthClaimPolicy(
+                min_terminal_operations=args.min_terminal_operations,
+                min_truth_events=args.min_truth_population,
+                require_corpus_quality=not args.ignore_corpus_quality,
+            ),
+            quality_policy=(
+                _quality_policy(args)
+                if isinstance(source, RealMarketReplayCorpus)
+                else None
+            ),
         )
         _write_json(report.to_envelope(), args.output)
         if args.markdown_output:
             _write_text(
                 args.markdown_output,
-                render_opportunity_truth_markdown(report),
+                render_opportunity_truth_benchmark_v2_markdown(report),
             )
         print(
-            f"benchmark_status={report.status.value} source={report.evidence_source.value} "
+            f"claim_status={report.claim_status.value} "
+            f"source={report.evidence_source.value} "
+            f"terminal_operations={report.terminal_operations} "
             f"truth_population={report.truth_population} "
-            f"public_claim_eligible={str(report.public_claim_eligible).lower()} "
+            f"internal_evidence_ready="
+            f"{str(report.internal_evidence_ready).lower()} "
             f"sha256={report.sha256}",
             file=sys.stderr,
         )
@@ -113,11 +161,58 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "verify":
         source = _load_source(args.input)
-        verify_opportunity_truth_benchmark_envelope(
-            _load_json(args.report),
-            source=source,
+        envelope = _load_json(args.report)
+        verify_opportunity_truth_benchmark_v2_envelope(envelope)
+        verify_opportunity_truth_benchmark_v2_source_binding(
+            envelope,
+            source,
         )
-        print("OK")
+        print("FULL_OK")
+        return 0
+
+    if args.command == "render":
+        payload = verify_opportunity_truth_benchmark_v2_envelope(
+            _load_json(args.report)
+        )
+        report = OpportunityTruthBenchmarkV2Report(
+            evidence_source=__import__(
+                "resonance_arbitrage_graph.opportunity_truth_benchmark",
+                fromlist=["OpportunityTruthEvidenceSource"],
+            ).OpportunityTruthEvidenceSource(payload["evidence_source"]),
+            source_sha256=payload["source_sha256"],
+            replay_bundle_sha256=payload["replay_bundle_sha256"],
+            operation_ids=tuple(payload["operation_ids"]),
+            legacy_benchmark=payload["legacy_benchmark"],
+            legacy_benchmark_sha256=payload["legacy_benchmark_sha256"],
+            claim_policy=OpportunityTruthClaimPolicy.from_payload(
+                payload["claim_policy"]
+            ),
+            claim_status=__import__(
+                "resonance_arbitrage_graph.opportunity_truth_benchmark_v2",
+                fromlist=["OpportunityTruthClaimStatus"],
+            ).OpportunityTruthClaimStatus(payload["claim_status"]),
+            claim_reasons=tuple(payload["claim_reasons"]),
+            corpus_quality=payload["corpus_quality"],
+            corpus_quality_sha256=payload["corpus_quality_sha256"],
+            terminal_operations=payload["terminal_operations"],
+            truth_population=payload["truth_population"],
+            truth_coverage=payload["truth_coverage"],
+            mean_expected_edge_bps=payload["mean_expected_edge_bps"],
+            mean_observed_edge_bps=payload["mean_observed_edge_bps"],
+            mean_edge_decay_bps=payload["mean_edge_decay_bps"],
+            paper_pnl_by_start_state=tuple(
+                __import__(
+                    "resonance_arbitrage_graph.opportunity_truth_benchmark_v2",
+                    fromlist=["OpportunityTruthPnlSlice"],
+                ).OpportunityTruthPnlSlice.from_payload(item)
+                for item in payload["paper_pnl_by_start_state"]
+            ),
+        )
+        rendered = render_opportunity_truth_benchmark_v2_markdown(report)
+        if args.output:
+            _write_text(args.output, rendered)
+        else:
+            print(rendered, end="")
         return 0
 
     raise RuntimeError("unreachable command")
