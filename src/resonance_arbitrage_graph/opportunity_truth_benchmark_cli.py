@@ -7,6 +7,7 @@ import sys
 from typing import Any
 
 from .opportunity_truth_benchmark import (
+    OpportunityTruthEvidenceSource,
     build_opportunity_truth_benchmark,
     render_opportunity_truth_markdown,
     verify_opportunity_truth_benchmark_envelope,
@@ -22,17 +23,27 @@ def _load_json(path: str) -> dict[str, Any]:
     return payload
 
 
-def _load_bundle(path: str) -> tuple[ReplayBundle, str]:
+def _load_bundle(
+    path: str,
+) -> tuple[ReplayBundle, OpportunityTruthEvidenceSource, str | None]:
     envelope = _load_json(path)
     payload = envelope.get("payload")
     if not isinstance(payload, dict):
         raise ValueError("input envelope is missing payload object")
     schema = payload.get("schema")
     if schema == "resonance.arbitrage.replay-bundle/v0.2":
-        return ReplayBundle.from_envelope(envelope), "replay_bundle"
+        return (
+            ReplayBundle.from_envelope(envelope),
+            OpportunityTruthEvidenceSource.REPLAY_BUNDLE,
+            None,
+        )
     if schema == "resonance.arbitrage.real-market-replay-corpus/v0.1":
         corpus = RealMarketReplayCorpus.from_envelope(envelope)
-        return corpus.to_replay_bundle(), "real_market_corpus"
+        return (
+            corpus.to_replay_bundle(),
+            OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS,
+            corpus.sha256,
+        )
     raise ValueError("input must be a replay bundle or real-market replay corpus")
 
 
@@ -74,10 +85,12 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
 
     if args.command == "build":
-        bundle, source_kind = _load_bundle(args.input)
+        bundle, source_kind, corpus_sha = _load_bundle(args.input)
         report = build_opportunity_truth_benchmark(
             bundle,
             min_truth_population=args.min_truth_population,
+            evidence_source=source_kind,
+            source_corpus_sha256=corpus_sha,
         )
         envelope = report.to_envelope()
         _write_json(envelope, args.output)
@@ -87,17 +100,21 @@ def main(argv: list[str] | None = None) -> int:
                 render_opportunity_truth_markdown(report),
             )
         print(
-            f"benchmark_status={report.status.value} source={source_kind} "
-            f"truth_population={report.truth_population} sha256={report.sha256}",
+            f"benchmark_status={report.status.value} source={source_kind.value} "
+            f"truth_population={report.truth_population} "
+            f"public_claim_eligible={str(report.public_claim_eligible).lower()} "
+            f"sha256={report.sha256}",
             file=sys.stderr,
         )
         return 0
 
     if args.command == "verify":
-        bundle, _ = _load_bundle(args.input)
+        bundle, source_kind, corpus_sha = _load_bundle(args.input)
         verify_opportunity_truth_benchmark_envelope(
             _load_json(args.report),
             bundle=bundle,
+            evidence_source=source_kind,
+            source_corpus_sha256=corpus_sha,
         )
         print("OK")
         return 0
