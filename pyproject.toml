@@ -29,6 +29,7 @@ resonance-policy-authority = "resonance_arbitrage_graph.policy_authority_cli:mai
 resonance-catboost-walk-forward = "resonance_arbitrage_graph.predictive_catboost_cli:main"
 resonance-real-market-corpus = "resonance_arbitrage_graph.real_market_corpus_cli:main"
 resonance-corpus-runner = "resonance_arbitrage_graph.corpus_runner_cli:main"
+resonance-opportunity-truth-benchmark = "resonance_arbitrage_graph.opportunity_truth_benchmark_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
