@@ -10,6 +10,7 @@ import json
 from typing import Any
 
 from .model import Verdict
+from .real_market_corpus import RealMarketReplayCorpus
 from .replay import ReplayBundle, ReplayMetrics, ReplayResult, benchmark_bundle
 
 
@@ -250,23 +251,14 @@ def _slice(
     )
 
 
-def build_opportunity_truth_benchmark(
+def _build(
     bundle: ReplayBundle,
     *,
-    min_truth_population: int = 30,
-    evidence_source: OpportunityTruthEvidenceSource = OpportunityTruthEvidenceSource.REPLAY_BUNDLE,
-    source_corpus_sha256: str | None = None,
+    min_truth_population: int,
+    evidence_source: OpportunityTruthEvidenceSource,
+    source_corpus_sha256: str | None,
 ) -> OpportunityTruthBenchmarkReport:
-    if not isinstance(bundle, ReplayBundle):
-        raise ValueError("benchmark requires ReplayBundle")
-    if not isinstance(evidence_source, OpportunityTruthEvidenceSource):
-        raise ValueError("evidence_source has invalid type")
-    if evidence_source is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS:
-        _sha256_text(source_corpus_sha256, "source_corpus_sha256")
-    elif source_corpus_sha256 is not None:
-        raise ValueError("replay-bundle source cannot bind a corpus digest")
     _positive_int(min_truth_population, "min_truth_population")
-
     calibration = benchmark_bundle(bundle)
     results = calibration.results
     collapsed = bundle.collapsed_cases()
@@ -320,6 +312,37 @@ def build_opportunity_truth_benchmark(
             _slice(key, route_groups[key], metrics_by_route[key], cases_by_operation)
             for key in sorted(route_groups)
         ),
+    )
+
+
+def build_opportunity_truth_benchmark(
+    bundle: ReplayBundle,
+    *,
+    min_truth_population: int = 30,
+) -> OpportunityTruthBenchmarkReport:
+    if not isinstance(bundle, ReplayBundle):
+        raise ValueError("benchmark requires ReplayBundle")
+    return _build(
+        bundle,
+        min_truth_population=min_truth_population,
+        evidence_source=OpportunityTruthEvidenceSource.REPLAY_BUNDLE,
+        source_corpus_sha256=None,
+    )
+
+
+def build_opportunity_truth_benchmark_from_corpus(
+    corpus: RealMarketReplayCorpus,
+    *,
+    min_truth_population: int = 30,
+) -> OpportunityTruthBenchmarkReport:
+    if not isinstance(corpus, RealMarketReplayCorpus):
+        raise ValueError("real-market benchmark requires RealMarketReplayCorpus")
+    bundle = corpus.to_replay_bundle()
+    return _build(
+        bundle,
+        min_truth_population=min_truth_population,
+        evidence_source=OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS,
+        source_corpus_sha256=corpus.sha256,
     )
 
 
@@ -383,9 +406,7 @@ def render_opportunity_truth_markdown(report: OpportunityTruthBenchmarkReport) -
 def verify_opportunity_truth_benchmark_envelope(
     envelope: Mapping[str, Any],
     *,
-    bundle: ReplayBundle,
-    evidence_source: OpportunityTruthEvidenceSource = OpportunityTruthEvidenceSource.REPLAY_BUNDLE,
-    source_corpus_sha256: str | None = None,
+    source: ReplayBundle | RealMarketReplayCorpus,
 ) -> bool:
     if not isinstance(envelope, Mapping) or set(envelope) != {"payload", "sha256"}:
         raise ValueError("benchmark envelope is not canonical")
@@ -396,12 +417,18 @@ def verify_opportunity_truth_benchmark_envelope(
     if not isinstance(supplied_sha, str) or not hmac.compare_digest(_sha256(payload), supplied_sha):
         raise ValueError("benchmark SHA-256 does not match payload")
     min_truth_population = _positive_int(payload.get("min_truth_population"), "min_truth_population")
-    rebuilt = build_opportunity_truth_benchmark(
-        bundle,
-        min_truth_population=min_truth_population,
-        evidence_source=evidence_source,
-        source_corpus_sha256=source_corpus_sha256,
-    )
+    if isinstance(source, RealMarketReplayCorpus):
+        rebuilt = build_opportunity_truth_benchmark_from_corpus(
+            source,
+            min_truth_population=min_truth_population,
+        )
+    elif isinstance(source, ReplayBundle):
+        rebuilt = build_opportunity_truth_benchmark(
+            source,
+            min_truth_population=min_truth_population,
+        )
+    else:
+        raise ValueError("benchmark verification requires ReplayBundle or RealMarketReplayCorpus")
     if rebuilt.canonical_payload() != payload:
         raise ValueError("benchmark report does not reproduce from supplied source evidence")
     if not hmac.compare_digest(rebuilt.sha256, supplied_sha):
