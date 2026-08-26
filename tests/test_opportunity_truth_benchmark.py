@@ -1,4 +1,5 @@
 from copy import deepcopy
+from dataclasses import replace
 
 import pytest
 
@@ -10,29 +11,40 @@ from resonance_arbitrage_graph.opportunity_truth_benchmark import (
     render_opportunity_truth_markdown,
     verify_opportunity_truth_benchmark_envelope,
 )
-from resonance_arbitrage_graph.real_market_corpus import (
-    RealMarketReplayCorpus,
-    resolve_replay_case,
-)
-from test_real_market_corpus import _decision_case, _outcome_quotes
-from test_walk_forward import _bundle
+from resonance_arbitrage_graph.real_market_corpus import RealMarketReplayCorpus
+from resonance_arbitrage_graph.replay import ReplayOutcome
+from test_walk_forward import _bundle, _case
 
 
 def _real_market_corpus() -> RealMarketReplayCorpus:
-    decision = _decision_case()
+    terminal_fixture = _case(
+        "product-real-market",
+        1,
+        volatility="low",
+        edge_bps=32.0,
+        realized_edge_bps=32.0,
+    )
+    decision = replace(
+        terminal_fixture,
+        outcome=ReplayOutcome(observed_at_ms=terminal_fixture.evaluation_time_ms),
+    )
     corpus = RealMarketReplayCorpus().append_decisions(
         (decision,),
-        captured_at_ms=1_000,
+        captured_at_ms=decision.evaluation_time_ms,
     )
-    terminal = resolve_replay_case(
+    expired = replace(
         decision,
-        _outcome_quotes(),
-        observed_at_ms=2_000,
+        case_id=f"{decision.logical_operation_id}-a2",
+        attempt=2,
+        outcome=ReplayOutcome(
+            observed_at_ms=decision.evaluation_time_ms + 1_000,
+            expired=True,
+        ),
     )
     return corpus.append_outcome(
-        terminal,
-        _outcome_quotes(),
-        captured_at_ms=2_000,
+        expired,
+        (),
+        captured_at_ms=expired.outcome.observed_at_ms,
     )
 
 
