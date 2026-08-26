@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "resonance-arbitrage-graph"
 version = "0.15.0"
-description = "Paper-only causal verification engine for crypto arbitrage opportunities"
+description = "Evidence-bound pre-trade verification for autonomous financial agents"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
