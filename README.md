@@ -1,312 +1,187 @@
-# RESONANCE Arbitrage Graph
+# RESONANCE Verify
 
-A paper-only causal verification engine for crypto-arbitrage opportunities.
+**Pre-trade verification for autonomous financial agents.**
 
-The project does **not** place live orders, sign transactions, hold exchange keys, or transfer funds. Its job is to decide whether a visible market discrepancy still looks executable after modeling costs, liquidity, freshness, latency, settlement risk, market regime and historical signal reliability — and to emit deterministic evidence, replayable market state and outcome memory for that decision.
+> Send a proposed market opportunity. RESONANCE Verify checks whether it still looks executable after fees, slippage, liquidity, quote freshness, latency, market regime and historical outcome evidence — then returns a deterministic paper verdict and a reproducible evidence trail.
 
-## Causal spine
+[![CI](https://github.com/safal207/resonance-arbitrage-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/safal207/resonance-arbitrage-graph/actions/workflows/ci.yml)
 
-```text
-public/fixture market state
-  -> normalized quote snapshot
-  -> verified pair metadata
-  -> rolling public market window
-  -> discrepancy
-  -> candidate route
-  -> execution constraints
-  -> base verifier verdict
-  -> route-bound market regime
-  -> monotonic regime execution gate
-  -> final paper verdict
-  -> quote + rolling-window + regime + gate-bound evidence
-  -> opportunity observation
-  -> truth metrics
-  -> regime-segmented reliability ranking
-  -> offline replay + calibration benchmark
-  -> chronological holdout
-  -> joint execute/volatility causal calibration
-  -> untouched out-of-sample validation
-```
+## Product status
 
-A price difference is not treated as an opportunity by itself. The core invariant is:
+**Research core: implemented. Product proof: collecting.**
+
+The repository contains a working public-market, paper-only verification engine, an append-only real-market corpus, leakage-safe replay and walk-forward evaluation, and an Opportunity Truth Benchmark report. It does **not** yet publish a performance or profitability claim. Any headline benchmark stays marked `NOT_READY` until the bound real-market corpus passes explicit quantity, diversity and truth-event gates.
+
+No private exchange API, wallet key, signing, order placement, transfer, bridge or live-capital path exists in this project.
+
+## The problem
+
+A visible spread is not the same thing as an executable opportunity.
 
 ```text
-final simulated capital > initial capital
-AND route returns to its starting asset/venue state
-AND quotes are fresh
-AND capacity is sufficient
-AND route latency is within policy
-AND modeled execution/settlement confidence is acceptable
-AND final post-regime verdict never exceeds the base verifier verdict
+visible discrepancy
+  - fees
+  - slippage
+  - insufficient depth
+  - stale quotes
+  - latency
+  - regime shift
+  - settlement uncertainty
+  = sometimes no opportunity at all
 ```
 
-## v0.10 — Joint Causal Holdout Calibration
+Trading agents are good at proposing actions. Before an action is trusted, someone still has to answer:
 
-v0.10 jointly calibrates the two thresholds that now change the actual paper decision population:
+1. Does the route return capital to the intended state?
+2. Are the exact quotes fresh and the capacity sufficient?
+3. Does the edge survive modeled costs and latency?
+4. Is the current market regime allowed by policy?
+5. How often did comparable signals survive in later paper observations?
+6. Can the decision and its evidence be independently replayed?
+
+RESONANCE Verify is the verification layer between **signal** and **execution**.
 
 ```text
-execute_net_edge_bps × volatile_return_bps
+signal / agent proposal
+        ↓
+┌──────────────────┐
+│ RESONANCE VERIFY │
+└──────────────────┘
+        ↓
+EXECUTE_SIM / OBSERVE / REJECT
+        ↓
+deterministic evidence + later outcome
 ```
 
-The volatility threshold only became causally active after v0.9 introduced the regime execution gate.
+## Product contract
 
-For every logical operation, v0.10 evaluates a complete **2×2 counterfactual** on the same captured market bytes:
+### Input today
 
-```text
-baseline (00)
-  = baseline execute + baseline volatility
+The current implementation accepts Python objects and local/public-data CLI flows built from:
 
-execute-only (10)
-  = candidate execute + baseline volatility
+- normalized public best-bid/best-ask snapshots;
+- an exact route and starting venue/asset state;
+- starting capital;
+- explicit fee and slippage assumptions;
+- freshness, latency, regime and execution policies;
+- optional historical replay/outcome evidence.
 
-volatility-only (01)
-  = baseline execute + candidate volatility
+A REST/SDK adapter is a product-integration layer, not yet an advertised hosted service.
 
-joint (11)
-  = candidate execute + candidate volatility
+### Output
+
+Every proposed route receives one of three paper verdicts:
+
+- `EXECUTE_SIM` — the route passes the deterministic paper policy;
+- `OBSERVE` — the signal is interesting but not eligible for simulated execution;
+- `REJECT` — one or more hard constraints fail.
+
+Illustrative response shape — **not a measured benchmark result**:
+
+```json
+{
+  "verdict": "OBSERVE",
+  "base_verdict": "EXECUTE_SIM",
+  "market_regime": "VOLATILE",
+  "regime_action": "OBSERVE_ONLY",
+  "expected_edge_bps": 18.4,
+  "checks": {
+    "fresh_quotes": true,
+    "capacity_sufficient": true,
+    "route_continuous": true
+  },
+  "reasons": [
+    "derived market regime requires a monotonic downgrade"
+  ],
+  "evidence_sha256": "…"
+}
 ```
 
-This lets each dimension be judged while holding the other candidate dimension fixed:
+The exact wire objects are content-addressed and validated in the Python core; the example above is deliberately simplified for product orientation.
 
-```text
-execute causal support
-  = final verdict(11) != final verdict(01)
+## Opportunity Truth Benchmark
 
-volatility causal support
-  = final verdict(11) != final verdict(10)
-```
+The product claim is not “we find the largest spread.” It is:
 
-Additional diagnostics preserve volatility regime-label changes and total joint final-verdict changes versus baseline. A regime relabel is not enough. If changing the volatility threshold turns `NORMAL` into `VOLATILE` while the route is already `OBSERVE`, the final decision remains `OBSERVE`; that produces label support but **zero volatility causal support** and cannot qualify the candidate.
+> **RESONANCE Verify separates opportunities that merely look profitable from opportunities that survive the full paper-verification chain.**
 
-Core v0.10 invariants:
+The new benchmark consumes a bound `RealMarketReplayCorpus` or `ReplayBundle` and emits canonical JSON + SHA-256 plus a human-readable report.
 
-- calibration and validation remain strictly chronological by `logical_operation_id`;
-- retries never cross split boundaries;
-- validation never chooses among candidate pairs;
-- all untuned engine/regime fields, full `RegimeExecutionPolicy`, and rolling-window policy remain frozen;
-- baseline execute and volatility thresholds must be uniform across the corpus;
-- joint volatility calibration requires `NORMAL -> ALLOW` and a suppressive `VOLATILE -> OBSERVE_ONLY/REJECT` gate;
-- causal-support counts are eligibility guardrails, not score rewards;
-- validation can explicitly fail for insufficient out-of-sample causal support;
-- `JointPolicyContext` is recursively immutable and its inner SHA is independently verified;
-- reports are canonical JSON + SHA-256 and remain advisory/paper-only.
-
-Offline joint holdout CLI:
-
-```bash
-resonance-joint-holdout-calibration replay-bundle.json \
-  --validation-fraction 0.30 \
-  --execute-threshold-bps 25,30,35,40 \
-  --volatile-threshold-bps 20,40,60,75 \
-  --min-calibration-operations 20 \
-  --min-validation-operations 10 \
-  --min-calibration-truth-events 10 \
-  --min-validation-truth-events 5 \
-  --min-truth-lower-bound 0.60 \
-  --min-survival-lower-bound 0.70 \
-  --min-calibration-execute-causal-changes 1 \
-  --min-calibration-volatility-causal-changes 1 \
-  --min-validation-execute-causal-changes 1 \
-  --min-validation-volatility-causal-changes 1
-```
-
-These numbers are examples only. Guardrails are explicit caller inputs rather than hidden trading recommendations.
-
-## v0.9 — Evidence-Bound Regime Execution Gate
-
-v0.9 makes the derived market regime causally active while keeping the system paper-only.
-
-```text
-base verifier verdict
-  -> evidence-derived rolling regime
-  -> explicit regime action
-  -> monotonic downgrade
-  -> final paper verdict
-```
-
-Verdict order:
-
-```text
-REJECT < OBSERVE < EXECUTE_SIM
-```
-
-Invariant:
-
-```text
-final_verdict <= base_verdict
-```
-
-Default regime actions:
-
-```text
-NORMAL          -> ALLOW
-VOLATILE        -> OBSERVE_ONLY
-THIN_LIQUIDITY  -> OBSERVE_ONLY
-DISLOCATED      -> OBSERVE_ONLY
-UNKNOWN         -> REJECT
-```
-
-`UNKNOWN` is structurally fail-closed and cannot be configured to allow execution. A base `REJECT` can never be promoted, and a base `OBSERVE` can never become `EXECUTE_SIM`.
-
-Evidence exposes `base_verdict` and final `verdict` separately and binds the gate action, full canonical `RegimeExecutionPolicy`, and gate-policy SHA-256. Observation memory validates the gate against the bound policy before accepting the receipt and classifies outcomes from the **final** verdict. Therefore a regime-downgraded `OBSERVE` does not enter the Opportunity Truth Rate denominator.
-
-Replay artifacts use schema v0.2. Replay rebuilds the route, recomputes the base verifier verdict, recomputes the rolling regime, reapplies the regime gate, and only then grades the later paper outcome. Gate policy is part of the replay decision fingerprint, so changing regime action semantics across retries is decision drift.
-
-Replay v0.1 artifacts are intentionally not silently reinterpreted as v0.2 because v0.1 did not bind this causal policy.
-
-## v0.8 — Holdout Policy Calibration
-
-v0.8 prevents the causally active execute threshold from being selected and graded on the same replay history.
-
-```text
-replay corpus
-  -> logical-operation groups
-  -> strict chronological split
-  -> calibration bundle
-  -> execute-threshold grid
-  -> calibration-only selection
-  -> freeze candidate
-  -> untouched validation bundle
-  -> out-of-sample gate
-```
-
-Core holdout invariants:
-
-- splitting happens by `logical_operation_id`, never raw retry rows;
-- all attempts for one logical operation remain on one side of the split;
-- validation is strictly later than calibration;
-- candidate selection sees calibration only;
-- validation can pass/fail the selected candidate but cannot choose a fallback;
-- all untuned `Policy` fields, full `RegimePolicy`, full `RegimeExecutionPolicy`, and rolling-window policy remain frozen measurement context;
-- uncertainty-sensitive guardrails use Wilson lower bounds rather than raw ratios alone;
-- insufficient corpus/calibration/validation fails closed explicitly;
-- the final report binds corpus/subset SHA-256 values, split membership, grid, evaluations, selected candidate and validation result;
-- all results remain advisory and paper-only.
-
-Offline holdout CLI:
-
-```bash
-resonance-holdout-calibration replay-bundle.json \
-  --validation-fraction 0.30 \
-  --execute-threshold-bps 20,30,40,50 \
-  --min-calibration-operations 20 \
-  --min-validation-operations 10 \
-  --min-calibration-truth-events 10 \
-  --min-validation-truth-events 5 \
-  --min-truth-lower-bound 0.60 \
-  --min-survival-lower-bound 0.70 \
-  --confidence-z 1.96
-```
-
-## v0.7 — Market-State Replay & Calibration Benchmark
-
-v0.7 turns captured v0.6 market state into an offline calibration laboratory. v0.9 upgrades the replay case/bundle/report wire schema to v0.2 so gate policy is part of the decision state.
-
-A `ReplayCase` stores the exact quote snapshots, rolling windows, route-leg descriptors, verifier/regime/gate policies and a later paper outcome. It deliberately does **not** store a trusted final verdict or regime. Replay rebuilds route edges from the captured quotes and recomputes the decision chain.
-
-Core replay invariants:
-
-- future snapshots or rolling samples cannot leak into an earlier decision;
-- bundle payloads are canonical JSON and SHA-256 verified before replay;
-- retries share one `logical_operation_id`, contiguous attempts and one stable decision fingerprint;
-- a terminal attempt cannot be retried;
-- retries collapse to one logical operation before metrics;
-- incomplete rolling evidence derives `UNKNOWN`, and the default v0.9 gate fails closed to final `REJECT`;
-- calibration is segmented by derived regime and semantic route ID;
-- threshold sensitivity is advisory only and never mutates runtime policy.
-
-Replay CLI:
-
-```bash
-resonance-replay-benchmark replay-bundle.json
-```
-
-Optional advisory threshold grid:
-
-```bash
-resonance-replay-benchmark replay-bundle.json \
-  --execute-threshold-bps 20,30,40,50 \
-  --volatile-threshold-bps 50,75,100
-```
-
-The replay CLI reads local JSON only and performs no network requests.
-
-## v0.6 — Evidence-Bound Rolling Market State
-
-v0.6 removes caller-supplied volatility from the live paper path. The scanner samples public GET-only market data into deterministic rolling windows and derives short-window volatility from observed mid-price returns.
-
-A rolling window is scoped to one exact `venue + symbol + base_asset + quote_asset`. Each sample preserves price/quantity, observation time, timestamp provenance and source identity.
-
-Important invariants:
-
-- input samples must already be strictly timestamp ordered;
-- duplicate/reordered timestamps are rejected rather than silently sorted;
-- all samples belong to one exact market;
-- minimum sample count and time coverage are explicit policy fields;
-- incomplete window evidence yields `UNKNOWN`;
-- the final sample of every route-bound window must exactly equal the current `QuoteSnapshot` backing that route;
-- the exact canonical window, summary and SHA-256 are bound into final evidence.
-
-For multi-leg routes, v0.6 conservatively uses the maximum derived volatility among the exact markets bound to the route.
-
-## v0.5 — Regime-Aware Calibration
-
-Market regimes are derived from route-specific evidence:
-
-```text
-NORMAL
-VOLATILE
-THIN_LIQUIDITY
-DISLOCATED
-UNKNOWN
-```
-
-Inputs include route-bound spread, capacity ratio, quote freshness/dispersion, cross-rate dislocation and rolling return volatility. `UNKNOWN` fails closed for reliability ranking and, since v0.9, for the final paper execution verdict.
-
-## v0.4 — Reliability-Adjusted Ranking
-
-Historical outcome memory ranks paper opportunities by reliability rather than raw spread alone. Bayesian-smoothed truth/survival rates, negative-only prediction-bias correction and history confidence produce an advisory score. History cannot manufacture positive edge or promote a non-`EXECUTE_SIM` route.
-
-## v0.3 — Opportunity Memory & Truth Metrics
-
-`OpportunityObservation` and the append-only JSONL journal preserve logical-operation identity across retries and record:
-
-```text
-TRUE_POSITIVE
-FALSE_POSITIVE
-EXPIRED
-REJECTED
-INDETERMINATE
-```
-
-Metrics:
+Core metrics:
 
 ```text
 Opportunity Truth Rate = TP / (TP + FP)
 False Opportunity Rate = FP / (TP + FP)
-Route Survival Rate = (TP + FP) / (TP + FP + EXPIRED)
-Prediction Error = observed_edge_bps - expected_edge_bps
+Route Survival Rate     = (TP + FP) / (TP + FP + EXPIRED)
+Truth Coverage          = (TP + FP) / EXECUTE_SIM
+Edge Decay              = expected edge - observed edge
 ```
 
-## v0.2 — public read-only market data
+Important semantics:
 
-- normalized public best-bid/best-ask snapshots;
-- read-only Binance Spot and Kraken Spot adapters;
-- quote-to-edge conversion with explicit cost assumptions;
-- single-venue triangular paper scan;
-- cross-venue gaps remain observe-only until rebalance/settlement is modeled;
-- public quote provenance is bound into deterministic evidence.
+- `REJECT` is not counted as a false positive because the system never claimed it was executable;
+- `OBSERVE` and unresolved outcomes do not enter the OTR denominator;
+- retries collapse to one logical opportunity;
+- paper PnL is grouped by exact starting `venue:asset` state and is never blended across incompatible units;
+- a replay fixture can be measured, but only a quality-gated append-only real-market corpus can become `INTERNAL_EVIDENCE_READY`;
+- even `INTERNAL_EVIDENCE_READY` is not a live-fill or profitability claim.
 
-### Live paper scan
+Build a benchmark from a local corpus:
+
+```bash
+resonance-opportunity-truth-benchmark build corpus.json \
+  --format json \
+  --output opportunity-truth-benchmark.json
+```
+
+Render a product-readable Markdown report:
+
+```bash
+resonance-opportunity-truth-benchmark render \
+  opportunity-truth-benchmark.json \
+  --output opportunity-truth-benchmark.md
+```
+
+Reproduce the report from its bound source:
+
+```bash
+resonance-opportunity-truth-benchmark verify \
+  opportunity-truth-benchmark.json \
+  corpus.json
+```
+
+A successful full check prints:
+
+```text
+FULL_OK
+```
+
+## Collect real public-market evidence
+
+Install locally:
 
 ```bash
 python -m pip install -e ".[test]"
 ```
 
-Example Binance triangle:
+The one-shot corpus runner performs:
+
+```text
+public decision capture
+→ persist before waiting
+→ configured paper horizon
+→ fresh public outcome capture
+→ append-only outcome record
+→ replay-bundle export
+→ quantity + quality readiness checks
+→ optional shadow benchmark
+```
+
+Example shape:
 
 ```bash
-resonance-live-scan \
+resonance-corpus-runner \
+  --corpus corpus.json \
   --venue binance \
   --pair BTCUSDT:BTC:USDT \
   --pair ETHBTC:ETH:BTC \
@@ -315,67 +190,115 @@ resonance-live-scan \
   --amount 1000 \
   --fee-bps 10 \
   --slippage-bps 5 \
-  --max-hops 3 \
-  --rolling-samples 5 \
-  --rolling-interval-ms 1000 \
-  --rolling-horizon-ms 5000 \
-  --rolling-min-coverage-ratio 0.8
+  --outcome-horizon-ms 60000
 ```
 
-The scanner synchronously collects public rolling samples before evaluating opportunities. Each opportunity exposes `base_verdict`, `market_regime`, `regime_action`, and `final_verdict`; `verdict` remains a compatibility alias for the final post-gate verdict. Fee/slippage and rolling-window settings are paper-model assumptions, not claims about an exchange account or universally optimal parameters.
+Run `resonance-corpus-runner --help` for the exact installed options. Public feeds currently include Binance Spot and Kraken Spot adapters.
 
-## v0.1 — verification core
+## Why the evidence is different
 
-- market `Node` / `Edge` graph;
-- fee, slippage, gas, capacity, freshness, latency and confidence modeling;
-- bounded cycle discovery;
-- verdicts `EXECUTE_SIM`, `OBSERVE`, `REJECT`;
-- deterministic paper executor and replay/idempotency guard;
-- ProofPath-style SHA-256 evidence receipts.
-
-## Evidence
-
-Evidence evolves monotonically:
+The engine does not trust stored labels when it can recompute them.
 
 ```text
-base route evidence
-  -> public quote provenance
-  -> regime features + policy
-  -> rolling-window state + window SHA
-  -> regime action + final verdict + gate-policy SHA
-  -> replay bundle + calibration report SHA
-  -> chronological holdout evidence
-  -> joint candidate + 2x2 causal-support + untouched-validation evidence
+public quotes
+→ route reconstruction
+→ cost / capacity / freshness checks
+→ rolling market state
+→ regime derivation
+→ monotonic execution gate
+→ paper verdict
+→ later public outcome
+→ truth classification
+→ replay / benchmark
 ```
 
-The observation layer recomputes evidence digests before admitting outcomes to memory and validates the evidence-bound regime gate against its policy. Replay verifies raw bundle digests and reconstructs typed cases. Holdout binds the source corpus, chronological subset digests, frozen measurement context, explicit guardrails, calibration-only selection and untouched validation result into deterministic report envelopes.
+Evidence and governance layers include:
 
-## Why cross-venue is observe-only
+- deterministic route and quote provenance;
+- append-only outcome identity across retries;
+- hash-chained real-market corpus records;
+- anti-lookahead replay and chronological splits;
+- holdout and walk-forward evaluation;
+- corpus quantity and diversity gates;
+- policy promotion, lineage, revocation and scoped authority receipts;
+- predictive models restricted to shadow ranking/downgrade behavior.
 
-Buying on venue A and selling on venue B does not return capital to the same venue state. Calling that an executable cycle without modeling inventory/rebalance would hide a real state transition. Future transfer/rebalance edges must model availability, fees, latency, capacity and settlement probability before cross-venue execution can become `EXECUTE_SIM`.
+No model can turn deterministic `OBSERVE` or `REJECT` into `EXECUTE_SIM`.
 
-## Tests
+## Who this is for
 
-```bash
-pytest
+The first design-partner profile is deliberately narrow:
+
+- teams building autonomous or agentic trading systems;
+- quant/trading infrastructure teams that need an independent pre-trade verifier;
+- strategy QA and risk teams that need reproducible replay rather than screenshots of historical spreads.
+
+Potential integrations:
+
+```text
+trading agent → RESONANCE Verify → existing execution stack
+signal service → RESONANCE Verify → risk review queue
+strategy candidate → replay corpus → Opportunity Truth Benchmark
 ```
 
-Coverage includes verifier/replay/idempotency contracts, quote provenance, adapters, triangular graph scans, evidence tamper rejection, retry identity, truth metrics, Bayesian reliability, regime isolation, rolling-window ordering/provenance/tail binding, monotonic regime-gate matrices, gate-policy evidence binding, final-verdict truth accounting, replay gate recomputation, gate-policy retry drift, lookahead rejection, replay-bundle tamper detection, deterministic calibration reports, chronological holdout anti-leakage, validation-selection firewall, frozen regime/gate context, Wilson guardrails, joint execute/volatility 2x2 counterfactual support, label-vs-action causal checks, immutable joint policy context, out-of-sample causal-support gates and report tamper detection.
+## Current product roadmap
+
+### Now — Product 0.1
+
+- product-first interface and examples;
+- repeated real-market corpus collection;
+- Opportunity Truth Benchmark;
+- design-partner discovery;
+- one narrow integration contract before adding more research layers.
+
+### Next — chosen by evidence, not version numbers
+
+- Verify API/SDK if partners need a pre-execution integration;
+- predictive ranking only after the real corpus is claim-ready;
+- wallet follower-edge verification only after the arbitrage wedge is validated;
+- cryptographic identity/signature attestation only when an enterprise workflow requires it.
 
 ## Safety boundary
 
-The system remains paper-only. Market data is public GET-only; replay and holdout consume local files only. There is no private API-key handling, account endpoint, order endpoint, signing, wallet interaction, transfer/bridge path, daemon or live execution.
+RESONANCE Verify is **paper-only research and verification infrastructure**.
 
-See:
+It does not:
 
-- `docs/market-data-contracts.md`
-- `docs/v0.2-design.md`
-- `docs/v0.3-design.md`
-- `docs/v0.4-design.md`
-- `docs/v0.5-design.md`
-- `docs/v0.6-design.md`
-- `docs/v0.7-design.md`
-- `docs/v0.8-design.md`
-- `docs/v0.9-design.md`
-- `docs/v0.10-design.md`
-- Issue #19 — v0.10 Joint Causal Holdout Calibration
+- give personalized investment advice;
+- guarantee profit;
+- place orders;
+- connect private exchange accounts;
+- hold or sign with wallet keys;
+- move assets;
+- initiate transfers or bridges;
+- allocate live capital;
+- automatically activate a learned model or promoted policy.
+
+Public top-of-book paper outcomes are not the same as executable fills. Benchmark reports state that limitation explicitly.
+
+## Technical map
+
+```text
+v0.1–v0.6   verification, public quotes, regimes, rolling state
+v0.7–v0.12  replay, holdout, causal calibration, walk-forward, decomposition
+v0.13–v0.15 promotion, lineage, revocation, authority
+v0.16       leakage-safe predictive contracts and shadow CatBoost baseline
+v0.16.2     append-only real-market replay corpus
+v0.16.3     one-shot corpus runner and quantity readiness
+v0.16.4     corpus diversity / evidence-quality gate
+Product 0.1 product surface + Opportunity Truth Benchmark
+```
+
+Design documents live in [`docs/`](docs/), including:
+
+- [`docs/market-data-contracts.md`](docs/market-data-contracts.md)
+- [`docs/v0.16-design.md`](docs/v0.16-design.md)
+- [`docs/v0.16.2-design.md`](docs/v0.16.2-design.md)
+- [`docs/v0.16.3-design.md`](docs/v0.16.3-design.md)
+- [`docs/v0.16.4-design.md`](docs/v0.16.4-design.md)
+- [`docs/product-brief.md`](docs/product-brief.md)
+- [`docs/opportunity-truth-benchmark.md`](docs/opportunity-truth-benchmark.md)
+
+## License
+
+Apache-2.0.
