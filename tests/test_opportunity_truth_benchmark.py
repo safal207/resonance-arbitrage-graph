@@ -4,11 +4,36 @@ import pytest
 
 from resonance_arbitrage_graph.opportunity_truth_benchmark import (
     OpportunityTruthBenchmarkStatus,
+    OpportunityTruthEvidenceSource,
     build_opportunity_truth_benchmark,
+    build_opportunity_truth_benchmark_from_corpus,
     render_opportunity_truth_markdown,
     verify_opportunity_truth_benchmark_envelope,
 )
+from resonance_arbitrage_graph.real_market_corpus import (
+    RealMarketReplayCorpus,
+    resolve_replay_case,
+)
+from test_real_market_corpus import _decision_case, _outcome_quotes
 from test_walk_forward import _bundle
+
+
+def _real_market_corpus() -> RealMarketReplayCorpus:
+    decision = _decision_case()
+    corpus = RealMarketReplayCorpus().append_decisions(
+        (decision,),
+        captured_at_ms=1_000,
+    )
+    terminal = resolve_replay_case(
+        decision,
+        _outcome_quotes(),
+        observed_at_ms=2_000,
+    )
+    return corpus.append_outcome(
+        terminal,
+        _outcome_quotes(),
+        captured_at_ms=2_000,
+    )
 
 
 def test_benchmark_is_deterministic_and_reproducible():
@@ -23,9 +48,12 @@ def test_benchmark_is_deterministic_and_reproducible():
         first.execute_sim_decisions + first.observe_decisions + first.reject_decisions
         == first.candidate_opportunities
     )
+    assert first.evidence_source is OpportunityTruthEvidenceSource.REPLAY_BUNDLE
+    assert first.source_corpus_sha256 is None
+    assert not first.public_claim_eligible
     assert verify_opportunity_truth_benchmark_envelope(
         first.to_envelope(),
-        bundle=bundle,
+        source=bundle,
     )
 
 
@@ -33,10 +61,33 @@ def test_sample_size_gate_prevents_premature_product_claim():
     report = build_opportunity_truth_benchmark(_bundle(), min_truth_population=10_000)
     assert report.status is OpportunityTruthBenchmarkStatus.INSUFFICIENT_TRUTH_POPULATION
     assert not report.sample_size_gate_passed
+    assert not report.public_claim_eligible
 
     rendered = render_opportunity_truth_markdown(report)
     assert "NOT READY" in rendered
-    assert "Public marketing claims must be generated from a captured real-market corpus" in rendered
+    assert "Public claims require evidence_source=REAL_MARKET_CORPUS" in rendered
+
+
+def test_real_market_builder_binds_corpus_identity():
+    corpus = _real_market_corpus()
+    report = build_opportunity_truth_benchmark_from_corpus(
+        corpus,
+        min_truth_population=1,
+    )
+
+    assert report.evidence_source is OpportunityTruthEvidenceSource.REAL_MARKET_CORPUS
+    assert report.source_corpus_sha256 == corpus.sha256
+    assert report.public_claim_eligible is report.sample_size_gate_passed
+    assert verify_opportunity_truth_benchmark_envelope(
+        report.to_envelope(),
+        source=corpus,
+    )
+
+    with pytest.raises(ValueError, match="does not reproduce"):
+        verify_opportunity_truth_benchmark_envelope(
+            report.to_envelope(),
+            source=corpus.to_replay_bundle(),
+        )
 
 
 def test_benchmark_exposes_truth_and_paper_pnl_metrics():
@@ -55,7 +106,7 @@ def test_report_tamper_is_rejected_even_with_original_outer_digest():
     envelope = deepcopy(report.to_envelope())
     envelope["payload"]["candidate_opportunities"] += 1
     with pytest.raises(ValueError, match="SHA-256"):
-        verify_opportunity_truth_benchmark_envelope(envelope, bundle=bundle)
+        verify_opportunity_truth_benchmark_envelope(envelope, source=bundle)
 
 
 def test_min_truth_population_rejects_bool():
