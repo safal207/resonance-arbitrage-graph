@@ -22,7 +22,6 @@ from resonance_arbitrage_graph.real_market_corpus import (
     save_corpus,
 )
 from resonance_arbitrage_graph.replay import ReplayBundle, ReplayOutcome
-from test_corpus_quality import _decision
 from test_walk_forward import _bundle, _case
 
 
@@ -187,15 +186,17 @@ def test_mixed_start_assets_are_never_summed_into_one_pnl_total():
         edge_bps=32.0,
         realized_edge_bps=32.0,
     )
-    btc_decision = _decision(
-        500_000,
-        operation_prefix="mixed-btc",
-        start_asset="BTC",
-    )
+    # Rotate the already-profitable closed route so this fixture really is an
+    # EXECUTE_SIM truth event whose exact starting state is BTC. Building a
+    # fresh route from BTC can select a different, non-executable opportunity
+    # and would not exercise cross-unit PnL grouping at all.
     btc = replace(
-        btc_decision,
+        usdt,
+        case_id="mixed-btc-a1",
+        logical_operation_id="mixed-btc",
+        legs=usdt.legs[1:] + usdt.legs[:1],
         outcome=ReplayOutcome(
-            observed_at_ms=btc_decision.evaluation_time_ms + 1_000,
+            observed_at_ms=usdt.evaluation_time_ms + 1_000,
             realized_net_edge_bps=20.0,
         ),
     )

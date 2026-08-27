@@ -616,7 +616,9 @@ def _from_payload(
             ),
         )
     except (KeyError, TypeError, ValueError) as exc:
-        raise ValueError("invalid opportunity truth v0.2 payload") from exc
+        raise ValueError(
+            f"invalid opportunity truth v0.2 payload: {exc}"
+        ) from exc
     if (
         payload.get("internal_evidence_ready")
         is not report.internal_evidence_ready
