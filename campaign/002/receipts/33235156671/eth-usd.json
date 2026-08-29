@@ -1,0 +1,162 @@
+{
+  "payload": {
+    "campaign_policy": {
+      "campaign_id": "corpus-campaign-002",
+      "dedicated_corpus_required": true,
+      "horizon_ms": 60000,
+      "paper_only": true,
+      "public_market_data_only": true,
+      "schema": "resonance.verify.corpus-campaign-policy/v0.1",
+      "venue": "KRAKEN_SPOT"
+    },
+    "campaign_policy_sha256": "a126da7988299d8b26240de6658a00d63468813e8a10e5d8274d73d92479cb57",
+    "one_shot": {
+      "payload": {
+        "receipt": {
+          "captured_operation_ids": [
+            "real-market-KRAKEN_SPOT-1787979680466-0",
+            "real-market-KRAKEN_SPOT-1787979680466-1"
+          ],
+          "decision_at_ms": 1787979680466,
+          "decision_corpus_sha256": "7e647c5c7112caccc4b0628fe797f978af3039fbd47af07c0e2f8b1ffe04b0ef",
+          "horizon_ms": 60000,
+          "outcome_not_before_ms": 1787979740466,
+          "outcome_observed_at_ms": 1787979741181,
+          "pairs": [
+            "BTC/USD:BTC:USD",
+            "ETH/BTC:ETH:BTC",
+            "ETH/USD:ETH:USD"
+          ],
+          "paper_only": true,
+          "post_corpus_sha256": "02167de0c3d506d02834e80a4d4ece6d7da3b783689ed8d5c9900420eea1f693",
+          "pre_corpus_sha256": "23e556d8c27c035ef96537d933b5f30ab405c52035c846e7177839bed1d1b119",
+          "public_market_data_only": true,
+          "replay_bundle_sha256": "85f649bc21f615be0d38f90b083d25a17d1448e5f2cd973670de52a0017f037e",
+          "research_report_sha256": "8b1797e40fd7e7468d6f18d1cbb8650c638c9020765e485bd47edd37e9ba683d",
+          "resolved_operation_ids": [
+            "real-market-KRAKEN_SPOT-1787979680466-0",
+            "real-market-KRAKEN_SPOT-1787979680466-1"
+          ],
+          "schema": "resonance.arbitrage.corpus-runner-receipt/v0.1",
+          "venue": "KRAKEN_SPOT"
+        },
+        "receipt_sha256": "bb2123fa39a81b74ea4b3764e59f84b2ec18dd8915bfaa97da202ef1730af193",
+        "research_report": {
+          "automatic_promotion": false,
+          "benchmark_executed": false,
+          "benchmark_requested": false,
+          "comparison_payload": null,
+          "comparison_sha256": null,
+          "corpus_sha256": "02167de0c3d506d02834e80a4d4ece6d7da3b783689ed8d5c9900420eea1f693",
+          "interpretation": "RESEARCH_DIAGNOSTIC_ONLY",
+          "paper_only": true,
+          "public_market_data_only": true,
+          "quality_report_payload": {
+            "corpus_sha256": "02167de0c3d506d02834e80a4d4ece6d7da3b783689ed8d5c9900420eea1f693",
+            "decision_batch_counts": [
+              {
+                "evaluation_time_ms": 1787979680466,
+                "terminal_operations": 2
+              }
+            ],
+            "distinct_decision_batches": 1,
+            "distinct_regimes": 1,
+            "distinct_route_markets": 3,
+            "distinct_routes": 2,
+            "effective_decision_batches": 1.0,
+            "effective_routes": 2.0,
+            "failed_dimensions": [
+              "decision_batches",
+              "effective_decision_batches",
+              "temporal_span_ms",
+              "distinct_routes",
+              "distinct_regimes"
+            ],
+            "interpretation": "RESEARCH_READINESS_ONLY",
+            "largest_decision_batch_share": 1.0,
+            "largest_route_share": 0.5,
+            "paper_only": true,
+            "policy_payload": {
+              "interpretation": "RESEARCH_READINESS_ONLY",
+              "min_decision_batches": 20,
+              "min_distinct_regimes": 2,
+              "min_distinct_route_markets": 3,
+              "min_distinct_routes": 3,
+              "min_effective_decision_batches": 10.0,
+              "min_effective_routes": 2.0,
+              "min_temporal_span_ms": 3600000,
+              "schema": "resonance.arbitrage.corpus-quality-policy/v0.1"
+            },
+            "policy_sha256": "375d9a339684eb43f6f1d013e4d92e295d297768ed455fe6ff608d6f52673dbf",
+            "public_market_data_only": true,
+            "quality_ready": false,
+            "regime_counts": [
+              {
+                "regime": "NORMAL",
+                "terminal_operations": 2
+              }
+            ],
+            "route_market_identities": [
+              "KRAKEN_SPOT:BTC/USD:BTC/USD",
+              "KRAKEN_SPOT:ETH/BTC:ETH/BTC",
+              "KRAKEN_SPOT:ETH/USD:ETH/USD"
+            ],
+            "route_topology_counts": [
+              {
+                "route_topology_id": "1b31c86d9eb3a09c207f98bc9e5a2172bfb704dd4d76764a7a8725323f441510",
+                "terminal_operations": 1
+              },
+              {
+                "route_topology_id": "60f588cd596301c633dd760d22a156a3edb4bcf81b813417d1afd7b1f41b523d",
+                "terminal_operations": 1
+              }
+            ],
+            "schema": "resonance.arbitrage.corpus-quality-report/v0.1",
+            "temporal_span_ms": 0,
+            "terminal_operation_count": 2
+          },
+          "quality_report_sha256": "b90999bf980a23c179f57883a85e3894d166c55ff3d9603889e6a32d1c8a791c",
+          "reason": "need 98 more terminal operations; quality gate failed: decision_batches, effective_decision_batches, temporal_span_ms, distinct_routes, distinct_regimes",
+          "replay_bundle_sha256": "85f649bc21f615be0d38f90b083d25a17d1448e5f2cd973670de52a0017f037e",
+          "required_terminal_operations": 100,
+          "schema": "resonance.arbitrage.corpus-research-report/v0.2",
+          "status": "NOT_READY",
+          "terminal_operation_count": 2
+        },
+        "research_report_sha256": "8b1797e40fd7e7468d6f18d1cbb8650c638c9020765e485bd47edd37e9ba683d"
+      },
+      "sha256": "f5ff90d8a0002715d3b028e4d06cdccf67c1d7a8a5b53623a5c51d53fafe6a16"
+    },
+    "paper_only": true,
+    "public_market_data_only": true,
+    "recovery": {
+      "campaign_policy_sha256": "a126da7988299d8b26240de6658a00d63468813e8a10e5d8274d73d92479cb57",
+      "horizon_ms": 60000,
+      "market_set": [
+        {
+          "base_asset": "BTC",
+          "quote_asset": "USD"
+        },
+        {
+          "base_asset": "ETH",
+          "quote_asset": "BTC"
+        },
+        {
+          "base_asset": "ETH",
+          "quote_asset": "USD"
+        }
+      ],
+      "observed_at_ms": null,
+      "paper_only": true,
+      "post_corpus_sha256": "23e556d8c27c035ef96537d933b5f30ab405c52035c846e7177839bed1d1b119",
+      "pre_corpus_sha256": "23e556d8c27c035ef96537d933b5f30ab405c52035c846e7177839bed1d1b119",
+      "public_market_data_only": true,
+      "recovered_operation_ids": [],
+      "schema": "resonance.verify.corpus-pending-recovery/v0.1",
+      "venue": "KRAKEN_SPOT"
+    },
+    "recovery_sha256": "7f3e33df4d3bc7ea86372369c9490563ffdd6fc77728fad208ce515c3aec99c0",
+    "schema": "resonance.verify.corpus-campaign-step/v0.1"
+  },
+  "sha256": "3e222edcda11a47ef64b1e1b72004daacca6ab53c514650e288d782e650ffe76"
+}

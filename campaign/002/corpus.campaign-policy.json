@@ -1,0 +1,12 @@
+{
+  "payload": {
+    "campaign_id": "corpus-campaign-002",
+    "dedicated_corpus_required": true,
+    "horizon_ms": 60000,
+    "paper_only": true,
+    "public_market_data_only": true,
+    "schema": "resonance.verify.corpus-campaign-policy/v0.1",
+    "venue": "KRAKEN_SPOT"
+  },
+  "sha256": "a126da7988299d8b26240de6658a00d63468813e8a10e5d8274d73d92479cb57"
+}
