@@ -30,7 +30,14 @@ def _canonical_asset(value: Any) -> str:
 
 
 class KrakenPreTradeAdapter:
-    """Read-only Kraken Spot top-of-book adapter using the public PreTrade feed."""
+    """Read-only Kraken Spot top-of-book adapter using the public PreTrade feed.
+
+    Kraken's ``publication_ts`` belongs to each returned price level: it says
+    when that level was last updated and published. The complete REST snapshot
+    is observed when this client receives it. RESONANCE therefore preserves the
+    oldest top-level timestamp as source provenance without treating it as the
+    publication time — or freshness clock — of the whole snapshot.
+    """
 
     base_url = "https://api.kraken.com"
     venue = "KRAKEN_SPOT"
@@ -79,7 +86,11 @@ class KrakenPreTradeAdapter:
             ask_qty=float(ask["qty"]),
             observed_at_ms=observed_at_ms,
             source_url=url,
-            timestamp_class="exchange_published" if source_timestamp_ms is not None else "client_observed",
+            timestamp_class=(
+                "client_observed_level_update"
+                if source_timestamp_ms is not None
+                else "client_observed"
+            ),
             source_timestamp_ms=source_timestamp_ms,
             metadata_url=url,
         )
