@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime
 import time
 from typing import Any
 from urllib.parse import urlencode
@@ -15,11 +14,6 @@ _ASSET_ALIASES = {
     # canonical asset identity BTC while preserving Kraken's raw symbol.
     "XBT": "BTC",
 }
-
-
-def _iso8601_to_ms(value: str) -> int:
-    normalized = value.replace("Z", "+00:00")
-    return int(datetime.fromisoformat(normalized).timestamp() * 1000)
 
 
 def _canonical_asset(value: Any) -> str:
@@ -61,13 +55,14 @@ class KrakenPreTradeAdapter:
 
         bid = bids[0]
         ask = asks[0]
-        publication_times = [
-            _iso8601_to_ms(level["publication_ts"])
-            for level in (bid, ask)
-            if level.get("publication_ts")
-        ]
-        source_timestamp_ms = min(publication_times) if publication_times else None
 
+        # Kraken documents publication_ts as the time a price level was last
+        # updated and published. A resting best level can remain valid while
+        # that timestamp becomes old, so it is not a timestamp for the REST
+        # snapshot itself. Hard snapshot freshness therefore uses the local
+        # observation time. The exact public endpoint remains bound as source
+        # provenance; level-update provenance requires a separate future field
+        # rather than overloading QuoteSnapshot.source_timestamp_ms.
         return QuoteSnapshot(
             venue=self.venue,
             symbol=str(result.get("symbol") or symbol),
@@ -79,7 +74,7 @@ class KrakenPreTradeAdapter:
             ask_qty=float(ask["qty"]),
             observed_at_ms=observed_at_ms,
             source_url=url,
-            timestamp_class="exchange_published" if source_timestamp_ms is not None else "client_observed",
-            source_timestamp_ms=source_timestamp_ms,
+            timestamp_class="client_observed",
+            source_timestamp_ms=None,
             metadata_url=url,
         )
