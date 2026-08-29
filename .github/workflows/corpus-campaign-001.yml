@@ -101,7 +101,6 @@ jobs:
         if: steps.gate.outputs.complete != 'true' && steps.gate.outputs.paused != 'true'
         shell: bash
         run: |
-          set +e
           set -uo pipefail
 
           root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
@@ -128,6 +127,7 @@ jobs:
             local log="$log_root/$name.log"
 
             echo "Running profile: $name"
+            set +e
             resonance-corpus-campaign-step \
               --corpus "$corpus" \
               --replay-output "$replay" \
@@ -159,6 +159,7 @@ jobs:
               --min-distinct-regimes 2 \
               "$@" >"$log" 2>&1
             local code=$?
+            set -e
 
             if [[ $code -eq 0 ]]; then
               successes=$((successes + 1))
@@ -200,8 +201,6 @@ jobs:
             --pair "BTC/USD:BTC:USD" \
             --pair "ADA/BTC:ADA:BTC" \
             --pair "ADA/USD:ADA:USD"
-
-          set -e
 
           if [[ -f "$corpus" ]]; then
             after_file_sha="$(sha256sum "$corpus" | awk '{print $1}')"
