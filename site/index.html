@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RESONANCE Verify — Before your agent trades, verify the opportunity</title>
+  <meta name="description" content="Evidence-bound, paper-only pre-trade verification for autonomous crypto trading agents. Visible edge is not executable edge.">
+  <meta name="theme-color" content="#071014">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="RESONANCE Verify — Opportunity Truth">
+  <meta property="og:description" content="Before your agent trades, verify the opportunity. Public-data, paper-only, replayable evidence.">
+  <meta property="og:image:alt" content="RESONANCE Verify — Visible edge is not executable edge">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" aria-label="Primary navigation">
+    <a class="brand" href="#top" aria-label="RESONANCE Verify home">
+      <span class="brand-mark" aria-hidden="true">R</span>
+      <span>RESONANCE <strong>Verify</strong></span>
+    </a>
+    <nav>
+      <a href="#evidence">Evidence</a>
+      <a href="#how">How it works</a>
+      <a href="#pilot">Pilot</a>
+      <a class="nav-cta" href="#founding-list">Join the list</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow">Pre-trade verification for autonomous financial agents</p>
+        <h1>Before your agent trades, <span>verify the opportunity.</span></h1>
+        <p class="lead">A price difference can vanish after executable depth, quote freshness, modeled fees, slippage, market regime and policy checks. RESONANCE turns a proposed route into an evidence-bound <strong>ALLOW, OBSERVE or REJECT</strong> decision before it reaches your executor.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#founding-list">Join the Opportunity Truth list</a>
+          <a class="button secondary" href="#evidence">See the first bounded sample</a>
+        </div>
+        <ul class="trust-strip" aria-label="Product boundaries">
+          <li>Public or sandbox data</li>
+          <li>Paper-only</li>
+          <li>No keys or orders</li>
+          <li>Replayable evidence</li>
+        </ul>
+      </div>
+
+      <div class="decision-card" aria-label="Example verification flow">
+        <div class="card-head">
+          <span class="status-dot"></span>
+          <span>Verification boundary</span>
+          <span class="paper-pill">PAPER</span>
+        </div>
+        <div class="flow-step">
+          <span class="step-index">01</span>
+          <div><strong>Agent proposal</strong><small>Route, amount, policy context</small></div>
+        </div>
+        <div class="flow-line"></div>
+        <div class="flow-step active">
+          <span class="step-index">02</span>
+          <div><strong>RESONANCE Verify</strong><small>Depth · freshness · costs · regime · evidence</small></div>
+        </div>
+        <div class="flow-line"></div>
+        <div class="verdict-row" aria-label="Possible verdicts">
+          <span class="allow">ALLOW</span>
+          <span class="observe">OBSERVE</span>
+          <span class="reject">REJECT</span>
+        </div>
+        <div class="flow-line"></div>
+        <div class="flow-step">
+          <span class="step-index">03</span>
+          <div><strong>Your existing executor</strong><small>You keep strategy, custody and production control</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section evidence-section" id="evidence" aria-labelledby="evidence-title">
+      <div class="section-heading">
+        <p class="eyebrow">Campaign 002 · bounded real-market evidence</p>
+        <h2 id="evidence-title">Two cycles looked positive. <span>None survived modeled costs.</span></h2>
+        <p>This is an early opportunity-funnel observation, not an Opportunity Truth Rate and not a profitability result.</p>
+      </div>
+
+      <div class="metric-grid">
+        <article><strong>20</strong><span>terminal triangular cycles</span></article>
+        <article><strong>20</strong><span>complete evidence</span></article>
+        <article><strong>19</strong><span>structural-pass</span></article>
+        <article class="highlight"><strong>2</strong><span>gross-positive before costs</span></article>
+        <article class="zero"><strong>0</strong><span>net-positive after costs</span></article>
+        <article class="zero"><strong>0</strong><span>final EXECUTE_SIM</span></article>
+      </div>
+
+      <div class="evidence-grid">
+        <div class="funnel-card">
+          <h3>Where the visible edge disappeared</h3>
+          <div class="funnel-row"><span>Complete evidence</span><div class="bar"><i style="width:100%"></i></div><b>20</b></div>
+          <div class="funnel-row"><span>Structural pass</span><div class="bar"><i style="width:95%"></i></div><b>19</b></div>
+          <div class="funnel-row"><span>Gross-positive</span><div class="bar"><i style="width:10%"></i></div><b>2</b></div>
+          <div class="funnel-row"><span>Net-positive</span><div class="bar"><i style="width:0%"></i></div><b>0</b></div>
+          <div class="cost-callout">
+            <span>Mean modeled cost drag</span>
+            <strong>35.94 bps</strong>
+            <small>Best gross edge in sample: 1.65 bps</small>
+          </div>
+        </div>
+
+        <aside class="boundary-card">
+          <p class="boundary-label">Interpretation boundary</p>
+          <h3>OTR is unavailable — not zero.</h3>
+          <p>No candidate entered <code>EXECUTE_SIM</code>, so there is no true-positive / false-positive denominator to grade.</p>
+          <dl>
+            <div><dt>Source</dt><dd>Public Kraken top-of-book</dd></div>
+            <div><dt>Paper notional</dt><dd>USD 25 normal profiles</dd></div>
+            <div><dt>Modeled costs</dt><dd>10 bps fee + 2 bps slippage per leg</dd></div>
+            <div><dt>Required post-cost edge</dt><dd>5 bps</dd></div>
+            <div><dt>Outcome horizon</dt><dd>60 seconds</dd></div>
+          </dl>
+          <a href="https://github.com/safal207/resonance-arbitrage-graph/tree/data/corpus-campaign-002" target="_blank" rel="noreferrer">Inspect the evidence branch ↗</a>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section problem-section" id="how" aria-labelledby="how-title">
+      <div class="section-heading narrow">
+        <p class="eyebrow">The false-opportunity problem</p>
+        <h2 id="how-title">A signal is only the beginning of the causal chain.</h2>
+      </div>
+      <div class="checks-grid">
+        <article><span>01</span><h3>Route</h3><p>Is the proposed path continuous, complete and bound to the intended assets and venue?</p></article>
+        <article><span>02</span><h3>Market state</h3><p>Are the quotes fresh, mutually coherent and supported by enough executable top-of-book depth?</p></article>
+        <article><span>03</span><h3>Economics</h3><p>Does edge remain after explicit fees, slippage, capacity and policy thresholds?</p></article>
+        <article><span>04</span><h3>Decision evidence</h3><p>Can the team reproduce why this exact action was allowed, observed or rejected?</p></article>
+      </div>
+    </section>
+
+    <section class="section ownership-section" aria-labelledby="ownership-title">
+      <div>
+        <p class="eyebrow">Independent gate, not a replacement stack</p>
+        <h2 id="ownership-title">You keep the parts that make your system yours.</h2>
+      </div>
+      <ul class="ownership-list">
+        <li><span>Strategy and signal IP</span><b>Yours</b></li>
+        <li><span>Custody and exchange accounts</span><b>Yours</b></li>
+        <li><span>Execution infrastructure</span><b>Yours</b></li>
+        <li><span>Production risk decisions</span><b>Yours</b></li>
+        <li class="ours"><span>Pre-trade evidence and replay boundary</span><b>RESONANCE</b></li>
+      </ul>
+    </section>
+
+    <section class="section pilot-section" id="pilot" aria-labelledby="pilot-title">
+      <div class="pilot-copy">
+        <p class="eyebrow">Founding design-partner pilot</p>
+        <h2 id="pilot-title">Fourteen days to map where proposed trades stop being real.</h2>
+        <p>One bounded workflow, reviewed asynchronously with public, fixture or sandbox evidence. No production credentials and no live capital.</p>
+        <div class="pilot-price"><span>Discovery range</span><strong>USD 750–1,500</strong><small>Hypothesis, scoped after pain confirmation</small></div>
+      </div>
+      <div class="deliverables">
+        <h3>Deliverables</h3>
+        <ul>
+          <li>Opportunity funnel</li>
+          <li>False-opportunity map</li>
+          <li>Reproducible evidence examples</li>
+          <li>Integration recommendation</li>
+        </ul>
+        <p class="scope">One strategy · one venue · paper-only · async</p>
+      </div>
+    </section>
+
+    <section class="section form-section" id="founding-list" aria-labelledby="form-title">
+      <div class="form-intro">
+        <p class="eyebrow">Opportunity Truth Founding List</p>
+        <h2 id="form-title">Help define the verification boundary before the API is frozen.</h2>
+        <p>Tell us what your agent proposes and which pre-trade failure is hardest to catch. The form prepares an email in your own mail client, so you control what is sent.</p>
+        <div class="privacy-note">
+          <strong>Never send:</strong> exchange credentials, wallet keys, balances, signing permissions or production secrets.
+        </div>
+      </div>
+
+      <form id="founding-form" novalidate>
+        <div class="honeypot" aria-hidden="true">
+          <label for="website">Website</label>
+          <input id="website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="field-row">
+          <label>Work email<input type="email" id="email" name="email" required autocomplete="email" placeholder="you@company.com"></label>
+          <label>Company / project<input type="text" id="company" name="company" required maxlength="100" placeholder="Company or project"></label>
+        </div>
+        <div class="field-row">
+          <label>Role<input type="text" id="role" name="role" required maxlength="100" placeholder="Founder, engineer, quant…"></label>
+          <label>Preferred integration<select id="integration" name="integration" required><option value="">Select one</option><option>CLI</option><option>SDK</option><option>API</option><option>MCP</option><option>Replay report</option><option>Not sure</option></select></label>
+        </div>
+        <label>What kind of trades does the agent propose?<textarea id="workflow" name="workflow" required maxlength="700" rows="4" placeholder="Briefly describe the signal → decision → execution workflow. No sensitive details."></textarea></label>
+        <label>Which pre-trade failure is hardest to catch?<select id="failure" name="failure" required><option value="">Select one</option><option>Stale evidence / quote freshness</option><option>Slippage or executable depth</option><option>Latency / edge decay</option><option>Policy or permission breach</option><option>Explainability / audit trail</option><option>Paper qualification</option><option>Replay / incident review</option><option>Multi-venue inventory or settlement state</option><option>Other</option></select></label>
+        <div class="field-row">
+          <label>Public or sandbox example<select id="sample" name="sample" required><option value="">Select one</option><option>Available now</option><option>Possibly available</option><option>Not available</option></select></label>
+          <label>Pilot interest<select id="pilot-interest" name="pilot_interest" required><option value="">Select one</option><option>Interested in the 14-day pilot</option><option>Maybe later</option><option>Founding list only</option></select></label>
+        </div>
+        <label class="consent"><input type="checkbox" id="consent" name="consent" required><span>I consent to being contacted by email about RESONANCE Verify discovery, evidence updates and the paper-only pilot.</span></label>
+        <p class="form-error" id="form-error" role="alert" aria-live="polite"></p>
+        <div class="form-actions">
+          <button type="submit" class="button primary">Prepare my founding-list email</button>
+          <button type="button" class="button secondary" id="copy-button">Copy responses</button>
+        </div>
+        <p class="form-help">No trackers. No automatic data transmission. Your email client opens with the responses prefilled; joining is completed only when you send it.</p>
+        <div class="success-message" id="success-message" role="status" aria-live="polite" hidden>
+          <strong>Your email is prepared.</strong>
+          <span>Review it in your mail client and press Send to join the list.</span>
+        </div>
+      </form>
+    </section>
+
+    <section class="section safety-section" aria-labelledby="safety-title">
+      <p class="eyebrow">Scope boundary</p>
+      <h2 id="safety-title">Verification evidence, not financial promises.</h2>
+      <p>RESONANCE Verify is currently public/sandbox-data and paper-only. It is not investment advice, a broker, exchange, custody provider, signal seller or execution venue. It does not guarantee profitability and does not represent public top-of-book observations as live fills.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 RESONANCE Verify</span>
+    <div>
+      <a href="https://github.com/safal207/resonance-arbitrage-graph" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="https://github.com/safal207/resonance-arbitrage-graph/tree/data/corpus-campaign-002" target="_blank" rel="noreferrer">Campaign 002 evidence</a>
+      <a href="mailto:safal0645@gmail.com?subject=RESONANCE%20Verify%20question">Contact</a>
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
