@@ -43,13 +43,18 @@ jobs:
               def __init__(self):
                   super().__init__()
                   self.ids = set()
+                  self.text = []
               def handle_starttag(self, tag, attrs):
                   attrs = dict(attrs)
                   if attrs.get("id"):
                       self.ids.add(attrs["id"])
+              def handle_data(self, data):
+                  if data.strip():
+                      self.text.append(data.strip())
 
           parser = Parser()
           parser.feed(html)
+          visible_text = " ".join(" ".join(parser.text).split())
 
           required_ids = {
               "main", "evidence", "how", "pilot", "founding-list",
@@ -63,7 +68,7 @@ jobs:
               "20 terminal triangular cycles",
               "19 structural-pass",
               "2 gross-positive before costs",
-              "0 net-positive after modeled costs",
+              "0 net-positive after costs",
               "35.94 bps",
               "1.65 bps",
               "OTR is unavailable — not zero.",
@@ -72,7 +77,7 @@ jobs:
               "60 seconds",
           )
           for claim in required_claims:
-              assert claim in html, f"required bounded claim missing: {claim}"
+              assert claim in visible_text, f"required bounded claim missing: {claim}"
 
           required_boundaries = (
               "not investment advice",
@@ -81,8 +86,9 @@ jobs:
               "No automatic data transmission",
               "Never send:",
           )
+          visible_lower = visible_text.lower()
           for boundary in required_boundaries:
-              assert boundary.lower() in html.lower(), f"boundary missing: {boundary}"
+              assert boundary.lower() in visible_lower, f"boundary missing: {boundary}"
 
           forbidden = (
               "guaranteed profit",
