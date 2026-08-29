@@ -1,0 +1,38 @@
+name: Activate FormSubmit founding-list intake
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/activate-formsubmit-intake.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send one clearly labeled activation test
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --location \
+            --request POST "https://formsubmit.co/safal0645@gmail.com" \
+            --header "Referer: https://safal207.github.io/resonance-arbitrage-graph/" \
+            --form "_captcha=false" \
+            --form "_subject=[ACTIVATION TEST] RESONANCE Verify founding-list intake" \
+            --form "_template=table" \
+            --form "_url=https://safal207.github.io/resonance-arbitrage-graph/" \
+            --form "email=safal0645@gmail.com" \
+            --form "company=RESONANCE activation test" \
+            --form "role=System test" \
+            --form "integration=Form intake" \
+            --form "workflow=One-time activation probe. Not a prospect lead." \
+            --form "failure=ACTIVATION_TEST" \
+            --form "sample=Not applicable" \
+            --form "pilot_interest=Not applicable" \
+            --form "consent=Explicit test consent" \
+            --form "test_submission=true" \
+            --form "source_page=https://safal207.github.io/resonance-arbitrage-graph/"

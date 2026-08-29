@@ -5,6 +5,7 @@
   const errorBox = document.getElementById("form-error");
   const successBox = document.getElementById("success-message");
   const copyButton = document.getElementById("copy-button");
+  const submitButton = form.querySelector('button[type="submit"]');
 
   const requiredIds = [
     "email",
@@ -20,6 +21,37 @@
 
   const get = (id) => document.getElementById(id);
   const clean = (value) => String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim();
+
+  function attribution() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      ref: clean(params.get("ref")),
+      utm_source: clean(params.get("utm_source")),
+      utm_medium: clean(params.get("utm_medium")),
+      utm_campaign: clean(params.get("utm_campaign"))
+    };
+  }
+
+  function setValue(id, value) {
+    const field = get(id);
+    if (field) field.value = value;
+  }
+
+  function populateHiddenFields() {
+    const source = window.location.href.split("#")[0];
+    const company = clean(get("company").value) || "Founding List";
+    const attrs = attribution();
+
+    setValue("reply-to", clean(get("email").value));
+    setValue("form-subject", `Opportunity Truth Founding List — ${company}`);
+    setValue("source-page", source);
+    setValue("source-url", source);
+    setValue("ref", attrs.ref);
+    setValue("utm-source", attrs.utm_source);
+    setValue("utm-medium", attrs.utm_medium);
+    setValue("utm-campaign", attrs.utm_campaign);
+    setValue("submitted-at", new Date().toISOString());
+  }
 
   function validate() {
     let firstInvalid = null;
@@ -54,6 +86,7 @@
   }
 
   function responseText() {
+    const attrs = attribution();
     return [
       "RESONANCE Opportunity Truth Founding List",
       "",
@@ -68,6 +101,12 @@
       "Agent/trading workflow:",
       clean(get("workflow").value),
       "",
+      "Attribution:",
+      `ref=${attrs.ref}`,
+      `utm_source=${attrs.utm_source}`,
+      `utm_medium=${attrs.utm_medium}`,
+      `utm_campaign=${attrs.utm_campaign}`,
+      "",
       "Consent: I consent to being contacted by email about RESONANCE Verify discovery, evidence updates and the paper-only pilot.",
       "",
       "No credentials, private keys, balances, signing permissions or production secrets are included."
@@ -80,13 +119,61 @@
     return `mailto:safal0645@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(responseText())}`;
   }
 
+  function fingerprint() {
+    const text = responseText();
+    let hash = 2166136261;
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return String(hash >>> 0);
+  }
+
+  function rememberSubmission() {
+    try {
+      sessionStorage.setItem(
+        "resonance-founding-submission",
+        JSON.stringify({ fingerprint: fingerprint(), at: Date.now() })
+      );
+    } catch (_error) {
+      // Storage can be unavailable in privacy-focused browsers. Submission still works.
+    }
+  }
+
+  function isRapidDuplicate() {
+    try {
+      const previous = JSON.parse(sessionStorage.getItem("resonance-founding-submission") || "null");
+      return Boolean(
+        previous &&
+        previous.fingerprint === fingerprint() &&
+        Date.now() - Number(previous.at) < 60_000
+      );
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  populateHiddenFields();
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     successBox.hidden = true;
     if (!validate()) return;
 
+    if (isRapidDuplicate()) {
+      errorBox.textContent = "This exact request was just submitted. Wait a minute before trying again.";
+      return;
+    }
+
+    populateHiddenFields();
+    rememberSubmission();
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting…";
     successBox.hidden = false;
-    window.location.href = mailtoUrl();
+    successBox.querySelector("strong").textContent = "Opening the secure submission step.";
+    successBox.querySelector("span").textContent = "FormSubmit may show an anti-spam check before returning you to the thank-you page.";
+
+    HTMLFormElement.prototype.submit.call(form);
   });
 
   copyButton.addEventListener("click", async () => {
@@ -99,7 +186,7 @@
       successBox.querySelector("strong").textContent = "Responses copied.";
       successBox.querySelector("span").textContent = "Paste them into an email to safal0645@gmail.com with the subject Opportunity Truth Founding List.";
     } catch (_error) {
-      errorBox.textContent = "Clipboard access was blocked. Use the email button instead.";
+      errorBox.textContent = "Clipboard access was blocked. Use the contact email in the footer instead.";
     }
   });
 
@@ -109,6 +196,8 @@
       field.removeAttribute("aria-invalid");
       errorBox.textContent = "";
       successBox.hidden = true;
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit my founding-list request";
     }
   });
 })();
