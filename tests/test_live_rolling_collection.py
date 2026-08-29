@@ -27,6 +27,28 @@ class FakeBinance:
         )
 
 
+class JitteredBinance:
+    venue = "BINANCE_SPOT"
+
+    def __init__(self):
+        self._timestamps = iter((1_000, 2_210, 3_520, 4_760, 6_100, 7_430))
+
+    def fetch(self, symbol: str, *, base_asset: str, quote_asset: str) -> QuoteSnapshot:
+        ts = next(self._timestamps)
+        return QuoteSnapshot(
+            venue=self.venue,
+            symbol=symbol,
+            base_asset=base_asset,
+            quote_asset=quote_asset,
+            bid_price=100.0,
+            bid_qty=10.0,
+            ask_price=100.1,
+            ask_qty=10.0,
+            observed_at_ms=ts,
+            source_url=f"fixture:{symbol}",
+        )
+
+
 def test_live_collection_keeps_final_quote_as_window_tail():
     sleeps = []
     adapter = FakeBinance()
@@ -52,6 +74,34 @@ def test_live_collection_keeps_final_quote_as_window_tail():
     )
     assert window.samples[-1].observed_at_ms == latest[0].observed_at_ms
     assert window.summary().complete is True
+
+
+def test_campaign_window_policy_survives_realistic_request_jitter():
+    adapter = JitteredBinance()
+    pairs = [("BTCUSDT", "BTC", "USDT")]
+
+    latest, history = _collect_rolling_quotes(
+        adapter,
+        pairs,
+        sample_count=6,
+        interval_ms=1_000,
+        sleep_fn=lambda _seconds: None,
+    )
+
+    key = market_key(adapter.venue, "BTCUSDT")
+    window = RollingMarketWindow.from_quotes(
+        history[key],
+        policy=RollingWindowPolicy(
+            horizon_ms=10_000,
+            min_samples=6,
+            min_coverage_ratio=0.5,
+        ),
+        end_ms=latest[0].observed_at_ms,
+    )
+
+    assert len(window.samples) == 6
+    assert window.summary().complete is True
+    assert window.summary().coverage_ratio > 0.6
 
 
 def test_live_collection_rejects_too_few_samples_or_zero_interval():
