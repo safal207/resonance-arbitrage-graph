@@ -3,13 +3,14 @@
 ## Purpose
 
 Campaign 002 is a fresh, dedicated public-market corpus created after Campaign
-001 exposed two measurement problems:
+001 exposed three measurement problems:
 
 1. Kraken price-level `publication_ts` had been treated as the freshness clock
    of the complete client-observed snapshot;
-2. five requested HTTP samples were collected inside a five-second window, so
-   acquisition overhead could trim the first sample and leave an incomplete
-   rolling window.
+2. five requested HTTP samples inside a five-second window were vulnerable to
+   acquisition jitter trimming the first sample and forcing `UNKNOWN`;
+3. immediate two-leg buy/sell round trips consumed candidate slots despite
+   being spread/cost negative controls rather than arbitrage hypotheses.
 
 Campaign 001 is retained unchanged as a fail-closed diagnostic artifact.
 Campaign 002 does not import, relabel or reinterpret any Campaign 001 record.
@@ -19,12 +20,13 @@ Campaign 002 does not import, relabel or reinterpret any Campaign 001 record.
 ```text
 venue                  Kraken Spot public PreTrade
 starting state         KRAKEN_SPOT:USD
-paper capital          1,000 USD per logical operation
+paper capital          25 USD per logical operation
 fee assumption         10 bps per leg
 slippage assumption     2 bps per leg
 execution threshold     5 bps net edge
 outcome horizon         60 seconds
-rolling samples         5
+route population        three-leg triangular cycles only
+rolling samples         6
 rolling interval        1 second
 rolling horizon         10 seconds
 minimum coverage        0.5
@@ -35,9 +37,21 @@ level timestamp         preserved source provenance
 These values are explicit research assumptions, not claims about a particular
 account tier and not trading recommendations.
 
-The ten-second rolling horizon deliberately exceeds the nominal four-second
-inter-sample span. Public HTTP acquisition time is part of the real collection
-process; it must not silently delete one of the five required samples.
+Six samples create five intended inter-sample intervals. The ten-second horizon
+keeps all six samples despite ordinary public-HTTP acquisition jitter, while the
+50% coverage gate still requires at least five seconds of observed market time.
+
+## Why USD 25
+
+Campaign 001 used USD 1,000 and repeatedly exceeded top-of-book capacity on
+thin cross pairs. That measured the chosen notional more often than route edge.
+Campaign 002 uses a micro-notional so the normal corpus can test triangular
+route economics and 60-second survival without bypassing capacity: every route
+is still checked against exact top-of-book quantity.
+
+A deliberately oversized capacity profile remains useful adversarial QA, but it
+stays outside the headline Opportunity Truth corpus so it cannot distort the
+product metric.
 
 ## Candidate definition
 
@@ -51,8 +65,9 @@ USD -> BTC -> USD on the same market
 That path measures spread and modeled costs; it does not express an arbitrage
 hypothesis. Keeping it in the candidate population would consume limited scan
 slots and inflate rejection counts without testing cross-market consistency.
-The current CEX graph therefore admits the three-leg triangular cycles while
-retaining ordinary two-leg round trips for separate negative-control testing.
+The current CEX graph therefore admits the two three-leg triangular directions
+for each profile while retaining ordinary two-leg round trips as unit-test
+negative controls.
 
 ## Profiles
 
@@ -74,7 +89,7 @@ would distort the product claim.
 ```text
 current public snapshot
 → complete rolling evidence
-→ candidate cycles
+→ triangular candidate cycles
 → deterministic verifier
 → regime gate
 → decision persisted before waiting
