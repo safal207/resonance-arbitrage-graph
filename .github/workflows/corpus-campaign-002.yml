@@ -134,7 +134,7 @@ jobs:
               --campaign-id corpus-campaign-002 \
               --venue kraken \
               --start-asset USD \
-              --amount 1000 \
+              --amount 25 \
               --fee-bps 10 \
               --slippage-bps 2 \
               --gas-bps 0 \
@@ -143,8 +143,8 @@ jobs:
               --max-quote-age-ms 3000 \
               --horizon-ms 60000 \
               --max-hops 3 \
-              --max-cases 4 \
-              --rolling-samples 5 \
+              --max-cases 2 \
+              --rolling-samples 6 \
               --rolling-interval-ms 1000 \
               --rolling-horizon-ms 10000 \
               --rolling-min-coverage-ratio 0.5 \
@@ -254,7 +254,9 @@ jobs:
             echo "## RESONANCE Verify — Corpus Campaign 002"
             echo
             echo "- Measurement semantics: client-observed snapshot freshness + preserved Kraken level-update provenance"
-            echo "- Rolling geometry: 5 samples / 1s interval / 10s horizon / 0.5 minimum coverage"
+            echo "- Opportunity population: three-leg triangular routes only"
+            echo "- Paper capital: USD 25 per logical operation"
+            echo "- Rolling geometry: 6 samples / 1s interval / 10s horizon / 0.5 minimum coverage"
             echo "- Paper costs: 10 bps fee + 2 bps slippage per leg"
             echo "- Trusted pre-run report: ${{ steps.gate.outputs.report_valid }}"
             echo "- Campaign complete: ${{ steps.gate.outputs.complete }}"
