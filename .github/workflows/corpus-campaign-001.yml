@@ -46,23 +46,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          report="$GITHUB_WORKSPACE/campaign-data/campaign/001/opportunity-truth-v0.2.json"
+          root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
+          corpus="$root/corpus.json"
+          report="$root/opportunity-truth-v0.2.json"
           complete=false
           paused=false
+          report_valid=false
           terminal_operations=0
 
-          if [[ -f "$report" ]]; then
-            status="$(jq -r '.payload.claim_status // "NOT_READY"' "$report")"
-            terminal_operations="$(jq -r '.payload.terminal_operations // 0' "$report")"
-            if [[ "$status" == "INTERNAL_EVIDENCE_READY" ]]; then
-              complete=true
-            elif [[ "$terminal_operations" -ge 2000 ]]; then
-              paused=true
+          if [[ -f "$report" && -f "$corpus" ]]; then
+            if resonance-opportunity-truth-benchmark verify \
+              "$corpus" "$report" >"$RUNNER_TEMP/campaign-gate-verify.log" 2>&1; then
+              report_valid=true
+              status="$(jq -r '.payload.claim_status // "NOT_READY"' "$report")"
+              terminal_operations="$(jq -r '.payload.terminal_operations // 0' "$report")"
+              if [[ "$status" == "INTERNAL_EVIDENCE_READY" ]]; then
+                complete=true
+              elif [[ "$terminal_operations" -ge 2000 ]]; then
+                paused=true
+              fi
+            else
+              echo "::warning::Stored benchmark does not bind the current corpus; collection will continue and rebuild it."
+              cat "$RUNNER_TEMP/campaign-gate-verify.log" || true
             fi
+          elif [[ -f "$report" ]]; then
+            echo "::warning::Stored benchmark exists without its bound corpus; it will not be trusted."
           fi
 
           echo "complete=$complete" >> "$GITHUB_OUTPUT"
           echo "paused=$paused" >> "$GITHUB_OUTPUT"
+          echo "report_valid=$report_valid" >> "$GITHUB_OUTPUT"
           echo "terminal_operations=$terminal_operations" >> "$GITHUB_OUTPUT"
 
       - name: Capture public market evidence
@@ -190,6 +203,9 @@ jobs:
         run: |
           set -euo pipefail
           root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
+          report_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.json"
+          markdown_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.md"
+          rm -f "$report_tmp" "$markdown_tmp"
 
           resonance-opportunity-truth-benchmark build "$root/corpus.json" \
             --min-terminal-operations 100 \
@@ -201,12 +217,15 @@ jobs:
             --min-effective-routes 2 \
             --min-distinct-route-markets 3 \
             --min-distinct-regimes 2 \
-            --output "$root/opportunity-truth-v0.2.json" \
-            --markdown-output "$root/opportunity-truth-v0.2.md"
+            --output "$report_tmp" \
+            --markdown-output "$markdown_tmp"
 
           resonance-opportunity-truth-benchmark verify \
             "$root/corpus.json" \
-            "$root/opportunity-truth-v0.2.json"
+            "$report_tmp"
+
+          mv "$report_tmp" "$root/opportunity-truth-v0.2.json"
+          mv "$markdown_tmp" "$root/opportunity-truth-v0.2.md"
 
       - name: Write campaign summary
         if: always()
@@ -215,6 +234,7 @@ jobs:
           {
             echo "## RESONANCE Verify — Corpus Campaign 001"
             echo
+            echo "- Trusted pre-run report: ${{ steps.gate.outputs.report_valid }}"
             echo "- Campaign complete: ${{ steps.gate.outputs.complete }}"
             echo "- Campaign paused at evidence budget: ${{ steps.gate.outputs.paused }}"
             echo "- Terminal operations before run: ${{ steps.gate.outputs.terminal_operations }}"
