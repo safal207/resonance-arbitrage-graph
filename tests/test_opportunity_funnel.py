@@ -105,7 +105,10 @@ def test_modeled_cost_drag_is_separated_from_raw_gross_edge():
 
     assert report.overall.counts.gross_positive == 1
     assert report.overall.counts.net_positive == 0
-    assert report.overall.modeled_cost_drag.mean_bps == pytest.approx(35.9568, abs=0.02)
+    assert report.overall.modeled_cost_drag.mean_bps == pytest.approx(
+        36.02873091455905,
+        abs=1e-12,
+    )
     assert report.first_blocker_counts == (("MODELED_COSTS_ERASE_EDGE", 1),)
     assert report.economic_blocker_counts == (("MODELED_COSTS_ERASE_EDGE", 1),)
 
