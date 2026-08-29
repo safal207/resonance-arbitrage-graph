@@ -30,6 +30,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--corpus", type=Path, required=True)
     parser.add_argument("--replay-output", type=Path, required=True)
     parser.add_argument("--receipt-output", type=Path)
+    parser.add_argument("--campaign-id", default="corpus-campaign-001")
     parser.add_argument("--venue", choices=("binance", "kraken"), required=True)
     parser.add_argument("--pair", action="append", type=_parse_pair, required=True)
     parser.add_argument("--start-asset", required=True)
@@ -130,6 +131,7 @@ def main(argv: list[str] | None = None) -> int:
             max_route_latency_ms=args.max_route_latency_ms,
             min_success_probability=args.min_success_probability,
         ),
+        campaign_id=args.campaign_id,
     )
     envelope = result.to_envelope()
     if args.receipt_output is not None:
