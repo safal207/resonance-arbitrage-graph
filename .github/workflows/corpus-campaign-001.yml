@@ -101,6 +101,7 @@ jobs:
         if: steps.gate.outputs.complete != 'true' && steps.gate.outputs.paused != 'true'
         shell: bash
         run: |
+          set +e
           set -uo pipefail
 
           root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
@@ -199,6 +200,8 @@ jobs:
             --pair "BTC/USD:BTC:USD" \
             --pair "ADA/BTC:ADA:BTC" \
             --pair "ADA/USD:ADA:USD"
+
+          set -e
 
           if [[ -f "$corpus" ]]; then
             after_file_sha="$(sha256sum "$corpus" | awk '{print $1}')"
