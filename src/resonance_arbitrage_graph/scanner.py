@@ -43,6 +43,21 @@ def build_graph_from_quotes(
     return MarketGraph(edges)
 
 
+def _is_immediate_inverse_round_trip(route: Sequence[Edge]) -> bool:
+    """Return True for buy/sell cycles that immediately undo one market leg.
+
+    With the current graph, a two-edge cycle inside one venue is the buy and
+    sell direction of the same top-of-book snapshot. It is a spread/cost
+    negative control, not an arbitrage hypothesis, so it should not consume a
+    campaign candidate slot.
+    """
+
+    if len(route) != 2:
+        return False
+    first, second = route
+    return first.src == second.dst and first.dst == second.src
+
+
 def scan_cycles(
     quotes: Sequence[QuoteSnapshot],
     *,
@@ -57,6 +72,7 @@ def scan_cycles(
     opportunities = [
         ScannedOpportunity(route=route, result=evaluate_route(route, amount, policy=policy))
         for route in graph.find_cycles(start, max_hops=max_hops)
+        if not _is_immediate_inverse_round_trip(route)
     ]
     return sorted(opportunities, key=lambda item: item.result.net_edge, reverse=True)
 
