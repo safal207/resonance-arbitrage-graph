@@ -4,6 +4,7 @@ import pytest
 
 from resonance_arbitrage_graph.quotes import QuoteSnapshot
 from resonance_arbitrage_graph.rolling_state import (
+    RollingMarketSample,
     RollingMarketWindow,
     RollingWindowPolicy,
 )
@@ -97,6 +98,30 @@ def test_sample_timestamp_provenance_cannot_drift():
 
     with pytest.raises(ValueError, match="exchange_published"):
         replace(sample, timestamp_class="exchange_published")
+
+
+def test_level_update_sample_preserves_source_time_without_aging_snapshot():
+    quote = QuoteSnapshot(
+        venue="KRAKEN_SPOT",
+        symbol="BTC/USD",
+        base_asset="BTC",
+        quote_asset="USD",
+        bid_price=100.0,
+        bid_qty=5.0,
+        ask_price=100.1,
+        ask_qty=4.0,
+        observed_at_ms=20_000,
+        source_timestamp_ms=10_000,
+        source_url="fixture:kraken",
+        timestamp_class="client_observed_level_update",
+    )
+
+    sample = RollingMarketSample.from_quote(quote)
+
+    assert sample.source_timestamp_ms == 10_000
+    assert sample.freshness_reference_ms == 20_000
+    with pytest.raises(ValueError, match="freshness_reference_ms"):
+        replace(sample, freshness_reference_ms=10_000)
 
 
 def test_insufficient_samples_or_coverage_fail_closed_in_summary():
