@@ -1,4 +1,4 @@
-name: Probe FormSubmit activation in a standard browser
+name: Probe FormSubmit AJAX activation endpoint
 
 on:
   push:
@@ -14,124 +14,55 @@ jobs:
   activate:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-
-      - name: Install Playwright Chromium
+      - name: Send one clearly labeled AJAX activation test
         shell: bash
         run: |
           set -euo pipefail
-          npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
+          response_file="formsubmit-ajax-response.txt"
+          status="$({
+            curl --silent --show-error --location \
+              --output "$response_file" \
+              --write-out "%{http_code}" \
+              --request POST "https://formsubmit.co/ajax/safal0645@gmail.com" \
+              --header "Accept: application/json" \
+              --header "Referer: https://safal207.github.io/resonance-arbitrage-graph/" \
+              --form "_captcha=false" \
+              --form "_subject=[ACTIVATION TEST] RESONANCE Verify founding-list intake" \
+              --form "_template=table" \
+              --form "_url=https://safal207.github.io/resonance-arbitrage-graph/" \
+              --form "email=safal0645@gmail.com" \
+              --form "company=RESONANCE activation test" \
+              --form "role=System test" \
+              --form "integration=Form intake" \
+              --form "workflow=One-time AJAX activation probe. Not a prospect lead." \
+              --form "failure=ACTIVATION_TEST" \
+              --form "sample=Not applicable" \
+              --form "pilot_interest=Not applicable" \
+              --form "consent=Explicit test consent" \
+              --form "test_submission=true" \
+              --form "source_page=https://safal207.github.io/resonance-arbitrage-graph/"
+          } || true)"
 
-      - name: Submit one clearly labeled browser activation test
-        shell: bash
-        run: |
-          set -euo pipefail
-          node <<'JS'
-          const fs = require("node:fs");
-          const { chromium } = require("playwright");
+          echo "HTTP status: $status"
+          cat "$response_file" || true
 
-          const liveUrl = "https://safal207.github.io/resonance-arbitrage-graph/?ref=activation-test&utm_source=github-actions&utm_medium=browser-probe&utm_campaign=form-intake-activation";
-          const resultPath = "formsubmit-activation-result.json";
-          const screenshotPath = "formsubmit-activation.png";
+          {
+            echo "## FormSubmit AJAX activation probe"
+            echo
+            echo "- HTTP status: **$status**"
+            echo
+            if [[ "$status" == "200" || "$status" == "201" || "$status" == "202" ]]; then
+              echo "The endpoint accepted the activation test. Check Gmail for the confirmation message."
+            else
+              echo "The endpoint did not accept a headless request. A normal human-browser submission remains required; no anti-bot bypass was attempted."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
-          (async () => {
-            const browser = await chromium.launch({ headless: true });
-            const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
-            const result = { status: "UNKNOWN", liveUrl, finalUrl: "", title: "", bodyPreview: "" };
-
-            try {
-              await page.goto(liveUrl, { waitUntil: "domcontentloaded", timeout: 60_000 });
-              await page.locator("#email").fill("safal0645@gmail.com");
-              await page.locator("#company").fill("RESONANCE activation test");
-              await page.locator("#role").fill("System test");
-              await page.locator("#integration").selectOption({ label: "API" });
-              await page.locator("#workflow").fill("One-time browser activation probe. Not a prospect lead.");
-              await page.locator("#failure").selectOption({ label: "Other" });
-              await page.locator("#sample").selectOption({ label: "Not available" });
-              await page.locator("#pilot-interest").selectOption({ label: "Founding list only" });
-              await page.locator("#consent").check();
-
-              await page.locator("#founding-form").evaluate((form) => {
-                const captcha = document.createElement("input");
-                captcha.type = "hidden";
-                captcha.name = "_captcha";
-                captcha.value = "false";
-                form.appendChild(captcha);
-
-                const subject = form.querySelector('[name="_subject"]');
-                subject.value = "[ACTIVATION TEST] RESONANCE Verify founding-list intake";
-
-                const test = document.createElement("input");
-                test.type = "hidden";
-                test.name = "test_submission";
-                test.value = "true — not a prospect lead";
-                form.appendChild(test);
-              });
-
-              await page.locator('button[type="submit"]').click();
-
-              const deadline = Date.now() + 75_000;
-              while (Date.now() < deadline) {
-                await page.waitForTimeout(2_500);
-                const url = page.url();
-                const title = await page.title().catch(() => "");
-                const body = await page.locator("body").innerText().catch(() => "");
-                result.finalUrl = url;
-                result.title = title;
-                result.bodyPreview = body.replace(/\s+/g, " ").slice(0, 1_500);
-
-                if (url.includes("/thanks.html")) {
-                  result.status = "SUBMISSION_ACCEPTED";
-                  break;
-                }
-                if (/activate|confirmation|check your email|form submitted/i.test(`${title} ${body}`) && !/just a moment|enable javascript and cookies/i.test(`${title} ${body}`)) {
-                  result.status = "ACTIVATION_EMAIL_EXPECTED";
-                  break;
-                }
-              }
-
-              if (result.status === "UNKNOWN") {
-                const combined = `${result.title} ${result.bodyPreview}`;
-                result.status = /just a moment|enable javascript and cookies|captcha/i.test(combined)
-                  ? "MANUAL_BROWSER_REQUIRED"
-                  : "NO_CONFIRMED_ACTIVATION_SIGNAL";
-              }
-
-              await page.screenshot({ path: screenshotPath, fullPage: true });
-            } finally {
-              fs.writeFileSync(resultPath, JSON.stringify(result, null, 2));
-              await browser.close();
-            }
-
-            console.log(JSON.stringify(result));
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, [
-              "## FormSubmit browser activation probe",
-              "",
-              `- Status: **${result.status}**`,
-              `- Final URL: ${result.finalUrl || "n/a"}`,
-              `- Page title: ${result.title || "n/a"}`,
-              "",
-              result.status === "MANUAL_BROWSER_REQUIRED"
-                ? "Cloudflare or CAPTCHA requires a normal human browser. No bypass was attempted. Submit the live form once and confirm the activation email."
-                : "Check Gmail for the clearly labelled activation/confirmation message before treating intake as active."
-            ].join("\n"));
-          })().catch((error) => {
-            console.error(error);
-            process.exit(1);
-          });
-          JS
-
-      - name: Upload activation evidence
+      - name: Upload response evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: formsubmit-activation-probe
-          path: |
-            formsubmit-activation-result.json
-            formsubmit-activation.png
+          name: formsubmit-ajax-activation-probe
+          path: formsubmit-ajax-response.txt
           if-no-files-found: warn
           retention-days: 3
