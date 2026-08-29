@@ -1,0 +1,21 @@
+name: Kick off Corpus Campaign 001
+
+on:
+  push:
+    branches:
+      - ops/corpus-campaign-001-kickoff
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch the campaign workflow on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh workflow run corpus-campaign-001.yml --ref main
