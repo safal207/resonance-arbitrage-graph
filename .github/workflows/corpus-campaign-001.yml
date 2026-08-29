@@ -123,6 +123,7 @@ jobs:
             local log="$log_root/$name.log"
 
             echo "Running profile: $name"
+            set +e
             resonance-corpus-campaign-step \
               --corpus "$corpus" \
               --replay-output "$replay" \
@@ -154,6 +155,7 @@ jobs:
               --min-distinct-regimes 2 \
               "$@" >"$log" 2>&1
             local code=$?
+            set -e
 
             if [[ $code -eq 0 ]]; then
               successes=$((successes + 1))
