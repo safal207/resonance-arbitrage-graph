@@ -130,15 +130,32 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Configure GitHub Pages
+        id: pages
+        continue-on-error: true
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
+
+      - name: Explain one-time Pages enablement
+        if: steps.pages.outcome != 'success'
+        shell: bash
+        run: |
+          {
+            echo "## Opportunity Truth site validated; deployment is paused"
+            echo
+            echo "GitHub Pages is not enabled for this repository yet."
+            echo "An administrator must select **Settings → Pages → Build and deployment → Source: GitHub Actions** once."
+            echo "Then run this workflow manually; no code change is required."
+            echo
+            echo "Expected URL after deployment: https://safal207.github.io/resonance-arbitrage-graph/"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Site validation passed. Enable GitHub Pages with Source=GitHub Actions, then rerun this workflow."
 
       - name: Upload site artifact
+        if: steps.pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v4
         with:
           path: site
 
       - name: Deploy to GitHub Pages
+        if: steps.pages.outcome == 'success'
         id: deployment
         uses: actions/deploy-pages@v4
