@@ -41,8 +41,33 @@ jobs:
         working-directory: code
         run: python -m pip install -e ".[test]"
 
+      - name: Check campaign stop conditions
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$GITHUB_WORKSPACE/campaign-data/campaign/001/opportunity-truth-v0.2.json"
+          complete=false
+          paused=false
+          terminal_operations=0
+
+          if [[ -f "$report" ]]; then
+            status="$(jq -r '.payload.claim_status // "NOT_READY"' "$report")"
+            terminal_operations="$(jq -r '.payload.terminal_operations // 0' "$report")"
+            if [[ "$status" == "INTERNAL_EVIDENCE_READY" ]]; then
+              complete=true
+            elif [[ "$terminal_operations" -ge 2000 ]]; then
+              paused=true
+            fi
+          fi
+
+          echo "complete=$complete" >> "$GITHUB_OUTPUT"
+          echo "paused=$paused" >> "$GITHUB_OUTPUT"
+          echo "terminal_operations=$terminal_operations" >> "$GITHUB_OUTPUT"
+
       - name: Capture public market evidence
         id: collect
+        if: steps.gate.outputs.complete != 'true' && steps.gate.outputs.paused != 'true'
         shell: bash
         run: |
           set -uo pipefail
@@ -190,6 +215,9 @@ jobs:
           {
             echo "## RESONANCE Verify — Corpus Campaign 001"
             echo
+            echo "- Campaign complete: ${{ steps.gate.outputs.complete }}"
+            echo "- Campaign paused at evidence budget: ${{ steps.gate.outputs.paused }}"
+            echo "- Terminal operations before run: ${{ steps.gate.outputs.terminal_operations }}"
             echo "- Successful profiles: ${{ steps.collect.outputs.successes || '0' }}"
             echo "- Failed profiles: ${{ steps.collect.outputs.failures || '0' }}"
             echo "- Evidence progress: ${{ steps.collect.outputs.progress || 'false' }}"
@@ -226,8 +254,22 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Stop successfully when evidence gate has passed
+        if: steps.gate.outputs.complete == 'true'
+        run: echo "Campaign is complete; INTERNAL_EVIDENCE_READY was already reached."
+
+      - name: Stop successfully at campaign evidence budget
+        if: steps.gate.outputs.paused == 'true'
+        run: |
+          echo "Campaign paused after 2,000 terminal operations without readiness."
+          echo "Product review is required before collecting more evidence."
+
       - name: Fail closed on zero progress
-        if: always() && steps.collect.outputs.progress != 'true'
+        if: >-
+          always() &&
+          steps.gate.outputs.complete != 'true' &&
+          steps.gate.outputs.paused != 'true' &&
+          steps.collect.outputs.progress != 'true'
         run: |
           echo "No campaign profile succeeded and no pending evidence was recovered."
           exit 1
