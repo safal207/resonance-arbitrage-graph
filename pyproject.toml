@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "resonance-arbitrage-graph"
-version = "0.16.7"
+version = "0.16.8"
 description = "Evidence-bound pre-trade verification for autonomous financial agents"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -31,6 +31,7 @@ resonance-real-market-corpus = "resonance_arbitrage_graph.real_market_corpus_cli
 resonance-corpus-runner = "resonance_arbitrage_graph.corpus_runner_cli:main"
 resonance-corpus-campaign-step = "resonance_arbitrage_graph.corpus_campaign_cli:main"
 resonance-opportunity-truth-benchmark = "resonance_arbitrage_graph.opportunity_truth_benchmark_cli:main"
+resonance-opportunity-funnel = "resonance_arbitrage_graph.opportunity_funnel_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

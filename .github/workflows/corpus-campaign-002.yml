@@ -208,7 +208,9 @@ jobs:
             progress=true
             rm -f \
               "$root/opportunity-truth-v0.2.json" \
-              "$root/opportunity-truth-v0.2.md"
+              "$root/opportunity-truth-v0.2.md" \
+              "$root/opportunity-funnel-v0.1.json" \
+              "$root/opportunity-funnel-v0.1.md"
           fi
 
           echo "successes=$successes" >> "$GITHUB_OUTPUT"
@@ -216,15 +218,19 @@ jobs:
           echo "progress=$progress" >> "$GITHUB_OUTPUT"
           echo "corpus_exists=$([[ -f "$corpus" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
-      - name: Build and fully verify Opportunity Truth Benchmark v0.2
+      - name: Build and fully verify product reports
         if: steps.collect.outputs.corpus_exists == 'true'
         shell: bash
         run: |
           set -euo pipefail
           root="$GITHUB_WORKSPACE/campaign-data/campaign/002"
-          report_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.json"
-          markdown_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.md"
-          rm -f "$report_tmp" "$markdown_tmp"
+          truth_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.json"
+          truth_markdown_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.md"
+          funnel_tmp="$RUNNER_TEMP/opportunity-funnel-v0.1.json"
+          funnel_markdown_tmp="$RUNNER_TEMP/opportunity-funnel-v0.1.md"
+          rm -f \
+            "$truth_tmp" "$truth_markdown_tmp" \
+            "$funnel_tmp" "$funnel_markdown_tmp"
 
           resonance-opportunity-truth-benchmark build "$root/corpus.json" \
             --min-terminal-operations 100 \
@@ -236,15 +242,25 @@ jobs:
             --min-effective-routes 2 \
             --min-distinct-route-markets 3 \
             --min-distinct-regimes 2 \
-            --output "$report_tmp" \
-            --markdown-output "$markdown_tmp"
+            --output "$truth_tmp" \
+            --markdown-output "$truth_markdown_tmp"
 
           resonance-opportunity-truth-benchmark verify \
             "$root/corpus.json" \
-            "$report_tmp"
+            "$truth_tmp"
 
-          mv "$report_tmp" "$root/opportunity-truth-v0.2.json"
-          mv "$markdown_tmp" "$root/opportunity-truth-v0.2.md"
+          resonance-opportunity-funnel build "$root/corpus.json" \
+            --output "$funnel_tmp" \
+            --markdown-output "$funnel_markdown_tmp"
+
+          resonance-opportunity-funnel verify \
+            "$root/corpus.json" \
+            "$funnel_tmp"
+
+          mv "$truth_tmp" "$root/opportunity-truth-v0.2.json"
+          mv "$truth_markdown_tmp" "$root/opportunity-truth-v0.2.md"
+          mv "$funnel_tmp" "$root/opportunity-funnel-v0.1.json"
+          mv "$funnel_markdown_tmp" "$root/opportunity-funnel-v0.1.md"
 
       - name: Write campaign summary
         if: always()
@@ -267,9 +283,13 @@ jobs:
             echo "- Evidence progress: ${{ steps.collect.outputs.progress || 'false' }}"
             echo "- Data branch: \`data/corpus-campaign-002\`"
             echo "- Safety: public data, paper-only, no keys or orders"
+            if [[ -f "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-funnel-v0.1.md" ]]; then
+              echo
+              sed -n '1,32p' "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-funnel-v0.1.md"
+            fi
             if [[ -f "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-truth-v0.2.md" ]]; then
               echo
-              sed -n '1,28p' "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-truth-v0.2.md"
+              sed -n '1,20p' "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-truth-v0.2.md"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
