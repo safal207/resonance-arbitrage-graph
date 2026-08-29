@@ -10,7 +10,11 @@ from typing import Any, Iterable
 from .quotes import QuoteSnapshot
 
 
-_ALLOWED_TIMESTAMP_CLASSES = {"client_observed", "exchange_published"}
+_ALLOWED_TIMESTAMP_CLASSES = {
+    "client_observed",
+    "client_observed_level_update",
+    "exchange_published",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,13 +87,19 @@ class RollingMarketSample:
             raise ValueError("source_timestamp_ms cannot be negative")
         if self.timestamp_class not in _ALLOWED_TIMESTAMP_CLASSES:
             raise ValueError(f"unsupported timestamp_class: {self.timestamp_class}")
-        if self.timestamp_class == "exchange_published" and self.source_timestamp_ms is None:
-            raise ValueError("exchange_published samples require source_timestamp_ms")
+        if (
+            self.timestamp_class
+            in {"exchange_published", "client_observed_level_update"}
+            and self.source_timestamp_ms is None
+        ):
+            raise ValueError(
+                f"{self.timestamp_class} samples require source_timestamp_ms"
+            )
         if self.timestamp_class == "client_observed" and self.source_timestamp_ms is not None:
             raise ValueError("client_observed samples cannot claim source_timestamp_ms")
         expected_freshness = (
             self.source_timestamp_ms
-            if self.source_timestamp_ms is not None
+            if self.timestamp_class == "exchange_published"
             else self.observed_at_ms
         )
         if self.freshness_reference_ms != expected_freshness:
