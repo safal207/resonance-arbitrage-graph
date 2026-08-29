@@ -21,6 +21,7 @@ jobs:
       - name: Checkout verifier code
         uses: actions/checkout@v4
         with:
+          ref: main
           path: code
 
       - name: Checkout append-only campaign data branch
@@ -54,16 +55,25 @@ jobs:
           report_valid=false
           terminal_operations=0
 
+          if [[ -f "$corpus" ]]; then
+            terminal_operations="$(python - "$corpus" <<'PY'
+          from pathlib import Path
+          import sys
+          from resonance_arbitrage_graph.corpus_runner import terminal_operation_count
+          from resonance_arbitrage_graph.real_market_corpus import load_corpus
+
+          print(terminal_operation_count(load_corpus(Path(sys.argv[1]))))
+          PY
+            )"
+          fi
+
           if [[ -f "$report" && -f "$corpus" ]]; then
             if resonance-opportunity-truth-benchmark verify \
               "$corpus" "$report" >"$RUNNER_TEMP/campaign-gate-verify.log" 2>&1; then
               report_valid=true
               status="$(jq -r '.payload.claim_status // "NOT_READY"' "$report")"
-              terminal_operations="$(jq -r '.payload.terminal_operations // 0' "$report")"
               if [[ "$status" == "INTERNAL_EVIDENCE_READY" ]]; then
                 complete=true
-              elif [[ "$terminal_operations" -ge 2000 ]]; then
-                paused=true
               fi
             else
               echo "::warning::Stored benchmark does not bind the current corpus; collection will continue and rebuild it."
@@ -71,6 +81,10 @@ jobs:
             fi
           elif [[ -f "$report" ]]; then
             echo "::warning::Stored benchmark exists without its bound corpus; it will not be trusted."
+          fi
+
+          if [[ "$complete" != "true" && "$terminal_operations" -ge 2000 ]]; then
+            paused=true
           fi
 
           echo "complete=$complete" >> "$GITHUB_OUTPUT"
@@ -113,6 +127,7 @@ jobs:
               --corpus "$corpus" \
               --replay-output "$replay" \
               --receipt-output "$receipt" \
+              --campaign-id corpus-campaign-001 \
               --venue kraken \
               --start-asset USD \
               --amount "$amount" \
@@ -190,6 +205,9 @@ jobs:
           progress=false
           if [[ $successes -gt 0 || "$before_file_sha" != "$after_file_sha" ]]; then
             progress=true
+            rm -f \
+              "$root/opportunity-truth-v0.2.json" \
+              "$root/opportunity-truth-v0.2.md"
           fi
 
           echo "successes=$successes" >> "$GITHUB_OUTPUT"
