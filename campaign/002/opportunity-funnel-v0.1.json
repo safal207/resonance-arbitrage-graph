@@ -3,21 +3,21 @@
     "by_regime": [
       {
         "expected_net_edge_bps": {
-          "count": 37,
-          "maximum_bps": -32.71956326540093,
-          "mean_bps": -40.615150325796165,
+          "count": 47,
+          "maximum_bps": -30.753877808197274,
+          "mean_bps": -40.312964976673705,
           "minimum_bps": -55.83720051585139
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 37,
-            "complete_evidence": 37,
+            "candidate_cycles": 47,
+            "complete_evidence": 47,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
-            "gross_positive": 6,
+            "gross_positive": 8,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 37,
+            "structural_constraints_pass": 47,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -26,7 +26,7 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.16216216216216217,
+            "gross_positive": 0.1702127659574468,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
             "structural_constraints_pass": 1.0,
@@ -35,22 +35,22 @@
           }
         },
         "gross_edge_bps": {
-          "count": 37,
-          "maximum_bps": 3.248936154964799,
-          "mean_bps": -4.67514337340044,
+          "count": 47,
+          "maximum_bps": 5.221715097365465,
+          "mean_bps": -4.371867540908461,
           "minimum_bps": -19.95212472616581
         },
         "key": "NORMAL",
         "modeled_cost_drag_bps": {
-          "count": 37,
-          "maximum_bps": 35.96849942036573,
-          "mean_bps": 35.94000695239573,
+          "count": 47,
+          "maximum_bps": 35.975592905562735,
+          "mean_bps": 35.94109743576524,
           "minimum_bps": 35.88507578968559
         },
         "observed_edge_bps": {
-          "count": 37,
+          "count": 47,
           "maximum_bps": -34.07086279688776,
-          "mean_bps": -40.62652699166346,
+          "mean_bps": -40.43194720136677,
           "minimum_bps": -57.054854952026666
         }
       },
@@ -111,21 +111,21 @@
     "by_route": [
       {
         "expected_net_edge_bps": {
-          "count": 4,
-          "maximum_bps": -41.030093092625506,
-          "mean_bps": -44.038479372082165,
+          "count": 5,
+          "maximum_bps": -30.753877808197274,
+          "mean_bps": -41.38155905930518,
           "minimum_bps": -46.656201883855665
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
-            "gross_positive": 0,
+            "gross_positive": 1,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 4,
+            "structural_constraints_pass": 5,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -134,7 +134,7 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.0,
+            "gross_positive": 0.2,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
             "structural_constraints_pass": 1.0,
@@ -143,92 +143,39 @@
           }
         },
         "gross_edge_bps": {
-          "count": 4,
-          "maximum_bps": -5.091583526479759,
-          "mean_bps": -8.110826041077823,
+          "count": 5,
+          "maximum_bps": 5.221715097365465,
+          "mean_bps": -5.444317813389166,
           "minimum_bps": -10.737995016332214
         },
         "key": "0f900639b50bd580e23728e911fb1edd6d7309932ef2cb15c491db8594b9bc81",
         "modeled_cost_drag_bps": {
-          "count": 4,
-          "maximum_bps": 35.93850956614575,
-          "mean_bps": 35.927653331004336,
+          "count": 5,
+          "maximum_bps": 35.975592905562735,
+          "mean_bps": 35.93724124591602,
           "minimum_bps": 35.91820686752345
         },
         "observed_edge_bps": {
-          "count": 4,
-          "maximum_bps": -43.508326844791114,
-          "mean_bps": -43.92422008319269,
+          "count": 5,
+          "maximum_bps": -43.14758516104411,
+          "mean_bps": -43.76889309876297,
           "minimum_bps": -44.41631369195953
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -36.392515868862716,
-          "mean_bps": -42.40818209723385,
+          "mean_bps": -42.16382133471952,
           "minimum_bps": -49.93355658383769
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 0,
-            "net_positive": 0,
-            "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 3,
-            "survived_required_edge": 0,
-            "truth_outcomes": 0
-          },
-          "rates_from_candidates": {
-            "candidate_cycles": 1.0,
-            "complete_evidence": 1.0,
-            "execute_threshold_eligible": 0.0,
-            "final_execute_sim": 0.0,
-            "gross_positive": 0.0,
-            "net_positive": 0.0,
-            "resolved_execute_outcomes": 0.0,
-            "structural_constraints_pass": 0.75,
-            "survived_required_edge": 0.0,
-            "truth_outcomes": 0.0
-          }
-        },
-        "gross_edge_bps": {
-          "count": 4,
-          "maximum_bps": -0.4372708757627297,
-          "mean_bps": -6.474645582049132,
-          "minimum_bps": -14.027176566312471
-        },
-        "key": "195fffbb1e0172ae1a17f3a4fcbd1848a25c39e36129389a036c3f4b65712437",
-        "modeled_cost_drag_bps": {
-          "count": 4,
-          "maximum_bps": 35.95524499309999,
-          "mean_bps": 35.93353651518472,
-          "minimum_bps": 35.90638001752522
-        },
-        "observed_edge_bps": {
-          "count": 4,
-          "maximum_bps": -34.714510041524704,
-          "mean_bps": -41.988680640399345,
-          "minimum_bps": -49.93355658383769
-        }
-      },
-      {
-        "expected_net_edge_bps": {
-          "count": 4,
-          "maximum_bps": -35.27951804961127,
-          "mean_bps": -36.38698042954108,
-          "minimum_bps": -37.12685009921613
-        },
-        "funnel": {
-          "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
-            "execute_threshold_eligible": 0,
-            "final_execute_sim": 0,
-            "gross_positive": 1,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
             "structural_constraints_pass": 4,
@@ -240,51 +187,51 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.25,
+            "gross_positive": 0.0,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
-            "structural_constraints_pass": 1.0,
+            "structural_constraints_pass": 0.8,
             "survived_required_edge": 0.0,
             "truth_outcomes": 0.0
           }
         },
         "gross_edge_bps": {
-          "count": 4,
-          "maximum_bps": 0.6797433712057988,
-          "mean_bps": -0.43171546093595525,
-          "minimum_bps": -1.1742550667037666
+          "count": 5,
+          "maximum_bps": -0.4372708757627297,
+          "mean_bps": -6.229403005282741,
+          "minimum_bps": -14.027176566312471
         },
-        "key": "3a41007eaaefc79b61ae7351071fa476b018a32ebf9dfd589da8f3475aedf3c6",
+        "key": "195fffbb1e0172ae1a17f3a4fcbd1848a25c39e36129389a036c3f4b65712437",
         "modeled_cost_drag_bps": {
-          "count": 4,
-          "maximum_bps": 35.95926142081707,
-          "mean_bps": 35.95526496860513,
-          "minimum_bps": 35.95259503251236
+          "count": 5,
+          "maximum_bps": 35.95524499309999,
+          "mean_bps": 35.93441832943678,
+          "minimum_bps": 35.90638001752522
         },
         "observed_edge_bps": {
-          "count": 4,
-          "maximum_bps": -34.07086279688776,
-          "mean_bps": -36.22083757662209,
-          "minimum_bps": -37.271546069409524
+          "count": 5,
+          "maximum_bps": -34.714510041524704,
+          "mean_bps": -40.799564269428544,
+          "minimum_bps": -49.93355658383769
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
-          "maximum_bps": -35.79322499731696,
-          "mean_bps": -36.373577012036584,
-          "minimum_bps": -37.63955684494946
+          "count": 5,
+          "maximum_bps": -34.973736420191855,
+          "mean_bps": -36.104331627671236,
+          "minimum_bps": -37.12685009921613
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 2,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 4,
+            "structural_constraints_pass": 5,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -293,7 +240,7 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.5,
+            "gross_positive": 0.4,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
             "structural_constraints_pass": 1.0,
@@ -302,42 +249,95 @@
           }
         },
         "gross_edge_bps": {
-          "count": 4,
+          "count": 5,
+          "maximum_bps": 0.9866284617410237,
+          "mean_bps": -0.14804667640055946,
+          "minimum_bps": -1.1742550667037666
+        },
+        "key": "3a41007eaaefc79b61ae7351071fa476b018a32ebf9dfd589da8f3475aedf3c6",
+        "modeled_cost_drag_bps": {
+          "count": 5,
+          "maximum_bps": 35.960364881932875,
+          "mean_bps": 35.95628495127068,
+          "minimum_bps": 35.95259503251236
+        },
+        "observed_edge_bps": {
+          "count": 5,
+          "maximum_bps": -34.07086279688776,
+          "mean_bps": -36.23697775017498,
+          "minimum_bps": -37.271546069409524
+        }
+      },
+      {
+        "expected_net_edge_bps": {
+          "count": 5,
+          "maximum_bps": -35.79322499731696,
+          "mean_bps": -36.814993649228796,
+          "minimum_bps": -38.58066019799766
+        },
+        "funnel": {
+          "counts": {
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
+            "execute_threshold_eligible": 0,
+            "final_execute_sim": 0,
+            "gross_positive": 2,
+            "net_positive": 0,
+            "resolved_execute_outcomes": 0,
+            "structural_constraints_pass": 5,
+            "survived_required_edge": 0,
+            "truth_outcomes": 0
+          },
+          "rates_from_candidates": {
+            "candidate_cycles": 1.0,
+            "complete_evidence": 1.0,
+            "execute_threshold_eligible": 0.0,
+            "final_execute_sim": 0.0,
+            "gross_positive": 0.4,
+            "net_positive": 0.0,
+            "resolved_execute_outcomes": 0.0,
+            "structural_constraints_pass": 1.0,
+            "survived_required_edge": 0.0,
+            "truth_outcomes": 0.0
+          }
+        },
+        "gross_edge_bps": {
+          "count": 5,
           "maximum_bps": 0.16418263117046195,
-          "mean_bps": -0.4182636750918456,
-          "minimum_bps": -1.6888119953850644
+          "mean_bps": -0.8612732336592543,
+          "minimum_bps": -2.6333114679288894
         },
         "key": "81d88668c16fa78f000433a2cfaa32f5efb2f43297fa4cca58c6671e85644f9a",
         "modeled_cost_drag_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 35.957407628487424,
-          "mean_bps": 35.95531333694474,
-          "minimum_bps": 35.950744849564394
+          "mean_bps": 35.95372041556954,
+          "minimum_bps": 35.94734873006877
         },
         "observed_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -35.863085752277925,
-          "mean_bps": -37.026434858427606,
+          "mean_bps": -36.94476269190816,
           "minimum_bps": -38.847369247683176
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -39.762864029654345,
-          "mean_bps": -47.95066021255984,
+          "mean_bps": -48.51382269768001,
           "minimum_bps": -55.83720051585139
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 0,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 4,
+            "structural_constraints_pass": 5,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -355,42 +355,42 @@
           }
         },
         "gross_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -3.819781468084038,
-          "mean_bps": -12.03712460154771,
+          "mean_bps": -12.602319347086777,
           "minimum_bps": -19.95212472616581
         },
         "key": "850b84dc68c3d52a9812d9d7d9ff0f278615028aeea482d83cc457d821b51c54",
         "modeled_cost_drag_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 35.94308256157031,
-          "mean_bps": 35.91353561101213,
+          "mean_bps": 35.911503350593236,
           "minimum_bps": 35.88507578968559
         },
         "observed_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -39.762864029654345,
-          "mean_bps": -48.76182094326886,
+          "mean_bps": -49.78250959542962,
           "minimum_bps": -57.054854952026666
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -32.71956326540093,
-          "mean_bps": -35.982798813756766,
+          "mean_bps": -36.15866291661995,
           "minimum_bps": -38.00386106373899
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 1,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 3,
+            "structural_constraints_pass": 4,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -399,98 +399,45 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.25,
+            "gross_positive": 0.2,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
-            "structural_constraints_pass": 0.75,
+            "structural_constraints_pass": 0.8,
             "survived_required_edge": 0.0,
             "truth_outcomes": 0.0
           }
         },
         "gross_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 3.248936154964799,
-          "mean_bps": -0.026075292209049028,
+          "mean_bps": -0.20257402835244243,
           "minimum_bps": -2.0544308632541863
         },
         "key": "98d774c1e10cf931bb917fc3b775cdf0641046cdd2a4baad38000bafcea40368",
         "modeled_cost_drag_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 35.96849942036573,
-          "mean_bps": 35.956723521547715,
+          "mean_bps": 35.95608888826751,
           "minimum_bps": 35.9494302004848
         },
         "observed_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -36.04476235182563,
-          "mean_bps": -37.83908089896315,
+          "mean_bps": -37.69852886794167,
           "minimum_bps": -39.625280717064946
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -34.31018781688944,
-          "mean_bps": -37.66354353951118,
+          "mean_bps": -37.73271391271971,
           "minimum_bps": -41.46564077511794
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
-            "execute_threshold_eligible": 0,
-            "final_execute_sim": 0,
-            "gross_positive": 0,
-            "net_positive": 0,
-            "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 3,
-            "survived_required_edge": 0,
-            "truth_outcomes": 0
-          },
-          "rates_from_candidates": {
-            "candidate_cycles": 1.0,
-            "complete_evidence": 1.0,
-            "execute_threshold_eligible": 0.0,
-            "final_execute_sim": 0.0,
-            "gross_positive": 0.0,
-            "net_positive": 0.0,
-            "resolved_execute_outcomes": 0.0,
-            "structural_constraints_pass": 0.75,
-            "survived_required_edge": 0.0,
-            "truth_outcomes": 0.0
-          }
-        },
-        "gross_edge_bps": {
-          "count": 4,
-          "maximum_bps": 1.6525715845605582,
-          "mean_bps": -1.7128852497064195,
-          "minimum_bps": -5.528702951298481
-        },
-        "key": "a1d4c89ed1ed7def6f517eefc3a7ac8ad7c4f44a343e70444bfdbfd2da83ff3b",
-        "modeled_cost_drag_bps": {
-          "count": 4,
-          "maximum_bps": 35.96275940145,
-          "mean_bps": 35.950658289804764,
-          "minimum_bps": 35.93693782381946
-        },
-        "observed_edge_bps": {
-          "count": 4,
-          "maximum_bps": -30.804145584673037,
-          "mean_bps": -35.333898541768384,
-          "minimum_bps": -38.02922272180042
-        }
-      },
-      {
-        "expected_net_edge_bps": {
-          "count": 4,
-          "maximum_bps": -44.8306110974428,
-          "mean_bps": -45.92014732751226,
-          "minimum_bps": -48.02408012591685
-        },
-        "funnel": {
-          "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 0,
@@ -508,48 +455,101 @@
             "gross_positive": 0.0,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
+            "structural_constraints_pass": 0.8,
+            "survived_required_edge": 0.0,
+            "truth_outcomes": 0.0
+          }
+        },
+        "gross_edge_bps": {
+          "count": 5,
+          "maximum_bps": 1.6525715845605582,
+          "mean_bps": -1.7823052350880442,
+          "minimum_bps": -5.528702951298481
+        },
+        "key": "a1d4c89ed1ed7def6f517eefc3a7ac8ad7c4f44a343e70444bfdbfd2da83ff3b",
+        "modeled_cost_drag_bps": {
+          "count": 5,
+          "maximum_bps": 35.96275940145,
+          "mean_bps": 35.950408677631664,
+          "minimum_bps": 35.93693782381946
+        },
+        "observed_edge_bps": {
+          "count": 5,
+          "maximum_bps": -30.804145584673037,
+          "mean_bps": -36.11690138651458,
+          "minimum_bps": -39.248912765499355
+        }
+      },
+      {
+        "expected_net_edge_bps": {
+          "count": 5,
+          "maximum_bps": -44.8306110974428,
+          "mean_bps": -46.07916850106619,
+          "minimum_bps": -48.02408012591685
+        },
+        "funnel": {
+          "counts": {
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
+            "execute_threshold_eligible": 0,
+            "final_execute_sim": 0,
+            "gross_positive": 0,
+            "net_positive": 0,
+            "resolved_execute_outcomes": 0,
+            "structural_constraints_pass": 5,
+            "survived_required_edge": 0,
+            "truth_outcomes": 0
+          },
+          "rates_from_candidates": {
+            "candidate_cycles": 1.0,
+            "complete_evidence": 1.0,
+            "execute_threshold_eligible": 0.0,
+            "final_execute_sim": 0.0,
+            "gross_positive": 0.0,
+            "net_positive": 0.0,
+            "resolved_execute_outcomes": 0.0,
             "structural_constraints_pass": 1.0,
             "survived_required_edge": 0.0,
             "truth_outcomes": 0.0
           }
         },
         "gross_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -8.905816298381275,
-          "mean_bps": -9.999284291332955,
+          "mean_bps": -10.158879317807346,
           "minimum_bps": -12.110809462213545
         },
         "key": "a7d665a0424aaa64e5897b3f91d326a29e50ab07d480a6fd94246f15ec7691ec",
         "modeled_cost_drag_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 35.92479479906152,
-          "mean_bps": 35.92086303617931,
+          "mean_bps": 35.92028918325885,
           "minimum_bps": 35.91327066370331
         },
         "observed_edge_bps": {
-          "count": 4,
-          "maximum_bps": -42.9312732639997,
-          "mean_bps": -44.21611865716851,
+          "count": 5,
+          "maximum_bps": -42.26072004491543,
+          "mean_bps": -43.825038934717895,
           "minimum_bps": -44.80750830130553
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -35.8447412717966,
-          "mean_bps": -38.30037798503494,
+          "mean_bps": -38.00219704018715,
           "minimum_bps": -41.76043672729168
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 1,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 4,
+            "structural_constraints_pass": 5,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -558,7 +558,7 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.25,
+            "gross_positive": 0.2,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
             "structural_constraints_pass": 1.0,
@@ -567,42 +567,42 @@
           }
         },
         "gross_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 0.11248045211020852,
-          "mean_bps": -2.3520178125077673,
+          "mean_bps": -2.0527608348135384,
           "minimum_bps": -5.824562721040705
         },
         "key": "e0b6ce6d92e622816d56623b1bc8fbad98c7f2bbc72a322383ef975933413db7",
         "modeled_cost_drag_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 35.95722172390681,
-          "mean_bps": 35.948360172527174,
+          "mean_bps": 35.94943620537361,
           "minimum_bps": 35.93587400625098
         },
         "observed_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -34.853008935361586,
-          "mean_bps": -36.78662209716549,
+          "mean_bps": -36.9078003934018,
           "minimum_bps": -38.20854311244237
         }
       },
       {
         "expected_net_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": -33.66268220092672,
-          "mean_bps": -37.23643312416064,
+          "mean_bps": -37.247431561386875,
           "minimum_bps": -40.27266034032806
         },
         "funnel": {
           "counts": {
-            "candidate_cycles": 4,
-            "complete_evidence": 4,
+            "candidate_cycles": 5,
+            "complete_evidence": 5,
             "execute_threshold_eligible": 0,
             "final_execute_sim": 0,
             "gross_positive": 1,
             "net_positive": 0,
             "resolved_execute_outcomes": 0,
-            "structural_constraints_pass": 4,
+            "structural_constraints_pass": 5,
             "survived_required_edge": 0,
             "truth_outcomes": 0
           },
@@ -611,7 +611,7 @@
             "complete_evidence": 1.0,
             "execute_threshold_eligible": 0.0,
             "final_execute_sim": 0.0,
-            "gross_positive": 0.25,
+            "gross_positive": 0.2,
             "net_positive": 0.0,
             "resolved_execute_outcomes": 0.0,
             "structural_constraints_pass": 1.0,
@@ -620,22 +620,22 @@
           }
         },
         "gross_edge_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 2.3024138263982863,
-          "mean_bps": -1.2842335392337922,
+          "mean_bps": -1.2952716660503683,
           "minimum_bps": -4.33141745894372
         },
         "key": "f7f75ffb8a100ecc88a293d803cc63ed38da355a9dc2dc2324624bbb7ee479c6",
         "modeled_cost_drag_bps": {
-          "count": 4,
+          "count": 5,
           "maximum_bps": 35.965096027325,
-          "mean_bps": 35.952199584926845,
+          "mean_bps": 35.952159895336514,
           "minimum_bps": 35.94124288138434
         },
         "observed_edge_bps": {
-          "count": 4,
-          "maximum_bps": -36.56490362003106,
-          "mean_bps": -39.08851487041676,
+          "count": 5,
+          "maximum_bps": -35.10599201919318,
+          "mean_bps": -38.29201030017204,
           "minimum_bps": -43.77500737567041
         }
       }
@@ -643,11 +643,11 @@
     "diagnostic_only": true,
     "economic_blocker_counts": [
       {
-        "count": 31,
+        "count": 39,
         "reason": "GROSS_NON_POSITIVE"
       },
       {
-        "count": 6,
+        "count": 8,
         "reason": "MODELED_COSTS_ERASE_EDGE"
       }
     ],
@@ -655,11 +655,11 @@
     "evidence_source": "REAL_MARKET_CORPUS",
     "first_blocker_counts": [
       {
-        "count": 31,
+        "count": 39,
         "reason": "GROSS_NON_POSITIVE"
       },
       {
-        "count": 6,
+        "count": 8,
         "reason": "MODELED_COSTS_ERASE_EDGE"
       },
       {
@@ -712,25 +712,35 @@
       "real-market-KRAKEN_SPOT-1788018538030-0",
       "real-market-KRAKEN_SPOT-1788018538030-1",
       "real-market-KRAKEN_SPOT-1788018608683-0",
-      "real-market-KRAKEN_SPOT-1788018608683-1"
+      "real-market-KRAKEN_SPOT-1788018608683-1",
+      "real-market-KRAKEN_SPOT-1788029640127-0",
+      "real-market-KRAKEN_SPOT-1788029640127-1",
+      "real-market-KRAKEN_SPOT-1788029711186-0",
+      "real-market-KRAKEN_SPOT-1788029711186-1",
+      "real-market-KRAKEN_SPOT-1788029783001-0",
+      "real-market-KRAKEN_SPOT-1788029783001-1",
+      "real-market-KRAKEN_SPOT-1788029854138-0",
+      "real-market-KRAKEN_SPOT-1788029854138-1",
+      "real-market-KRAKEN_SPOT-1788029925339-0",
+      "real-market-KRAKEN_SPOT-1788029925339-1"
     ],
     "overall": {
       "expected_net_edge_bps": {
-        "count": 40,
-        "maximum_bps": -32.71956326540093,
-        "mean_bps": -40.22611799134293,
+        "count": 50,
+        "maximum_bps": -30.753877808197274,
+        "mean_bps": -40.019870230058466,
         "minimum_bps": -55.83720051585139
       },
       "funnel": {
         "counts": {
-          "candidate_cycles": 40,
-          "complete_evidence": 40,
+          "candidate_cycles": 50,
+          "complete_evidence": 50,
           "execute_threshold_eligible": 0,
           "final_execute_sim": 0,
-          "gross_positive": 6,
+          "gross_positive": 8,
           "net_positive": 0,
           "resolved_execute_outcomes": 0,
-          "structural_constraints_pass": 37,
+          "structural_constraints_pass": 47,
           "survived_required_edge": 0,
           "truth_outcomes": 0
         },
@@ -739,39 +749,39 @@
           "complete_evidence": 1.0,
           "execute_threshold_eligible": 0.0,
           "final_execute_sim": 0.0,
-          "gross_positive": 0.15,
+          "gross_positive": 0.16,
           "net_positive": 0.0,
           "resolved_execute_outcomes": 0.0,
-          "structural_constraints_pass": 0.925,
+          "structural_constraints_pass": 0.94,
           "survived_required_edge": 0.0,
           "truth_outcomes": 0.0
         }
       },
       "gross_edge_bps": {
-        "count": 40,
-        "maximum_bps": 3.248936154964799,
-        "mean_bps": -4.284707154569245,
+        "count": 50,
+        "maximum_bps": 5.221715097365465,
+        "mean_bps": -4.077715115793024,
         "minimum_bps": -19.95212472616581
       },
       "key": "ALL",
       "modeled_cost_drag_bps": {
-        "count": 40,
-        "maximum_bps": 35.96849942036573,
-        "mean_bps": 35.941410836773684,
+        "count": 50,
+        "maximum_bps": 35.975592905562735,
+        "mean_bps": 35.94215511426544,
         "minimum_bps": 35.88507578968559
       },
       "observed_edge_bps": {
-        "count": 40,
+        "count": 50,
         "maximum_bps": -30.804145584673037,
-        "mean_bps": -40.11862291673929,
+        "mean_bps": -40.03729872884523,
         "minimum_bps": -57.054854952026666
       }
     },
     "paper_only": true,
     "rejected_routes_are_not_false_positives": true,
-    "replay_bundle_sha256": "2cd4b3fbbb0a8dc05f63e394d4f4e47fc0b227e97195760d4f3dfe8d34103ecc",
+    "replay_bundle_sha256": "a0c6d66873e2f446ff6d046d6d17bd092fd42d2dce6e2e9a4bf732624153c4bb",
     "schema": "resonance.verify.opportunity-funnel/v0.1",
-    "source_sha256": "2729f27be704b20fee0b2633a149d94e864a8efce68bf4604b34015ded7dd0db",
+    "source_sha256": "248b3e64b3c505ee101e3b2eaa565a687a4bbb8d3655515eb863183b4ad58d55",
     "structural_blocker_counts": [
       {
         "count": 2,
@@ -783,5 +793,5 @@
       }
     ]
   },
-  "sha256": "a4dd83756786b2e5fd5b4c57f5df249e08ba713ca5fa365c50c36e9123acfba0"
+  "sha256": "55b0a64f8ee4063bcdd19e883b16148779459f6cbc3b3de3d91866c3eb23ba7f"
 }
