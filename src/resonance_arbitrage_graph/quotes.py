@@ -7,12 +7,27 @@ from .model import Edge, Node
 from .validation import require_non_negative
 
 
-_ALLOWED_TIMESTAMP_CLASSES = {"client_observed", "exchange_published"}
+_ALLOWED_TIMESTAMP_CLASSES = {
+    "client_observed",
+    "client_observed_level_update",
+    "exchange_published",
+}
 
 
 @dataclass(frozen=True, slots=True)
 class QuoteSnapshot:
-    """Normalized best-bid/best-ask snapshot from a public market-data source."""
+    """Normalized best-bid/best-ask snapshot from a public market-data source.
+
+    ``timestamp_class`` defines what makes the snapshot current:
+
+    - ``client_observed``: currentness is the local observation time;
+    - ``exchange_published``: ``source_timestamp_ms`` is an exchange-published
+      timestamp for the complete snapshot and is used conservatively;
+    - ``client_observed_level_update``: the complete snapshot was fetched now,
+      while ``source_timestamp_ms`` preserves an exchange timestamp describing
+      when a contained price level last changed. That level-age evidence is not
+      treated as the publication time of the complete snapshot.
+    """
 
     venue: str
     symbol: str
@@ -29,7 +44,14 @@ class QuoteSnapshot:
     metadata_url: str | None = None
 
     def __post_init__(self) -> None:
-        for name in ("venue", "symbol", "base_asset", "quote_asset", "source_url", "timestamp_class"):
+        for name in (
+            "venue",
+            "symbol",
+            "base_asset",
+            "quote_asset",
+            "source_url",
+            "timestamp_class",
+        ):
             if not getattr(self, name):
                 raise ValueError(f"{name} must be non-empty")
         if self.metadata_url is not None and not self.metadata_url:
@@ -50,14 +72,23 @@ class QuoteSnapshot:
             raise ValueError("source_timestamp_ms cannot be negative")
         if self.timestamp_class not in _ALLOWED_TIMESTAMP_CLASSES:
             raise ValueError(f"unsupported timestamp_class: {self.timestamp_class}")
-        if self.timestamp_class == "exchange_published" and self.source_timestamp_ms is None:
-            raise ValueError("exchange_published snapshots require source_timestamp_ms")
+        if (
+            self.timestamp_class
+            in {"exchange_published", "client_observed_level_update"}
+            and self.source_timestamp_ms is None
+        ):
+            raise ValueError(
+                f"{self.timestamp_class} snapshots require source_timestamp_ms"
+            )
         if self.timestamp_class == "client_observed" and self.source_timestamp_ms is not None:
             raise ValueError("client_observed snapshots cannot claim source_timestamp_ms")
 
     @property
     def freshness_reference_ms(self) -> int:
-        return self.source_timestamp_ms if self.source_timestamp_ms is not None else self.observed_at_ms
+        if self.timestamp_class == "exchange_published":
+            assert self.source_timestamp_ms is not None
+            return self.source_timestamp_ms
+        return self.observed_at_ms
 
     def age_ms(self, now_ms: int) -> int:
         if now_ms < 0:
