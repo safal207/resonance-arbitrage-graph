@@ -1,0 +1,144 @@
+name: Deploy Opportunity Truth site
+
+on:
+  pull_request:
+    paths:
+      - "site/**"
+      - ".github/workflows/deploy-opportunity-truth.yml"
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/deploy-opportunity-truth.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opportunity-truth-pages
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate product and claim boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          site = Path("site")
+          html = (site / "index.html").read_text(encoding="utf-8")
+          css = (site / "styles.css").read_text(encoding="utf-8")
+          js = (site / "app.js").read_text(encoding="utf-8")
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = set()
+                  self.text = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if attrs.get("id"):
+                      self.ids.add(attrs["id"])
+              def handle_data(self, data):
+                  if data.strip():
+                      self.text.append(data.strip())
+
+          parser = Parser()
+          parser.feed(html)
+          visible_text = " ".join(" ".join(parser.text).split())
+
+          required_ids = {
+              "main", "evidence", "how", "pilot", "founding-list",
+              "founding-form", "email", "company", "role", "workflow",
+              "failure", "integration", "sample", "pilot-interest", "consent",
+          }
+          missing = sorted(required_ids - parser.ids)
+          assert not missing, f"missing required HTML ids: {missing}"
+
+          required_claims = (
+              "20 terminal triangular cycles",
+              "19 structural-pass",
+              "2 gross-positive before costs",
+              "0 net-positive after costs",
+              "35.94 bps",
+              "1.65 bps",
+              "OTR is unavailable — not zero.",
+              "USD 25 normal profiles",
+              "10 bps fee + 2 bps slippage per leg",
+              "60 seconds",
+          )
+          for claim in required_claims:
+              assert claim in visible_text, f"required bounded claim missing: {claim}"
+
+          required_boundaries = (
+              "not investment advice",
+              "does not guarantee profitability",
+              "No trackers",
+              "No automatic data transmission",
+              "Never send:",
+          )
+          visible_lower = visible_text.lower()
+          for boundary in required_boundaries:
+              assert boundary.lower() in visible_lower, f"boundary missing: {boundary}"
+
+          forbidden = (
+              "guaranteed profit",
+              "guaranteed returns",
+              "connect your wallet",
+              "enter your private key",
+              "send us your api key",
+              "google-analytics.com",
+              "googletagmanager.com",
+              "segment.com",
+              "mixpanel.com",
+          )
+          combined = (html + css + js).lower()
+          for item in forbidden:
+              assert item not in combined, f"forbidden content detected: {item}"
+
+          assert "mailto:safal0645@gmail.com" in html or "mailto:safal0645@gmail.com" in js
+          assert "navigator.clipboard" in js
+          assert "website" in js, "honeypot validation missing"
+          assert "prefers-reduced-motion" in css
+          assert "@media" in css
+
+          print("OPPORTUNITY_TRUTH_SITE_OK")
+          PY
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
