@@ -39,6 +39,21 @@ The ten-second rolling horizon deliberately exceeds the nominal four-second
 inter-sample span. Public HTTP acquisition time is part of the real collection
 process; it must not silently delete one of the five required samples.
 
+## Candidate definition
+
+Campaign 002 treats a candidate as a multi-market cycle. An immediate two-leg
+buy/sell reversal on one top-of-book pair is excluded:
+
+```text
+USD -> BTC -> USD on the same market
+```
+
+That path measures spread and modeled costs; it does not express an arbitrage
+hypothesis. Keeping it in the candidate population would consume limited scan
+slots and inflate rejection counts without testing cross-market consistency.
+The current CEX graph therefore admits the three-leg triangular cycles while
+retaining ordinary two-leg round trips for separate negative-control testing.
+
 ## Profiles
 
 Campaign 002 uses five equal-capital Kraken USD triangular market sets:
