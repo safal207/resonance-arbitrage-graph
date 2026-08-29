@@ -48,11 +48,5 @@ def test_intake_docs_state_interim_processor_and_replacement_gate():
     assert "30 days" in docs
     assert "first-party" in docs
     assert "ten genuine submissions" in docs
-
-
-def test_activation_workflow_is_labeled_and_not_a_prospect():
-    workflow = (ROOT / ".github" / "workflows" / "activate-formsubmit-intake.yml").read_text(encoding="utf-8")
-    assert "[ACTIVATION TEST]" in workflow
-    assert "Not a prospect lead" in workflow
-    assert "test_submission=true" in workflow
-    assert "workflow_dispatch" in workflow
+    assert "human-browser submission" in docs
+    assert "No bypass was attempted" in docs
