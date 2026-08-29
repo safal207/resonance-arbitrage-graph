@@ -1,6 +1,6 @@
 # Founding-list form intake
 
-Status: interim production intake for PLF discovery.
+Status: interim production intake for PLF discovery; awaiting one-time recipient activation.
 
 ## Current path
 
@@ -49,9 +49,13 @@ The page discloses the external processor before submission. Nothing is transmit
 - copy/email fallback;
 - deployment validation that fails if the endpoint or disclosure disappears.
 
-## Activation
+## Activation boundary
 
-FormSubmit requires one confirmation email for a new recipient/form. The one-time activation workflow sends a clearly labeled test request. Remove the workflow after activation is confirmed.
+FormSubmit requires one confirmation email for a new recipient/form. Direct curl, AJAX, and a standard headless Chromium probe were all stopped by the provider's Cloudflare human-verification gate. No bypass was attempted.
+
+Activation therefore requires one normal human-browser submission from the live page, followed by the confirmation link sent to `safal0645@gmail.com`. Until both actions complete, the page must not be described as a confirmed automatic intake channel; the copy/email fallback remains available.
+
+After activation, submit one clearly labelled system test and verify that it arrives in Gmail before directing broader PLF traffic to the form.
 
 ## Replacement gate
 
