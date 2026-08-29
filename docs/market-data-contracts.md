@@ -22,6 +22,8 @@ Official documentation:
 - Public base: `https://api.kraken.com`
 - Top-of-book endpoint: `GET /0/public/PreTrade`
 - Normalized fields: symbol, base/quote assets, bid/ask price and quantity
+- Kraken's raw Bitcoin asset code `XBT` is explicitly normalized to the cross-venue RESONANCE identity `BTC`; the raw exchange symbol (for example `XBT/USD`) remains preserved in `QuoteSnapshot.symbol` and source provenance.
+- No fuzzy symbol matching is used. Asset aliases must be explicitly enumerated by the adapter, and any other metadata mismatch remains fail-closed.
 - The same response supplies pair metadata and per-level `publication_ts`; v0.2 conservatively uses the older of the top bid/ask publication timestamps as the quote freshness reference.
 - The source URL is preserved as both quote and metadata provenance for this adapter.
 

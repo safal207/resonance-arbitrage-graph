@@ -10,9 +10,23 @@ from ..quotes import QuoteSnapshot
 from .http import get_json
 
 
+_ASSET_ALIASES = {
+    # Kraken's native code for Bitcoin. RESONANCE uses the cross-venue
+    # canonical asset identity BTC while preserving Kraken's raw symbol.
+    "XBT": "BTC",
+}
+
+
 def _iso8601_to_ms(value: str) -> int:
     normalized = value.replace("Z", "+00:00")
     return int(datetime.fromisoformat(normalized).timestamp() * 1000)
+
+
+def _canonical_asset(value: Any) -> str:
+    asset = str(value).strip().upper()
+    if not asset:
+        raise ValueError("Kraken asset identity must be non-empty")
+    return _ASSET_ALIASES.get(asset, asset)
 
 
 class KrakenPreTradeAdapter:
@@ -57,8 +71,8 @@ class KrakenPreTradeAdapter:
         return QuoteSnapshot(
             venue=self.venue,
             symbol=str(result.get("symbol") or symbol),
-            base_asset=str(result["base_asset"]).upper(),
-            quote_asset=str(result["quote_asset"]).upper(),
+            base_asset=_canonical_asset(result["base_asset"]),
+            quote_asset=_canonical_asset(result["quote_asset"]),
             bid_price=float(bid["price"]),
             bid_qty=float(bid["qty"]),
             ask_price=float(ask["price"]),
