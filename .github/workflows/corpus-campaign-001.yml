@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "7,37 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/corpus-campaign-001.yml"
 
 permissions:
   contents: write
