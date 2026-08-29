@@ -34,5 +34,19 @@ def test_campaign_002_keeps_profile_failures_isolated_and_fail_closed():
     assert "Fail closed on zero progress" in workflow
 
 
+def test_campaign_002_rebuilds_and_fully_verifies_both_product_reports():
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "resonance-opportunity-truth-benchmark build" in workflow
+    assert "resonance-opportunity-truth-benchmark verify" in workflow
+    assert "resonance-opportunity-funnel build" in workflow
+    assert "resonance-opportunity-funnel verify" in workflow
+    assert "opportunity-funnel-v0.1.json" in workflow
+    assert "opportunity-funnel-v0.1.md" in workflow
+    assert workflow.index("resonance-opportunity-funnel verify") < workflow.index(
+        'mv "$funnel_tmp"'
+    )
+
+
 def test_campaign_001_is_frozen_after_measurement_contract_change():
     assert not Path(".github/workflows/corpus-campaign-001.yml").exists()
