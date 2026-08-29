@@ -63,7 +63,7 @@ def test_binance_adapter_rejects_caller_pair_label_that_disagrees_with_exchange(
         adapter.fetch("BTCUSDT", base_asset="ETH", quote_asset="USDT")
 
 
-def test_kraken_adapter_uses_exchange_publication_timestamp():
+def test_kraken_adapter_uses_client_observation_for_snapshot_freshness():
     def fake_fetch(_url):
         return {
             "error": [],
@@ -99,6 +99,7 @@ def test_kraken_adapter_uses_exchange_publication_timestamp():
     assert quote.quote_asset == "USDT"
     assert quote.bid_price == 80010.0
     assert quote.ask_price == 80020.0
-    assert quote.timestamp_class == "exchange_published"
-    assert quote.source_timestamp_ms is not None
+    assert quote.timestamp_class == "client_observed"
+    assert quote.source_timestamp_ms is None
+    assert quote.freshness_reference_ms == quote.observed_at_ms
     assert quote.metadata_url == quote.source_url
