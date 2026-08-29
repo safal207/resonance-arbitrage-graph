@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "resonance-arbitrage-graph"
-version = "0.16.6"
+version = "0.16.7"
 description = "Evidence-bound pre-trade verification for autonomous financial agents"
 readme = "README.md"
 requires-python = ">=3.11"

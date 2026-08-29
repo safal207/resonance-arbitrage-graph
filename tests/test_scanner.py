@@ -40,6 +40,21 @@ def test_real_quote_shape_can_form_profitable_triangular_cycle():
     assert len(results[0].route) == 3
 
 
+def test_immediate_buy_sell_round_trip_is_not_an_opportunity_candidate():
+    quotes = [q("BTCUSDT", "BTC", "USDT", 79_990, 10, 80_000, 10)]
+
+    results = scan_cycles(
+        quotes,
+        start=Node("BINANCE_SPOT", "USDT"),
+        amount=100,
+        costs_by_venue={"BINANCE_SPOT": CostAssumption(fee_bps=0, slippage_bps=0)},
+        now_ms=10_100,
+        max_hops=2,
+    )
+
+    assert results == []
+
+
 def test_missing_fee_assumptions_fail_closed():
     quotes = [q("BTCUSDT", "BTC", "USDT", 79_990, 10, 80_000, 10)]
 

@@ -1,19 +1,19 @@
-name: Corpus Campaign 001
+name: Corpus Campaign 002 — measurement corrected
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "7,37 * * * *"
+    - cron: "17,47 * * * *"
   push:
     branches: [main]
     paths:
-      - ".github/workflows/corpus-campaign-001.yml"
+      - ".github/workflows/corpus-campaign-002.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: resonance-corpus-campaign-001
+  group: resonance-corpus-campaign-002
   cancel-in-progress: false
 
 jobs:
@@ -28,10 +28,10 @@ jobs:
           ref: main
           path: code
 
-      - name: Checkout append-only campaign data branch
+      - name: Checkout dedicated Campaign 002 data branch
         uses: actions/checkout@v4
         with:
-          ref: data/corpus-campaign-001
+          ref: data/corpus-campaign-002
           path: campaign-data
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
+          root="$GITHUB_WORKSPACE/campaign-data/campaign/002"
           corpus="$root/corpus.json"
           report="$root/opportunity-truth-v0.2.json"
           complete=false
@@ -103,7 +103,7 @@ jobs:
         run: |
           set -uo pipefail
 
-          root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
+          root="$GITHUB_WORKSPACE/campaign-data/campaign/002"
           run_root="$root/receipts/$GITHUB_RUN_ID"
           log_root="$root/logs/$GITHUB_RUN_ID"
           corpus="$root/corpus.json"
@@ -121,8 +121,7 @@ jobs:
 
           run_profile() {
             local name="$1"
-            local amount="$2"
-            shift 2
+            shift
             local receipt="$run_root/$name.json"
             local log="$log_root/$name.log"
 
@@ -132,22 +131,23 @@ jobs:
               --corpus "$corpus" \
               --replay-output "$replay" \
               --receipt-output "$receipt" \
-              --campaign-id corpus-campaign-001 \
+              --campaign-id corpus-campaign-002 \
               --venue kraken \
               --start-asset USD \
-              --amount "$amount" \
+              --amount 25 \
               --fee-bps 10 \
               --slippage-bps 2 \
               --gas-bps 0 \
               --execute-net-edge-bps 5 \
               --observe-net-edge-bps 0 \
+              --max-quote-age-ms 3000 \
               --horizon-ms 60000 \
               --max-hops 3 \
-              --max-cases 4 \
-              --rolling-samples 5 \
+              --max-cases 2 \
+              --rolling-samples 6 \
               --rolling-interval-ms 1000 \
-              --rolling-horizon-ms 5000 \
-              --rolling-min-coverage-ratio 0.8 \
+              --rolling-horizon-ms 10000 \
+              --rolling-min-coverage-ratio 0.5 \
               --min-terminal-operations 100 \
               --min-training-rows 20 \
               --min-decision-batches 20 \
@@ -172,35 +172,30 @@ jobs:
             fi
           }
 
-          run_profile eth-usd 1000 \
+          run_profile eth-usd \
             --pair "BTC/USD:BTC:USD" \
             --pair "ETH/BTC:ETH:BTC" \
             --pair "ETH/USD:ETH:USD"
 
-          run_profile sol-usd 1000 \
+          run_profile sol-usd \
             --pair "BTC/USD:BTC:USD" \
             --pair "SOL/BTC:SOL:BTC" \
             --pair "SOL/USD:SOL:USD"
 
-          run_profile ada-usd 1000 \
+          run_profile ada-usd \
             --pair "BTC/USD:BTC:USD" \
             --pair "ADA/BTC:ADA:BTC" \
             --pair "ADA/USD:ADA:USD"
 
-          run_profile xrp-usd 1000 \
+          run_profile xrp-usd \
             --pair "BTC/USD:BTC:USD" \
             --pair "XRP/BTC:XRP:BTC" \
             --pair "XRP/USD:XRP:USD"
 
-          run_profile ltc-usd 1000 \
+          run_profile ltc-usd \
             --pair "BTC/USD:BTC:USD" \
             --pair "LTC/BTC:LTC:BTC" \
             --pair "LTC/USD:LTC:USD"
-
-          run_profile ada-capacity-stress 250000 \
-            --pair "BTC/USD:BTC:USD" \
-            --pair "ADA/BTC:ADA:BTC" \
-            --pair "ADA/USD:ADA:USD"
 
           if [[ -f "$corpus" ]]; then
             after_file_sha="$(sha256sum "$corpus" | awk '{print $1}')"
@@ -226,7 +221,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          root="$GITHUB_WORKSPACE/campaign-data/campaign/001"
+          root="$GITHUB_WORKSPACE/campaign-data/campaign/002"
           report_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.json"
           markdown_tmp="$RUNNER_TEMP/opportunity-truth-v0.2.md"
           rm -f "$report_tmp" "$markdown_tmp"
@@ -256,8 +251,13 @@ jobs:
         shell: bash
         run: |
           {
-            echo "## RESONANCE Verify — Corpus Campaign 001"
+            echo "## RESONANCE Verify — Corpus Campaign 002"
             echo
+            echo "- Measurement semantics: client-observed snapshot freshness + preserved Kraken level-update provenance"
+            echo "- Opportunity population: three-leg triangular routes only"
+            echo "- Paper capital: USD 25 per logical operation"
+            echo "- Rolling geometry: 6 samples / 1s interval / 10s horizon / 0.5 minimum coverage"
+            echo "- Paper costs: 10 bps fee + 2 bps slippage per leg"
             echo "- Trusted pre-run report: ${{ steps.gate.outputs.report_valid }}"
             echo "- Campaign complete: ${{ steps.gate.outputs.complete }}"
             echo "- Campaign paused at evidence budget: ${{ steps.gate.outputs.paused }}"
@@ -265,15 +265,15 @@ jobs:
             echo "- Successful profiles: ${{ steps.collect.outputs.successes || '0' }}"
             echo "- Failed profiles: ${{ steps.collect.outputs.failures || '0' }}"
             echo "- Evidence progress: ${{ steps.collect.outputs.progress || 'false' }}"
-            echo "- Data branch: \`data/corpus-campaign-001\`"
+            echo "- Data branch: \`data/corpus-campaign-002\`"
             echo "- Safety: public data, paper-only, no keys or orders"
-            if [[ -f "$GITHUB_WORKSPACE/campaign-data/campaign/001/opportunity-truth-v0.2.md" ]]; then
+            if [[ -f "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-truth-v0.2.md" ]]; then
               echo
-              sed -n '1,28p' "$GITHUB_WORKSPACE/campaign-data/campaign/001/opportunity-truth-v0.2.md"
+              sed -n '1,28p' "$GITHUB_WORKSPACE/campaign-data/campaign/002/opportunity-truth-v0.2.md"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Commit append-only campaign evidence
+      - name: Commit append-only Campaign 002 evidence
         if: always() && steps.collect.outputs.progress == 'true'
         working-directory: campaign-data
         shell: bash
@@ -281,31 +281,31 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add campaign/001
+          git add campaign/002
           if git diff --cached --quiet; then
-            echo "No campaign evidence changes to commit"
+            echo "No Campaign 002 evidence changes to commit"
             exit 0
           fi
-          git commit -m "data(campaign-001): run $GITHUB_RUN_ID [skip ci]"
-          git push origin HEAD:data/corpus-campaign-001
+          git commit -m "data(campaign-002): run $GITHUB_RUN_ID [skip ci]"
+          git push origin HEAD:data/corpus-campaign-002
 
-      - name: Upload reproducible campaign evidence
+      - name: Upload reproducible Campaign 002 evidence
         if: always() && steps.collect.outputs.corpus_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: resonance-corpus-campaign-001-${{ github.run_id }}
-          path: campaign-data/campaign/001
+          name: resonance-corpus-campaign-002-${{ github.run_id }}
+          path: campaign-data/campaign/002
           if-no-files-found: error
           retention-days: 30
 
       - name: Stop successfully when evidence gate has passed
         if: steps.gate.outputs.complete == 'true'
-        run: echo "Campaign is complete; INTERNAL_EVIDENCE_READY was already reached."
+        run: echo "Campaign 002 is complete; INTERNAL_EVIDENCE_READY was already reached."
 
       - name: Stop successfully at campaign evidence budget
         if: steps.gate.outputs.paused == 'true'
         run: |
-          echo "Campaign paused after 2,000 terminal operations without readiness."
+          echo "Campaign 002 paused after 2,000 terminal operations without readiness."
           echo "Product review is required before collecting more evidence."
 
       - name: Fail closed on zero progress
@@ -315,5 +315,5 @@ jobs:
           steps.gate.outputs.paused != 'true' &&
           steps.collect.outputs.progress != 'true'
         run: |
-          echo "No campaign profile succeeded and no pending evidence was recovered."
+          echo "No Campaign 002 profile succeeded and no pending evidence was recovered."
           exit 1
