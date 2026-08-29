@@ -10,7 +10,9 @@ from resonance_arbitrage_graph.opportunity_funnel import (
     render_opportunity_funnel_markdown,
     verify_opportunity_funnel_envelope,
 )
+from resonance_arbitrage_graph.opportunity_funnel_cli import main as funnel_main
 from resonance_arbitrage_graph.quotes import CostAssumption
+from resonance_arbitrage_graph.real_market_corpus import save_corpus
 from resonance_arbitrage_graph.replay import ReplayBundle
 from test_opportunity_truth_benchmark_v2 import _real_corpus
 from test_walk_forward import _bundle, _case
@@ -139,3 +141,25 @@ def test_report_tamper_is_rejected_even_with_recomputed_outer_digest():
 
     with pytest.raises(ValueError, match="does not reproduce"):
         verify_opportunity_funnel_envelope(envelope, source=source)
+
+
+def test_cli_builds_markdown_and_fully_verifies_real_corpus(tmp_path):
+    source = tmp_path / "corpus.json"
+    report = tmp_path / "funnel.json"
+    markdown = tmp_path / "funnel.md"
+    save_corpus(source, _real_corpus())
+
+    assert funnel_main(
+        [
+            "build",
+            str(source),
+            "--output",
+            str(report),
+            "--markdown-output",
+            str(markdown),
+        ]
+    ) == 0
+    assert report.exists()
+    assert markdown.exists()
+    assert "Opportunity Funnel Benchmark" in markdown.read_text(encoding="utf-8")
+    assert funnel_main(["verify", str(source), str(report)]) == 0
