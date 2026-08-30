@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `f5fa11d3f21a06d987e83715005ddf30e345a5bc1424c95c36ffd48a0790dc66`
-- Replay SHA-256: `aa96a46460572feb143191909af9dc7857390e9afd8c3aa1976bb2a1d82815a3`
+- Source SHA-256: `3aeacce3de987e49ae7c849afe43b69c294ed0551e336e331f223fd09e3c9379`
+- Replay SHA-256: `f7828d6c32ac2548d9e976f9cfbcad43702867d2e2b3d1fb72ebf8704957c949`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **70**
-- Complete evidence: **70** (100.00%)
-- Structural constraints pass: **64** (91.43%)
-- Gross-positive before costs: **11** (15.71%)
+- Captured terminal cycles: **80**
+- Complete evidence: **80** (100.00%)
+- Structural constraints pass: **73** (91.25%)
+- Gross-positive before costs: **13** (16.25%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -3.91 bps (min -19.95, max 5.22)**
-- Expected net edge: **mean -39.85 bps (min -55.84, max -30.75)**
-- Observed terminal edge: **mean -39.93 bps (min -57.05, max -30.80)**
+- Gross edge: **mean -3.87 bps (min -19.95, max 5.22)**
+- Expected net edge: **mean -39.81 bps (min -55.84, max -30.75)**
+- Observed terminal edge: **mean -39.88 bps (min -57.05, max -30.80)**
 - Modeled cost drag: **mean 35.94 bps (min 35.89, max 35.98)**
 
 ## Interpretation boundary
@@ -32,10 +32,10 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 53 × `GROSS_NON_POSITIVE`
-- 11 × `MODELED_COSTS_ERASE_EDGE`
-- 3 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 60 × `GROSS_NON_POSITIVE`
+- 13 × `MODELED_COSTS_ERASE_EDGE`
+- 4 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 2 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 1 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 
-Evidence SHA-256: `ca6897a6eda69fbd1a5e67437dd679954fb89041f158cf7399d5d06f690433b3`
+Evidence SHA-256: `9ca6eef65881ca9fc2c679d9cc071269a1ba4f41007b97ba912ccabbc2d28d13`
