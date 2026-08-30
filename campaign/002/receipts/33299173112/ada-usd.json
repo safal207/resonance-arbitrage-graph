@@ -1,0 +1,368 @@
+{
+  "payload": {
+    "campaign_policy": {
+      "campaign_id": "corpus-campaign-002",
+      "dedicated_corpus_required": true,
+      "horizon_ms": 60000,
+      "paper_only": true,
+      "public_market_data_only": true,
+      "schema": "resonance.verify.corpus-campaign-policy/v0.1",
+      "venue": "KRAKEN_SPOT"
+    },
+    "campaign_policy_sha256": "a126da7988299d8b26240de6658a00d63468813e8a10e5d8274d73d92479cb57",
+    "one_shot": {
+      "payload": {
+        "receipt": {
+          "captured_operation_ids": [
+            "real-market-KRAKEN_SPOT-1788074911054-0",
+            "real-market-KRAKEN_SPOT-1788074911054-1"
+          ],
+          "decision_at_ms": 1788074911054,
+          "decision_corpus_sha256": "3616cb2740ea68855a056e82e08d576e97909b8590e2009b470aea5a7819b4a1",
+          "horizon_ms": 60000,
+          "outcome_not_before_ms": 1788074971054,
+          "outcome_observed_at_ms": 1788074972231,
+          "pairs": [
+            "BTC/USD:BTC:USD",
+            "ADA/BTC:ADA:BTC",
+            "ADA/USD:ADA:USD"
+          ],
+          "paper_only": true,
+          "post_corpus_sha256": "0219ac3ff4478414822d23644d64f313445bb81efdc7706c74edac4b242f5ce3",
+          "pre_corpus_sha256": "b736367b3850e7ecf548a6ea0b811f134af20de95497d1f5c54a5e45610e3068",
+          "public_market_data_only": true,
+          "replay_bundle_sha256": "d14b8f57971c1739bb8a2077cd0c60dd75dc97d2807354314e6764b3d26d497b",
+          "research_report_sha256": "2225e377688427c0e1a96ca6fed39a4a89a8e136fa3dd77f15008f4c445359c4",
+          "resolved_operation_ids": [
+            "real-market-KRAKEN_SPOT-1788074911054-0",
+            "real-market-KRAKEN_SPOT-1788074911054-1"
+          ],
+          "schema": "resonance.arbitrage.corpus-runner-receipt/v0.1",
+          "venue": "KRAKEN_SPOT"
+        },
+        "receipt_sha256": "acece98cf4834692cdf8c09f343b9ec2ecda0d3ddf0ea484037383bf1ac678fb",
+        "research_report": {
+          "automatic_promotion": false,
+          "benchmark_executed": false,
+          "benchmark_requested": false,
+          "comparison_payload": null,
+          "comparison_sha256": null,
+          "corpus_sha256": "0219ac3ff4478414822d23644d64f313445bb81efdc7706c74edac4b242f5ce3",
+          "interpretation": "RESEARCH_DIAGNOSTIC_ONLY",
+          "paper_only": true,
+          "public_market_data_only": true,
+          "quality_report_payload": {
+            "corpus_sha256": "0219ac3ff4478414822d23644d64f313445bb81efdc7706c74edac4b242f5ce3",
+            "decision_batch_counts": [
+              {
+                "evaluation_time_ms": 1787979680466,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787979749736,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787979818635,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787979887872,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787979957232,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787980918170,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787980988271,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787981057601,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787981127166,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1787981197185,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788003623910,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788003693628,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788003762946,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788003832794,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788003902410,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788018326282,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788018396748,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788018467201,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788018538030,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788018608683,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788029640127,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788029711186,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788029783001,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788029854138,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788029925339,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788039857071,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788039928477,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788039999789,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788040071311,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788040142762,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788046625411,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788046697064,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788046768700,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788046840028,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788046911277,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788054044513,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788054116324,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788054187906,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788054259564,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788054331347,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788074764334,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788074838524,
+                "terminal_operations": 2
+              },
+              {
+                "evaluation_time_ms": 1788074911054,
+                "terminal_operations": 2
+              }
+            ],
+            "distinct_decision_batches": 43,
+            "distinct_regimes": 2,
+            "distinct_route_markets": 11,
+            "distinct_routes": 10,
+            "effective_decision_batches": 42.999999999999964,
+            "effective_routes": 9.967654986522911,
+            "failed_dimensions": [],
+            "interpretation": "RESEARCH_READINESS_ONLY",
+            "largest_decision_batch_share": 0.023255813953488372,
+            "largest_route_share": 0.10465116279069768,
+            "paper_only": true,
+            "policy_payload": {
+              "interpretation": "RESEARCH_READINESS_ONLY",
+              "min_decision_batches": 20,
+              "min_distinct_regimes": 2,
+              "min_distinct_route_markets": 3,
+              "min_distinct_routes": 3,
+              "min_effective_decision_batches": 10.0,
+              "min_effective_routes": 2.0,
+              "min_temporal_span_ms": 3600000,
+              "schema": "resonance.arbitrage.corpus-quality-policy/v0.1"
+            },
+            "policy_sha256": "375d9a339684eb43f6f1d013e4d92e295d297768ed455fe6ff608d6f52673dbf",
+            "public_market_data_only": true,
+            "quality_ready": true,
+            "regime_counts": [
+              {
+                "regime": "NORMAL",
+                "terminal_operations": 76
+              },
+              {
+                "regime": "THIN_LIQUIDITY",
+                "terminal_operations": 10
+              }
+            ],
+            "route_market_identities": [
+              "KRAKEN_SPOT:ADA/BTC:ADA/BTC",
+              "KRAKEN_SPOT:ADA/USD:ADA/USD",
+              "KRAKEN_SPOT:BTC/USD:BTC/USD",
+              "KRAKEN_SPOT:ETH/BTC:ETH/BTC",
+              "KRAKEN_SPOT:ETH/USD:ETH/USD",
+              "KRAKEN_SPOT:LTC/BTC:LTC/BTC",
+              "KRAKEN_SPOT:LTC/USD:LTC/USD",
+              "KRAKEN_SPOT:SOL/BTC:SOL/BTC",
+              "KRAKEN_SPOT:SOL/USD:SOL/USD",
+              "KRAKEN_SPOT:XRP/BTC:XRP/BTC",
+              "KRAKEN_SPOT:XRP/USD:XRP/USD"
+            ],
+            "route_topology_counts": [
+              {
+                "route_topology_id": "1b31c86d9eb3a09c207f98bc9e5a2172bfb704dd4d76764a7a8725323f441510",
+                "terminal_operations": 9
+              },
+              {
+                "route_topology_id": "2efce319f0d40456b773f060846b547a2422063b1195bc49e991e0256c6b4faf",
+                "terminal_operations": 8
+              },
+              {
+                "route_topology_id": "4b46f6bcff526fef2122ba25b60df88602ad458034a8f0c76150e3d83016a4c4",
+                "terminal_operations": 9
+              },
+              {
+                "route_topology_id": "60f588cd596301c633dd760d22a156a3edb4bcf81b813417d1afd7b1f41b523d",
+                "terminal_operations": 9
+              },
+              {
+                "route_topology_id": "bf7097c185f558d3a2f4964317d17e5f4c5a289123f3e6661f0210b15467c4a5",
+                "terminal_operations": 8
+              },
+              {
+                "route_topology_id": "d788aa3e0a85767fca6c99eb080b383518511fed5bd40e325c6a15bb6177b272",
+                "terminal_operations": 9
+              },
+              {
+                "route_topology_id": "deb88b7bd12a91b53723ed11fa5deb369842c6f3a26b059c36bbaaeee9eefd8f",
+                "terminal_operations": 8
+              },
+              {
+                "route_topology_id": "e63f24ebab5b3eb5dcb963849e9f9ad51a994e2bbd02003e0dd57cfaa2c61a0f",
+                "terminal_operations": 9
+              },
+              {
+                "route_topology_id": "e6ce8f663532c037262665cc45a6cc119e87a2b7377452f4b640201aee9cf624",
+                "terminal_operations": 9
+              },
+              {
+                "route_topology_id": "f8dd05217448d1dbd515357d4104fd7dcea6149bbf5a3a7d753a45aebc0f2f9d",
+                "terminal_operations": 8
+              }
+            ],
+            "schema": "resonance.arbitrage.corpus-quality-report/v0.1",
+            "temporal_span_ms": 95230588,
+            "terminal_operation_count": 86
+          },
+          "quality_report_sha256": "00c5b6de6093034d7a605b66aba781f958cfc882fd319ca602bfdd18ab924712",
+          "reason": "need 14 more terminal operations",
+          "replay_bundle_sha256": "d14b8f57971c1739bb8a2077cd0c60dd75dc97d2807354314e6764b3d26d497b",
+          "required_terminal_operations": 100,
+          "schema": "resonance.arbitrage.corpus-research-report/v0.2",
+          "status": "NOT_READY",
+          "terminal_operation_count": 86
+        },
+        "research_report_sha256": "2225e377688427c0e1a96ca6fed39a4a89a8e136fa3dd77f15008f4c445359c4"
+      },
+      "sha256": "168651e2cf41e637fedd432ee75a14f1b2092e745073807129b1c0c9a8b1ad29"
+    },
+    "paper_only": true,
+    "public_market_data_only": true,
+    "recovery": {
+      "campaign_policy_sha256": "a126da7988299d8b26240de6658a00d63468813e8a10e5d8274d73d92479cb57",
+      "horizon_ms": 60000,
+      "market_set": [
+        {
+          "base_asset": "ADA",
+          "quote_asset": "BTC"
+        },
+        {
+          "base_asset": "ADA",
+          "quote_asset": "USD"
+        },
+        {
+          "base_asset": "BTC",
+          "quote_asset": "USD"
+        }
+      ],
+      "observed_at_ms": null,
+      "paper_only": true,
+      "post_corpus_sha256": "b736367b3850e7ecf548a6ea0b811f134af20de95497d1f5c54a5e45610e3068",
+      "pre_corpus_sha256": "b736367b3850e7ecf548a6ea0b811f134af20de95497d1f5c54a5e45610e3068",
+      "public_market_data_only": true,
+      "recovered_operation_ids": [],
+      "schema": "resonance.verify.corpus-pending-recovery/v0.1",
+      "venue": "KRAKEN_SPOT"
+    },
+    "recovery_sha256": "4c624a6fd3d75c4196d7d379c5ebc273f5d096c8a865b224c31ed379fdbc86e9",
+    "schema": "resonance.verify.corpus-campaign-step/v0.1"
+  },
+  "sha256": "ddfc69f398ef0a6e6224764ce6319dd63b8b3dd9a0f5571e8047e1bc311a0398"
+}
