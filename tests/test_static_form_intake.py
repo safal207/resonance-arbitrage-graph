@@ -8,7 +8,11 @@ def test_form_uses_explicit_https_submission_with_consent_and_fallbacks():
     html = (SITE / "index.html").read_text(encoding="utf-8")
     js = (SITE / "app.js").read_text(encoding="utf-8")
 
-    assert 'action="https://formsubmit.co/safal0645@gmail.com"' in html
+    assert (
+        'action="https://formsubmit.co/0813c7a88ecf2b0285ae6f644b485edf"'
+        in html
+    )
+    assert 'action="https://formsubmit.co/safal0645@gmail.com"' not in html
     assert 'method="POST"' in html
     assert 'name="_honey"' in html
     assert 'name="_next" value="https://safal207.github.io/resonance-arbitrage-graph/thanks.html"' in html
