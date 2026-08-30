@@ -2,7 +2,7 @@
 
 - **Claim status:** `NOT_READY`
 - **Evidence source:** `REAL_MARKET_CORPUS`
-- **Terminal operations:** 90
+- **Terminal operations:** 100
 - **Determinate truth events:** 0
 - **Truth coverage:** n/a
 - **Opportunity Truth Rate:** n/a
@@ -12,7 +12,7 @@
 - **Mean observed edge:** n/a
 - **Mean edge decay:** n/a
 
-**Readiness blockers:** `terminal_operations`, `truth_events`
+**Readiness blockers:** `truth_events`
 
 ## Interpretation boundary
 

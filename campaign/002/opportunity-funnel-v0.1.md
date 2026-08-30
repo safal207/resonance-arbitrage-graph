@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `c59e335dc3c2596f4359a96d39ee2d29a8ef7d8bff10039e44bb7dffc6ed2ce4`
-- Replay SHA-256: `8b8d10b058fc1b96fa8957a7f02286e6e10389055d599277ec3a33dfd3de723e`
+- Source SHA-256: `8d7094e94cb48d402bc1ccb088aa9706daccf26a289f7afc7f136b627d0e13ba`
+- Replay SHA-256: `18ec323ecd5e75b6fc8eda00298a5816225937b9d8ba9ae64e53751cb4541897`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **90**
-- Complete evidence: **90** (100.00%)
-- Structural constraints pass: **81** (90.00%)
-- Gross-positive before costs: **14** (15.56%)
+- Captured terminal cycles: **100**
+- Complete evidence: **100** (100.00%)
+- Structural constraints pass: **90** (90.00%)
+- Gross-positive before costs: **16** (16.00%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -4.01 bps (min -29.56, max 5.22)**
-- Expected net edge: **mean -39.95 bps (min -65.41, max -30.75)**
-- Observed terminal edge: **mean -40.39 bps (min -88.73, max -30.80)**
+- Gross edge: **mean -4.04 bps (min -29.56, max 5.22)**
+- Expected net edge: **mean -39.98 bps (min -65.41, max -30.75)**
+- Observed terminal edge: **mean -40.32 bps (min -88.73, max -30.80)**
 - Modeled cost drag: **mean 35.94 bps (min 35.85, max 35.98)**
 
 ## Interpretation boundary
@@ -32,10 +32,10 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 67 × `GROSS_NON_POSITIVE`
-- 14 × `MODELED_COSTS_ERASE_EDGE`
-- 4 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 74 × `GROSS_NON_POSITIVE`
+- 16 × `MODELED_COSTS_ERASE_EDGE`
+- 5 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 4 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 1 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 
-Evidence SHA-256: `dc5f7c38a10f4bca0056015b0e89457204c13cca14ae913bdc350bfd21f03d47`
+Evidence SHA-256: `173fd3709a829b1ae6cc5df6851c5b80fc5461e8132298f4992863c6287d2a99`
