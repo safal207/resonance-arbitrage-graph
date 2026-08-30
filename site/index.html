@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>RESONANCE Verify — Before your agent trades, verify the opportunity</title>
   <meta name="description" content="Evidence-bound, paper-only pre-trade verification for autonomous crypto trading agents. Visible edge is not executable edge.">
   <meta name="theme-color" content="#071014">
+  <meta name="color-scheme" content="dark">
   <meta property="og:type" content="website">
   <meta property="og:title" content="RESONANCE Verify — Opportunity Truth">
   <meta property="og:description" content="Before your agent trades, verify the opportunity. Public-data, paper-only, replayable evidence.">
@@ -21,7 +22,7 @@
       <span class="brand-mark" aria-hidden="true">R</span>
       <span>RESONANCE <strong>Verify</strong></span>
     </a>
-    <nav>
+    <nav aria-label="Site sections">
       <a href="#evidence">Evidence</a>
       <a href="#how">How it works</a>
       <a href="#pilot">Pilot</a>
@@ -178,7 +179,7 @@
         </div>
       </div>
 
-      <form id="founding-form" action="https://formsubmit.co/safal0645@gmail.com" method="POST" novalidate>
+      <form id="founding-form" action="https://formsubmit.co/safal0645@gmail.com" method="POST" aria-describedby="form-help" novalidate>
         <div class="honeypot" aria-hidden="true">
           <label for="website">Website</label>
           <input id="website" name="_honey" tabindex="-1" autocomplete="off">
@@ -199,14 +200,14 @@
         <input type="hidden" id="submitted-at" name="submitted_at" value="">
 
         <div class="field-row">
-          <label>Work email<input type="email" id="email" name="email" required autocomplete="email" placeholder="you@company.com"></label>
-          <label>Company / project<input type="text" id="company" name="company" required maxlength="100" placeholder="Company or project"></label>
+          <label>Work email<input type="email" id="email" name="email" required autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" enterkeyhint="next" placeholder="you@company.com"></label>
+          <label>Company / project<input type="text" id="company" name="company" required maxlength="100" autocomplete="organization" enterkeyhint="next" placeholder="Company or project"></label>
         </div>
         <div class="field-row">
-          <label>Role<input type="text" id="role" name="role" required maxlength="100" placeholder="Founder, engineer, quant…"></label>
+          <label>Role<input type="text" id="role" name="role" required maxlength="100" autocomplete="organization-title" enterkeyhint="next" placeholder="Founder, engineer, quant…"></label>
           <label>Preferred integration<select id="integration" name="integration" required><option value="">Select one</option><option>CLI</option><option>SDK</option><option>API</option><option>MCP</option><option>Replay report</option><option>Not sure</option></select></label>
         </div>
-        <label>What kind of trades does the agent propose?<textarea id="workflow" name="workflow" required maxlength="700" rows="4" placeholder="Briefly describe the signal → decision → execution workflow. No sensitive details."></textarea></label>
+        <label>What kind of trades does the agent propose?<textarea id="workflow" name="workflow" required maxlength="700" rows="4" autocapitalize="sentences" enterkeyhint="done" placeholder="Briefly describe the signal → decision → execution workflow. No sensitive details."></textarea></label>
         <label>Which pre-trade failure is hardest to catch?<select id="failure" name="failure" required><option value="">Select one</option><option>Stale evidence / quote freshness</option><option>Slippage or executable depth</option><option>Latency / edge decay</option><option>Policy or permission breach</option><option>Explainability / audit trail</option><option>Paper qualification</option><option>Replay / incident review</option><option>Multi-venue inventory or settlement state</option><option>Other</option></select></label>
         <div class="field-row">
           <label>Public or sandbox example<select id="sample" name="sample" required><option value="">Select one</option><option>Available now</option><option>Possibly available</option><option>Not available</option></select></label>
@@ -218,7 +219,7 @@
           <button type="submit" class="button primary">Submit my founding-list request</button>
           <button type="button" class="button secondary" id="copy-button">Copy responses</button>
         </div>
-        <p class="form-help">No trackers. No automatic data transmission before you press Submit. FormSubmit processes delivery to our Gmail, may show reCAPTCHA, and may retain a recoverable copy for up to 30 days. <a href="https://formsubmit.co/privacy.pdf" target="_blank" rel="noreferrer">Processor privacy ↗</a></p>
+        <p class="form-help" id="form-help">No trackers. No automatic data transmission before you press Submit. FormSubmit processes delivery to our Gmail, may show reCAPTCHA, and may retain a recoverable copy for up to 30 days. <a href="https://formsubmit.co/privacy.pdf" target="_blank" rel="noreferrer">Processor privacy ↗</a></p>
         <div class="success-message" id="success-message" role="status" aria-live="polite" hidden>
           <strong>Opening the secure submission step.</strong>
           <span>You may see an anti-spam check before the thank-you page.</span>
