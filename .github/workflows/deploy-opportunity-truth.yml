@@ -36,6 +36,7 @@ jobs:
 
           site = Path("site")
           html = (site / "index.html").read_text(encoding="utf-8")
+          thanks_html = (site / "thanks.html").read_text(encoding="utf-8")
           css = (site / "styles.css").read_text(encoding="utf-8")
           js = (site / "app.js").read_text(encoding="utf-8")
 
@@ -101,7 +102,7 @@ jobs:
               "segment.com",
               "mixpanel.com",
           )
-          combined = (html + css + js).lower()
+          combined = (html + thanks_html + css + js).lower()
           for item in forbidden:
               assert item not in combined, f"forbidden content detected: {item}"
 
@@ -110,6 +111,34 @@ jobs:
           assert "website" in js, "honeypot validation missing"
           assert "prefers-reduced-motion" in css
           assert "@media" in css
+          assert css.count("{") == css.count("}"), "unbalanced CSS blocks"
+
+          for page_name, page_html in (("index", html), ("thanks", thanks_html)):
+              assert "viewport-fit=cover" in page_html, f"{page_name} missing safe-area viewport"
+
+          mobile_contract = (
+              "safe-area-inset-top",
+              "safe-area-inset-right",
+              "safe-area-inset-bottom",
+              "safe-area-inset-left",
+              "--tap-target: 44px",
+              "min-height: var(--tap-target)",
+              "font-size: 16px",
+              "overflow-wrap: anywhere",
+              "@media (max-width: 620px)",
+          )
+          for token in mobile_contract:
+              assert token in css, f"mobile contract missing: {token}"
+
+          mobile_css = css.split("@media (max-width: 620px)", 1)[1].split(
+              "@media (max-width: 360px)", 1
+          )[0]
+          assert ".hero-actions, .form-actions" in mobile_css
+          assert ".evidence-grid, .checks-grid, .field-row" in mobile_css
+          assert "grid-template-columns: 1fr;" in mobile_css
+          assert "nav > a:not(.nav-cta) { display: inline-flex; }" in mobile_css
+          assert 'class="section safety-section confirmation-section"' in thanks_html
+          assert "style=" not in thanks_html, "confirmation page should use responsive classes"
 
           print("OPPORTUNITY_TRUTH_SITE_OK")
           PY
