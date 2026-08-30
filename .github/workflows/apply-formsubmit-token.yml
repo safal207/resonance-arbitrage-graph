@@ -1,0 +1,97 @@
+name: Apply RESONANCE FormSubmit token endpoint
+
+on:
+  push:
+    branches:
+      - fix/formsubmit-token-endpoint
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out patch branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/formsubmit-token-endpoint
+          fetch-depth: 0
+
+      - name: Replace exposed email endpoint
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("site/index.html")
+          text = path.read_text(encoding="utf-8")
+          old = 'action="https://formsubmit.co/safal0645@gmail.com"'
+          new = 'action="https://formsubmit.co/0813c7a88ecf2b0285ae6f644b485edf"'
+
+          matches = text.count(old)
+          if matches != 1:
+              raise SystemExit(f"expected exactly one exposed FormSubmit action, found {matches}")
+
+          updated = text.replace(old, new)
+          if old in updated or updated.count(new) != 1:
+              raise SystemExit("FormSubmit action replacement did not produce the expected state")
+
+          path.write_text(updated, encoding="utf-8")
+          PY
+
+      - name: Verify activated endpoint with a bounded test submission
+        shell: bash
+        env:
+          FORM_ENDPOINT: https://formsubmit.co/0813c7a88ecf2b0285ae6f644b485edf
+        run: |
+          set -euo pipefail
+
+          status="$({ curl -sS -o response.html -D response.headers -w '%{http_code}' \
+            -X POST "$FORM_ENDPOINT" \
+            --data-urlencode '_captcha=false' \
+            --data-urlencode '_next=https://safal207.github.io/resonance-arbitrage-graph/thanks.html' \
+            --data-urlencode '_subject=RESONANCE FormSubmit activation verification' \
+            --data-urlencode 'email=safal0645@gmail.com' \
+            --data-urlencode 'company=Owner' \
+            --data-urlencode 'role=RESONANCE endpoint verification' \
+            --data-urlencode 'integration=SDK' \
+            --data-urlencode 'workflow=Bounded activation verification. No credentials or private data.' \
+            --data-urlencode 'failure=Paper qualification' \
+            --data-urlencode 'sample=Possibly available' \
+            --data-urlencode 'pilot_interest=Maybe later' \
+            --data-urlencode 'consent=Explicit consent granted'; } 2>curl.err)" || {
+              cat curl.err
+              exit 1
+            }
+
+          location="$(awk 'BEGIN { IGNORECASE=1 } /^location:/ { sub(/\r$/, ""); print substr($0, index($0, ":") + 2) }' response.headers | tail -n1)"
+          echo "HTTP status: $status"
+          echo "Redirect: ${location:-none}"
+
+          if [[ "$status" -lt 200 || "$status" -ge 400 ]]; then
+            echo "Unexpected FormSubmit response status"
+            cat response.html
+            exit 1
+          fi
+
+          if [[ "$location" == *"/confirm/"* ]] || grep -Eqi 'activate form|activation required|confirm your email' response.html; then
+            echo "FormSubmit endpoint is still awaiting activation"
+            cat response.html
+            exit 1
+          fi
+
+      - name: Remove one-shot workflow
+        shell: bash
+        run: rm .github/workflows/apply-formsubmit-token.yml
+
+      - name: Commit verified endpoint change
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/index.html .github/workflows/apply-formsubmit-token.yml
+          git commit -m "fix(site): use activated FormSubmit token endpoint"
+          git push origin HEAD:fix/formsubmit-token-endpoint
