@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `859bca908179b85820745c120368e7ef83eae5ad13e99c0dde898e2cf7618e2b`
-- Replay SHA-256: `4e7d0c6adbee1b25d1749fe9f00d73d126c248e001da0e247b4fac656ece422f`
+- Source SHA-256: `286403d3d61891fc621fa71964b72f2b8172a4e500fedf84e8aac2d18037bcfb`
+- Replay SHA-256: `c22b70cd2f5b91dee7a33963e190562e238e59bdeb6be23045d4f78d64d7e167`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **140**
-- Complete evidence: **140** (100.00%)
-- Structural constraints pass: **127** (90.71%)
-- Gross-positive before costs: **22** (15.71%)
+- Captured terminal cycles: **150**
+- Complete evidence: **150** (100.00%)
+- Structural constraints pass: **134** (89.33%)
+- Gross-positive before costs: **23** (15.33%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -4.22 bps (min -29.56, max 5.22)**
-- Expected net edge: **mean -40.16 bps (min -65.41, max -30.75)**
-- Observed terminal edge: **mean -40.34 bps (min -88.73, max -30.80)**
+- Gross edge: **mean -4.23 bps (min -29.56, max 5.22)**
+- Expected net edge: **mean -40.17 bps (min -65.41, max -30.75)**
+- Observed terminal edge: **mean -40.31 bps (min -88.73, max -30.80)**
 - Modeled cost drag: **mean 35.94 bps (min 35.85, max 35.98)**
 
 ## Interpretation boundary
@@ -32,10 +32,10 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 105 × `GROSS_NON_POSITIVE`
-- 22 × `MODELED_COSTS_ERASE_EDGE`
-- 6 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 111 × `GROSS_NON_POSITIVE`
+- 23 × `MODELED_COSTS_ERASE_EDGE`
+- 7 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 6 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
-- 1 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
+- 3 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 
-Evidence SHA-256: `d1c292ed05c41d74d81942d2bb8c6325225171b8b16868d0ab07aa187ad39bbe`
+Evidence SHA-256: `a9fd5e428a1a284e50dc02fadd8c5ff7de2d32ba94e337a2a6fddbf5f3702f94`
