@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `3812b19eb70079891943115376d67f326c344497dec4e9c816cb71305934f528`
-- Replay SHA-256: `a6994528eed80d28260f6295f350c04c23c9bd16e2eec2225a60f43b8044adfd`
+- Source SHA-256: `75f17496cbff5d9ac5e74f14b366051174e9cd6bd8b9bbb5ca20e3f922f389c5`
+- Replay SHA-256: `98c8b867c34d55749797f648bff8230c127ccecdaaffa4efab913fe5e8b918b5`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **220**
-- Complete evidence: **220** (100.00%)
-- Structural constraints pass: **193** (87.73%)
-- Gross-positive before costs: **31** (14.09%)
+- Captured terminal cycles: **230**
+- Complete evidence: **230** (100.00%)
+- Structural constraints pass: **202** (87.83%)
+- Gross-positive before costs: **33** (14.35%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -4.19 bps (min -29.56, max 5.22)**
-- Expected net edge: **mean -40.13 bps (min -65.41, max -30.75)**
-- Observed terminal edge: **mean -40.19 bps (min -88.73, max -30.80)**
+- Gross edge: **mean -4.25 bps (min -29.56, max 5.22)**
+- Expected net edge: **mean -40.19 bps (min -65.41, max -30.75)**
+- Observed terminal edge: **mean -40.18 bps (min -88.73, max -30.80)**
 - Modeled cost drag: **mean 35.94 bps (min 35.85, max 35.98)**
 
 ## Interpretation boundary
@@ -32,10 +32,10 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 162 × `GROSS_NON_POSITIVE`
-- 31 × `MODELED_COSTS_ERASE_EDGE`
-- 10 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 169 × `GROSS_NON_POSITIVE`
+- 33 × `MODELED_COSTS_ERASE_EDGE`
+- 11 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 9 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 8 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 
-Evidence SHA-256: `2f02c288a0838b5c4bdad4622ded5b9f11f4f612bc14c678273ac81e7816d377`
+Evidence SHA-256: `5ccb250f3999523f3b84ac025e7a442d88ea70f0061b54f5eb5f173c8f4f1830`
