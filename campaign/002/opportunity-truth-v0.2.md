@@ -2,7 +2,7 @@
 
 - **Claim status:** `NOT_READY`
 - **Evidence source:** `REAL_MARKET_CORPUS`
-- **Terminal operations:** 330
+- **Terminal operations:** 340
 - **Determinate truth events:** 0
 - **Truth coverage:** n/a
 - **Opportunity Truth Rate:** n/a
