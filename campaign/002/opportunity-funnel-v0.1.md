@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `fd8fa080b2f4c1bd2a39ab6db778e391769d6577cdc6a818d36fc42ef7cd3807`
-- Replay SHA-256: `4681230ce628d0d1e01d10bf5d46716adceee2b1ead72ded0c5579b32e8d12fa`
+- Source SHA-256: `6bdd0498caf654f5636c41ab47a684812ab2b82f6f72e4e8aaf39270da65281e`
+- Replay SHA-256: `b00b7c9f3df6647aa0773ada75c347ada2bfc7801d825a8e4673bad05d66fba9`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **350**
-- Complete evidence: **348** (99.43%)
-- Structural constraints pass: **306** (87.43%)
-- Gross-positive before costs: **45** (12.86%)
+- Captured terminal cycles: **360**
+- Complete evidence: **358** (99.44%)
+- Structural constraints pass: **315** (87.50%)
+- Gross-positive before costs: **46** (12.78%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -4.10 bps (min -29.56, max 8.52)**
-- Expected net edge: **mean -40.05 bps (min -65.41, max -27.47)**
-- Observed terminal edge: **mean -40.03 bps (min -88.73, max -26.12)**
+- Gross edge: **mean -4.08 bps (min -29.56, max 8.52)**
+- Expected net edge: **mean -40.03 bps (min -65.41, max -27.47)**
+- Observed terminal edge: **mean -40.01 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.85, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 261 × `GROSS_NON_POSITIVE`
-- 45 × `MODELED_COSTS_ERASE_EDGE`
-- 20 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 269 × `GROSS_NON_POSITIVE`
+- 46 × `MODELED_COSTS_ERASE_EDGE`
+- 21 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 11 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 11 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `245b2060d020d92f71b9b246db4068766e94d2aeab84811af8675e1bda1eb74d`
+Evidence SHA-256: `df7e9c847c983210069b2779bdb3e28a0256cdb1efd86051d586a14df2ac4b9d`
