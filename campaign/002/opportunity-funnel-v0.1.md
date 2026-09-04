@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `71468aa345227890b3ec900ddd389b433746a85655934d6ec66b00705f21c265`
-- Replay SHA-256: `bfac8f204d299533f848d529cf406336d340d19e2f070185d8f10632525ab8de`
+- Source SHA-256: `343c02e6f6c1a440aa5ed68ecff32ac91778491f48378880aefa010bdd7a5b73`
+- Replay SHA-256: `716de7e67c33bcac6bffbb72e2155c4547639416b4587fa8234649e148cfdb79`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **430**
-- Complete evidence: **428** (99.53%)
-- Structural constraints pass: **372** (86.51%)
-- Gross-positive before costs: **55** (12.79%)
+- Captured terminal cycles: **440**
+- Complete evidence: **438** (99.55%)
+- Structural constraints pass: **382** (86.82%)
+- Gross-positive before costs: **57** (12.95%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -3.99 bps (min -29.56, max 8.52)**
-- Expected net edge: **mean -39.93 bps (min -65.41, max -27.47)**
-- Observed terminal edge: **mean -39.95 bps (min -88.73, max -26.12)**
+- Gross edge: **mean -3.97 bps (min -29.56, max 8.52)**
+- Expected net edge: **mean -39.91 bps (min -65.41, max -27.47)**
+- Observed terminal edge: **mean -39.93 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.85, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 317 × `GROSS_NON_POSITIVE`
-- 55 × `MODELED_COSTS_ERASE_EDGE`
+- 325 × `GROSS_NON_POSITIVE`
+- 57 × `MODELED_COSTS_ERASE_EDGE`
 - 29 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 14 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 13 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `1a3fbcb1392d0bd8e1d95eef44f6aa3918f06f1fe746a166efa61715b8669326`
+Evidence SHA-256: `46dbfb6c18808dd56f8448a99606b09d9b708f31f26ad8e6c6c59c43f243145f`
