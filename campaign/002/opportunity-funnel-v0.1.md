@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `6cf26c8ef19f9f2dde9c0477d5f3c269c5fe03f4d646681b9404ad6913a7fac3`
-- Replay SHA-256: `6e0e4ba9f2840b62483b3fe91b9f950c82e5417b6a2a6e62b5bf5b0ca0abae97`
+- Source SHA-256: `8a783b21d8038818523d6dce2ef7aca4af0dd654dab02fbd31e054fe045caba0`
+- Replay SHA-256: `43be9ac8d86b06dc58f36c112a8bab24cd1ce927f9c3c437eabfe37d2571ac0f`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **400**
-- Complete evidence: **398** (99.50%)
-- Structural constraints pass: **349** (87.25%)
-- Gross-positive before costs: **51** (12.75%)
+- Captured terminal cycles: **410**
+- Complete evidence: **408** (99.51%)
+- Structural constraints pass: **356** (86.83%)
+- Gross-positive before costs: **52** (12.68%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -4.00 bps (min -29.56, max 8.52)**
-- Expected net edge: **mean -39.94 bps (min -65.41, max -27.47)**
-- Observed terminal edge: **mean -39.95 bps (min -88.73, max -26.12)**
+- Gross edge: **mean -4.02 bps (min -29.56, max 8.52)**
+- Expected net edge: **mean -39.96 bps (min -65.41, max -27.47)**
+- Observed terminal edge: **mean -39.98 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.85, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 298 × `GROSS_NON_POSITIVE`
-- 51 × `MODELED_COSTS_ERASE_EDGE`
-- 26 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
-- 12 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
+- 304 × `GROSS_NON_POSITIVE`
+- 52 × `MODELED_COSTS_ERASE_EDGE`
+- 28 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 13 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 11 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `4624b4c22b7a42992ea7ff95b4b01d15a703c4c1d761c993a768b8e7a883a077`
+Evidence SHA-256: `e629cebf14e20ed52db1ac85a6a65c0d84101c4cf0287669c7eba46b8e1ef9fa`
