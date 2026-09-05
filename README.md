@@ -24,6 +24,16 @@ agent / scanner proposes an opportunity
 
 The repository remains named `resonance-arbitrage-graph` because arbitrage is the first verification domain. The product surface is **RESONANCE Verify**.
 
+## Exchange-state drift demo
+
+The [Quantilan fixture demo](docs/QUANTILAN_EXCHANGE_STATE_DEMO.md) compares reusing an initial permission with rechecking price, top-of-book capacity, freshness and synthetic exchange status immediately before simulated submission. Seven offline cases include both an unchanged-market control and a change after the last check that the guard cannot detect. This is admission replay with synthetic inputs, not a fill model or a Quantilan integration.
+
+```bash
+PYTHONPATH=src python -m resonance_arbitrage_graph.exchange_state_demo \
+  --fixture examples/quantilan/fixture.json \
+  --check examples/quantilan/expected-report.json
+```
+
 ## The problem
 
 Trading systems often begin with something that *looks* profitable:

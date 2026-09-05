@@ -1,0 +1,588 @@
+{
+  "schema": "resonance.synthetic-exchange-state-fixture/v1",
+  "paper_only": true,
+  "source_kind": "SYNTHETIC_FIXTURE",
+  "clock": "synthetic monotonic milliseconds, not Unix time",
+  "initial_validation_at_ms": 1000,
+  "start_amount": 1000.0,
+  "policy": {
+    "execute_net_edge": 0.003,
+    "observe_net_edge": 0.0,
+    "max_quote_age_ms": 100,
+    "max_route_latency_ms": 5000,
+    "min_success_probability": 0.75
+  },
+  "costs": {
+    "fee_bps": 5.0,
+    "slippage_bps": 5.0,
+    "gas_bps": 0.0
+  },
+  "route": [
+    {
+      "symbol": "BTCUSDT",
+      "side": "BUY"
+    },
+    {
+      "symbol": "ETHBTC",
+      "side": "BUY"
+    },
+    {
+      "symbol": "ETHUSDT",
+      "side": "SELL"
+    }
+  ],
+  "initial_state": {
+    "state_id": "initial",
+    "observed_at_ms": 1000,
+    "exchange_status": "TRADING",
+    "quotes": [
+      {
+        "symbol": "BTCUSDT",
+        "base_asset": "BTC",
+        "quote_asset": "USDT",
+        "bid_price": 79990.0,
+        "bid_qty": 2.0,
+        "ask_price": 80000.0,
+        "ask_qty": 2.0
+      },
+      {
+        "symbol": "ETHBTC",
+        "base_asset": "ETH",
+        "quote_asset": "BTC",
+        "bid_price": 0.0499,
+        "bid_qty": 20.0,
+        "ask_price": 0.05,
+        "ask_qty": 20.0
+      },
+      {
+        "symbol": "ETHUSDT",
+        "base_asset": "ETH",
+        "quote_asset": "USDT",
+        "bid_price": 4050.0,
+        "bid_qty": 20.0,
+        "ask_price": 4051.0,
+        "ask_qty": 20.0
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "unchanged_fresh",
+      "description": "Fresh observation of unchanged prices and capacity: positive control.",
+      "submission_at_ms": 1080,
+      "arrival_at_ms": 1100,
+      "boundary_state": {
+        "state_id": "unchanged_fresh:boundary",
+        "observed_at_ms": 1075,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "unchanged_fresh:arrival",
+        "observed_at_ms": 1100,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "depth_shrink",
+      "description": "BTC ask capacity falls from 160000 to 600 USDT before the 1000 USDT paper submission.",
+      "submission_at_ms": 1080,
+      "arrival_at_ms": 1100,
+      "boundary_state": {
+        "state_id": "depth_shrink:boundary",
+        "observed_at_ms": 1075,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 0.0075
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "depth_shrink:arrival",
+        "observed_at_ms": 1100,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 0.0075
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "price_drift",
+      "description": "ETH bid falls from 4050 to 3990 USDT; modeled net edge becomes negative.",
+      "submission_at_ms": 1080,
+      "arrival_at_ms": 1100,
+      "boundary_state": {
+        "state_id": "price_drift:boundary",
+        "observed_at_ms": 1075,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 3990.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "price_drift:arrival",
+        "observed_at_ms": 1100,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 3990.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "edge_below_threshold",
+      "description": "ETH bid falls to 4020 USDT; modeled edge remains positive but falls below the 30 bps threshold.",
+      "submission_at_ms": 1080,
+      "arrival_at_ms": 1100,
+      "boundary_state": {
+        "state_id": "edge_below_threshold:boundary",
+        "observed_at_ms": 1075,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4020.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "edge_below_threshold:arrival",
+        "observed_at_ms": 1100,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4020.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "exchange_halted",
+      "description": "Synthetic exchange status changes from TRADING to HALTED before submission.",
+      "submission_at_ms": 1080,
+      "arrival_at_ms": 1100,
+      "boundary_state": {
+        "state_id": "exchange_halted:boundary",
+        "observed_at_ms": 1075,
+        "exchange_status": "HALTED",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "exchange_halted:arrival",
+        "observed_at_ms": 1100,
+        "exchange_status": "HALTED",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "stale_snapshot",
+      "description": "No refreshed observation arrives: snapshot age at submission is 180 ms versus a 100 ms limit.",
+      "submission_at_ms": 1180,
+      "arrival_at_ms": 1200,
+      "boundary_state": {
+        "state_id": "stale_snapshot:boundary",
+        "observed_at_ms": 1000,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "stale_snapshot:arrival",
+        "observed_at_ms": 1000,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "drift_after_recheck",
+      "description": "Depth shrinks only after the final recheck, during the 20 ms simulated transmission gap; the guard cannot see it.",
+      "submission_at_ms": 1080,
+      "arrival_at_ms": 1100,
+      "boundary_state": {
+        "state_id": "drift_after_recheck:boundary",
+        "observed_at_ms": 1075,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 2.0
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      },
+      "arrival_state": {
+        "state_id": "drift_after_recheck:arrival",
+        "observed_at_ms": 1100,
+        "exchange_status": "TRADING",
+        "quotes": [
+          {
+            "symbol": "BTCUSDT",
+            "base_asset": "BTC",
+            "quote_asset": "USDT",
+            "bid_price": 79990.0,
+            "bid_qty": 2.0,
+            "ask_price": 80000.0,
+            "ask_qty": 0.0075
+          },
+          {
+            "symbol": "ETHBTC",
+            "base_asset": "ETH",
+            "quote_asset": "BTC",
+            "bid_price": 0.0499,
+            "bid_qty": 20.0,
+            "ask_price": 0.05,
+            "ask_qty": 20.0
+          },
+          {
+            "symbol": "ETHUSDT",
+            "base_asset": "ETH",
+            "quote_asset": "USDT",
+            "bid_price": 4050.0,
+            "bid_qty": 20.0,
+            "ask_price": 4051.0,
+            "ask_qty": 20.0
+          }
+        ]
+      }
+    }
+  ]
+}
