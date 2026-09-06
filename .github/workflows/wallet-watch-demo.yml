@@ -1,0 +1,51 @@
+name: Wallet Watch — synthetic replay
+
+on:
+  pull_request:
+    paths:
+      - "src/resonance_arbitrage_graph/wallet_watch*.py"
+      - "tests/test_wallet_watch.py"
+      - "pyproject.toml"
+      - ".github/workflows/wallet-watch-demo.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demonstrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Address to notification and history, then restart
+        run: |
+          mkdir -p wallet-data/ci
+          python -m resonance_arbitrage_graph.wallet_watch_cli demo --db wallet-data/ci/demo.sqlite3 > wallet-data/ci/result.jsonl
+          python -m resonance_arbitrage_graph.wallet_watch_cli history --db wallet-data/ci/demo.sqlite3 > wallet-data/ci/history.jsonl
+          python -m resonance_arbitrage_graph.wallet_watch_cli demo --db wallet-data/ci/demo.sqlite3 > wallet-data/ci/restart.jsonl
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          Path('wallet-data/ci/provenance.json').write_text(json.dumps({
+              'origin': 'SYNTHETIC_FIXTURE',
+              'checkout_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'pull_request_head_sha': event.get('pull_request', {}).get('head', {}).get('sha'),
+              'workflow_sha': os.environ['GITHUB_SHA'],
+              'run_id': os.environ['GITHUB_RUN_ID'],
+              'live_rpc_verified': False,
+          }, indent=2) + '\n')
+          PY
+      - name: Preserve synthetic evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wallet-watch-synthetic-${{ github.run_id }}
+          path: wallet-data/ci/*.json*
+          if-no-files-found: error
+          retention-days: 30
