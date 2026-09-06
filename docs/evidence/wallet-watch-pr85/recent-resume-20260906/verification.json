@@ -1,0 +1,12 @@
+{
+  "checkpoint_after": 25920400,
+  "checkpoint_before": 25920399,
+  "files_verified": 80,
+  "final_history_events": 1,
+  "offline_cli_replays": 3,
+  "replay_normalization": "ignore observed_at, created_at and emitted_at wall-clock values; retain acknowledgement state, packet contents, event projections, checkpoint and counts",
+  "rpc_responses_verified": 26,
+  "scope": "offline integrity and execution against captured RPC; no new live or independent network verification",
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "status": "PASS"
+}

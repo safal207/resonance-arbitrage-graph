@@ -1,0 +1,60 @@
+{
+  "checkpoint_after": [
+    25920400,
+    "0x28623314d175bda12bddefa5083250063cc7fc2112cb9323aaa2710a409eef21"
+  ],
+  "checkpoint_before": [
+    25920399,
+    "0x6604db844add66dc227697109d89ec012f369e500aa96cf700097b37a047a105"
+  ],
+  "earlier_archive_attempt_status": "INCOMPLETE",
+  "event": {
+    "amount": "100.000000",
+    "amount_units": "100000000",
+    "block_hash": "0x6604db844add66dc227697109d89ec012f369e500aa96cf700097b37a047a105",
+    "block_number": 25920399,
+    "block_timestamp": 1788722891,
+    "decimals": 6,
+    "direction": "incoming",
+    "event_id": "1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:0xbac280925b5c6241595ff6b11f539cd1d529d932e917a510731f88dd8f068ab4:13",
+    "from_address": "0x466ba3edd0783b0e0e675b50e7e59396b0433064",
+    "log_index": 13,
+    "to_address": "0xf740669fbcc0242f0302bdd9a3c6a01ddafb1bc4",
+    "token": "USDC",
+    "transaction_url": "https://etherscan.io/tx/0xbac280925b5c6241595ff6b11f539cd1d529d932e917a510731f88dd8f068ab4",
+    "tx_hash": "0xbac280925b5c6241595ff6b11f539cd1d529d932e917a510731f88dd8f068ab4",
+    "verification": "RPC_CONSISTENT_FINALIZED",
+    "watched_address": "0xf740669fbcc0242f0302bdd9a3c6a01ddafb1bc4"
+  },
+  "final_history_events": 1,
+  "fresh_cli_processes": 7,
+  "initial_scan": {
+    "console_notifications": 1,
+    "coverage": "RPC returned logs for this range; provider completeness is not independently proven",
+    "finalized_block": 25920400,
+    "from_block": 25920399,
+    "new_events": 1,
+    "status": "scanned",
+    "through_block": 25920399
+  },
+  "original_event_and_outbox_unchanged": true,
+  "original_event_notifications_on_resume": 0,
+  "pending_notifications": 0,
+  "resumed_scan": {
+    "console_notifications": 0,
+    "coverage": "RPC returned logs for this range; provider completeness is not independently proven",
+    "finalized_block": 25920400,
+    "from_block": 25920400,
+    "new_events": 0,
+    "status": "scanned",
+    "through_block": 25920400
+  },
+  "scope": "new recent two-block scenario, one provider",
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "status": "PASS",
+  "transaction_replay": {
+    "console_notifications": 0,
+    "new_events": 0,
+    "status": "transaction_verified"
+  }
+}
