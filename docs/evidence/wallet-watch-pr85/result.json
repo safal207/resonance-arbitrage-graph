@@ -1,0 +1,61 @@
+{
+  "additional_notifications_on_same_database_replay": 0,
+  "checkpoint_after_restart": [
+    25919603,
+    "0xff41bbf3c7e150735e6e6e4d8e4f294fb94d08983fcd2fdcba1a9ffbf950d565"
+  ],
+  "checkpoint_before_restart": [
+    25919603,
+    "0xff41bbf3c7e150735e6e6e4d8e4f294fb94d08983fcd2fdcba1a9ffbf950d565"
+  ],
+  "distinct_event_ids_across_paths": 1,
+  "event": {
+    "amount": "300.000000",
+    "amount_units": "300000000",
+    "block_hash": "0xff41bbf3c7e150735e6e6e4d8e4f294fb94d08983fcd2fdcba1a9ffbf950d565",
+    "block_number": 25919603,
+    "block_timestamp": 1788713303,
+    "decimals": 6,
+    "direction": "incoming",
+    "event_id": "1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:0xbe18af1609eba93e7e25d18e46c5d6662e15ee92ac6f029864e5feede515cf35:5",
+    "from_address": "0x63c79fccd0a21e4a4d87056a0efe3b85d8c373d4",
+    "log_index": 5,
+    "to_address": "0xa677353b8b6053039c51db9dcc1a420e76d33c84",
+    "token": "USDC",
+    "transaction_url": "https://etherscan.io/tx/0xbe18af1609eba93e7e25d18e46c5d6662e15ee92ac6f029864e5feede515cf35",
+    "tx_hash": "0xbe18af1609eba93e7e25d18e46c5d6662e15ee92ac6f029864e5feede515cf35",
+    "verification": "RPC_CONSISTENT_FINALIZED",
+    "watched_address": "0xa677353b8b6053039c51db9dcc1a420e76d33c84"
+  },
+  "fresh_one_block_scan": {
+    "console_notifications": 1,
+    "coverage": "RPC returned logs for this range; provider completeness is not independently proven",
+    "finalized_block": 25919603,
+    "from_block": 25919603,
+    "new_events": 1,
+    "status": "scanned",
+    "through_block": 25919603
+  },
+  "fresh_transaction": {
+    "console_notifications": 1,
+    "new_events": 1,
+    "status": "transaction_verified"
+  },
+  "live_transfer_verified": true,
+  "notification_total_across_two_isolated_databases": 2,
+  "notifications_per_fresh_database": 1,
+  "offline_history_replay": "PASS",
+  "pending_notifications_after_replay": 0,
+  "scan_db_restart_replay": {
+    "console_notifications": 0,
+    "new_events": 0,
+    "status": "transaction_verified"
+  },
+  "scope": "one existing finalized transfer; one provider; two isolated fresh databases",
+  "status": "PASS",
+  "transaction_restart": {
+    "console_notifications": 0,
+    "new_events": 0,
+    "status": "transaction_verified"
+  }
+}
