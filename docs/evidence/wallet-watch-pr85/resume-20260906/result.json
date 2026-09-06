@@ -1,0 +1,53 @@
+{
+  "attempts": 2,
+  "baseline_archive_and_database_unchanged": true,
+  "baseline_archive_sha256": "6c6122bd85437f598629b3dfeb1f7599013b2586dac7d969963f090fc6903e7f",
+  "baseline_database_sha256": "8e43bfff660fb11fa132865c9da2264761699e7ed7c79c8f6a4dd8db24e1e2a7",
+  "baseline_evidence_commit": "dc445bfac231ba6a3bcaac9c6388805d163c3c75",
+  "checkpoint_after_each_attempt": [
+    25919603,
+    25919603
+  ],
+  "checkpoint_before": 25919603,
+  "completed_scan_attempts": 0,
+  "console_notifications_each_attempt": [
+    0,
+    0
+  ],
+  "diagnostic_http_status": 403,
+  "diagnostic_limit": "HTTP status/body were captured only in the separate diagnostic; both original failed request records retain HTTPError without a status/body.",
+  "diagnostic_message": "Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode",
+  "diagnostic_rpc_error_code": -32602,
+  "failed_cli_rpc_requests": 2,
+  "fresh_cli_processes": 4,
+  "goal": "resume saved scan database into block 25919604 without duplicate prior notification",
+  "history_events_after_each_attempt": [
+    1,
+    1
+  ],
+  "new_events_each_attempt": [
+    0,
+    0
+  ],
+  "next_required_condition": "Configure authorized archive access to this same provider, then rerun the bounded scenario from an immutable copy of the published baseline. Any endpoint change must be recorded separately.",
+  "not_established": [
+    "checkpoint advancement",
+    "successful empty-block scan",
+    "restart old transaction replay after advancement",
+    "continuous monitoring",
+    "exactly-once delivery",
+    "provider completeness",
+    "independent network verification"
+  ],
+  "origin": "LIVE_RPC",
+  "pending_notifications_after_each_attempt": [
+    0,
+    0
+  ],
+  "provider": "ethereum-rpc.publicnode.com",
+  "separate_diagnostic_requests": 1,
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "state_and_database_bytes_unchanged_each_attempt": true,
+  "status": "INCOMPLETE",
+  "successful_captured_rpc_responses": 8
+}

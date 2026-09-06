@@ -1,0 +1,11 @@
+{
+  "bundle_integrity": "PASS",
+  "checkpoint_after_each_attempt": 25919603,
+  "database_bytes_unchanged": true,
+  "diagnostic_http_status": 403,
+  "failed_cli_rpc_requests": 2,
+  "live_resume_status": "INCOMPLETE",
+  "payload_files": 48,
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "successful_rpc_responses": 8
+}
