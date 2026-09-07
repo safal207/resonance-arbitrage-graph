@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `394db13bc84db5579310fc12ca23c8b035280f4788a9ac82270d45bf381b5000`
-- Replay SHA-256: `7a8ea212afa54156bb1495f4ad7039ee0040e02b97f12d4c2573e336fa3631cc`
+- Source SHA-256: `ba50cba1670b66c3cd3a8a49dec2fd0a4bb566e3f63cc42c97ee15304acb2823`
+- Replay SHA-256: `2da5609cc5b72d0ebd6ba23dc72caeb5b98724e9d5cfa91cec83ef33af8a7f7c`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **630**
-- Complete evidence: **628** (99.68%)
-- Structural constraints pass: **543** (86.19%)
-- Gross-positive before costs: **94** (14.92%)
+- Captured terminal cycles: **640**
+- Complete evidence: **638** (99.69%)
+- Structural constraints pass: **552** (86.25%)
+- Gross-positive before costs: **98** (15.31%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -20,8 +20,8 @@
 ## Edge distributions
 
 - Gross edge: **mean -3.89 bps (min -35.06, max 8.52)**
-- Expected net edge: **mean -39.83 bps (min -70.89, max -27.47)**
-- Observed terminal edge: **mean -39.79 bps (min -88.73, max -26.12)**
+- Expected net edge: **mean -39.84 bps (min -70.89, max -27.47)**
+- Observed terminal edge: **mean -39.78 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.83, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 449 × `GROSS_NON_POSITIVE`
-- 94 × `MODELED_COSTS_ERASE_EDGE`
+- 454 × `GROSS_NON_POSITIVE`
+- 98 × `MODELED_COSTS_ERASE_EDGE`
 - 44 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 23 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
-- 18 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
+- 19 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `140bfb2b13f2a8fe57b540653868a45d5c90370e3ecf6f6b311ca31cfc9ea221`
+Evidence SHA-256: `b95f411d5b7c0d735366b9c95deb65739927f03121b836b3766b41dc3ab6ff9e`
