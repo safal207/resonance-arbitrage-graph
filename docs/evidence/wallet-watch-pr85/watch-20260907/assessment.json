@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "completed_watch_iterations": 0,
+  "console_notifications": 0,
+  "discovery_candidate_status": "NOT_VERIFIED_OR_SAVED",
+  "failed_watch_rpc_requests": 1,
+  "history_events": 0,
+  "live_scenario_status": "INCOMPLETE",
+  "live_watch_processes": 1,
+  "minimal_next_step": "Repeat the bounded watch scenario once RPC access is permitted by the execution environment; use a new evidence directory and database.",
+  "new_finalized_progress_status": "NOT_REACHED",
+  "outbox_rows": 0,
+  "planned_restart_status": "NOT_REACHED",
+  "prior_recent_scan_resume_result": "separate PASS at evidence commit 34e99b59424924a50f5e35966bfd531d16eb1e2b; not changed by this attempt",
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "successful_discovery_rpc_responses": 3,
+  "successful_watch_rpc_responses": 6,
+  "watch_exit_code": 2
+}

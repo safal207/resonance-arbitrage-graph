@@ -1,0 +1,16 @@
+{
+  "checkpoint": null,
+  "completed_watch_iterations": 0,
+  "console_notifications": 0,
+  "failed_rpc_requests": 1,
+  "files_verified": 35,
+  "history_events": 0,
+  "limits": "Captured successful response bytes plus injected recorded exception class; original transport reason, runtime approval system and network were not replayed. No successful watch/restart claim.",
+  "live_scenario_status": "INCOMPLETE",
+  "offline_cli_executions": 1,
+  "replayed_watch_exit_code": 2,
+  "rpc_responses_verified": 9,
+  "scope": "offline package integrity and abort-path replay only",
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "status": "PASS"
+}

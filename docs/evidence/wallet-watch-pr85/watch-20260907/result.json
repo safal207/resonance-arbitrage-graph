@@ -1,0 +1,7 @@
+{
+  "error": "01-initial-watch did not complete the bounded condition with controlled SIGINT",
+  "error_type": "RuntimeError",
+  "scope": "bounded watch loop plus controlled process restart, single provider",
+  "source_head_sha": "e2d644155b587da89b12116a9b94150c6e5d4837",
+  "status": "INCOMPLETE"
+}
