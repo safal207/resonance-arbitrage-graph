@@ -296,3 +296,17 @@ def test_valid_content_length_retains_declared_size():
     _, f, _, _ = make(body=b'{"ok":1}', headers={"Content-Length": "8"})
     assert f(QUOTE) == {"ok": 1}
     assert f.requests[0]["declared_body_bytes"] == 8
+
+
+def test_header_processing_is_not_attributed_to_body_read():
+    clock = Clock()
+    class SlowHeader(str):
+        def isascii(self):
+            clock.advance(101)
+            return True
+    _, f, _, _ = make(clock=clock, body=b'{"ok":1}', headers={"Content-Length": SlowHeader("8")})
+    assert f(QUOTE) == {"ok": 1}
+    row = f.requests[0]
+    assert row["open_to_headers_ns"] == 11
+    assert row["body_read_ns"] == 7
+    assert row["transport_to_body_ns"] == 11 + 101 + 7
