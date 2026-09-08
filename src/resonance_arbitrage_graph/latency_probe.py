@@ -135,9 +135,10 @@ class MeasuredJSON:
                     if int(declared) > self.max_bytes:
                         raise ValueError("declared response body exceeds limit")
                 stage = "read"
+                read_start = self.clock()
                 body = response.read(self.max_bytes + 1)
                 body_at = self.clock()
-                row["body_read_ns"] = body_at - headers_at
+                row["body_read_ns"] = body_at - read_start
                 row["transport_to_body_ns"] = body_at - start
                 if len(body) > self.max_bytes:
                     raise ValueError("response body exceeds limit")
