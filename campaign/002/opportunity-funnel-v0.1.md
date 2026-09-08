@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `9a400e9a200c31b36f8cb999ab825ea93e38b9214f3cf4c2d4492abd3a91f1bf`
-- Replay SHA-256: `a86b3abeeb6151c2f39c6ba7a4bb3f1a0ef3ae9affc6720c50c69c1167082ecc`
+- Source SHA-256: `e46262bf737e2cf3522477da93fcf9d59a46d364dab5f8fa89ef7fa7781c3bfb`
+- Replay SHA-256: `a8e2e233499673f6b7432c178af6ce9f9baecc8192d84443bacee6daa63e41a8`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **700**
-- Complete evidence: **698** (99.71%)
-- Structural constraints pass: **601** (85.86%)
-- Gross-positive before costs: **105** (15.00%)
+- Captured terminal cycles: **710**
+- Complete evidence: **708** (99.72%)
+- Structural constraints pass: **609** (85.77%)
+- Gross-positive before costs: **107** (15.07%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,8 +19,8 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -3.86 bps (min -35.06, max 8.52)**
-- Expected net edge: **mean -39.80 bps (min -70.89, max -27.47)**
+- Gross edge: **mean -3.88 bps (min -35.06, max 8.52)**
+- Expected net edge: **mean -39.82 bps (min -70.89, max -27.47)**
 - Observed terminal edge: **mean -39.77 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.83, max 35.99)**
 
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 496 × `GROSS_NON_POSITIVE`
-- 105 × `MODELED_COSTS_ERASE_EDGE`
-- 54 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 502 × `GROSS_NON_POSITIVE`
+- 107 × `MODELED_COSTS_ERASE_EDGE`
+- 55 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 23 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
-- 20 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
+- 21 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `e1c9686d23ffa21224b0d67b97e88a1cacedda855be7008437bb7f634e8dfd08`
+Evidence SHA-256: `d434bfbe40bf3f63e9d32cb6fa415250c8aa8c3114cbc8366ba9f2355f29f6ab`
