@@ -1,0 +1,64 @@
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/bin/resonance-corpus-campaign-step", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/corpus_campaign_cli.py", line 114, in main
+    result = run_resumable_campaign_step(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/corpus_campaign.py", line 461, in run_resumable_campaign_step
+    result = run_one_shot(
+             ^^^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/corpus_runner.py", line 435, in run_one_shot
+    quotes, history = collect_fn(
+                      ^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/live_scan.py", line 57, in _collect_rolling_quotes
+    latest = _fetch_round(adapter, pairs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/live_scan.py", line 31, in _fetch_round
+    snapshots = [adapter.fetch(symbol) for symbol, _base, _quote in pairs]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/live_scan.py", line 31, in <listcomp>
+    snapshots = [adapter.fetch(symbol) for symbol, _base, _quote in pairs]
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/adapters/kraken.py", line 53, in fetch
+    payload = self._fetch_json(url)
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/resonance-arbitrage-graph/resonance-arbitrage-graph/code/src/resonance_arbitrage_graph/adapters/http.py", line 14, in get_json
+    with urlopen(request, timeout=timeout) as response:  # noqa: S310 - fixed public HTTPS URLs
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 1391, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/http/client.py", line 1443, in getresponse
+    response.begin()
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/http/client.py", line 337, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/http/client.py", line 298, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/socket.py", line 718, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/ssl.py", line 1314, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/ssl.py", line 1166, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
