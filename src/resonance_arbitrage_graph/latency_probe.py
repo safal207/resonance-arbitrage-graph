@@ -23,6 +23,7 @@ from urllib.parse import parse_qs, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .adapters.binance import BinanceBookTickerAdapter
+from .staleness import StalenessPolicy, assess_quote_staleness
 
 PUBLIC_HOST = "data-api.binance.vision"
 PATHS = {"/api/v3/exchangeInfo", "/api/v3/ticker/bookTicker"}
@@ -64,6 +65,16 @@ def _object_json(body: bytes) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("expected a JSON object")
     return payload
+
+
+def _wall_now_ms() -> int:
+    return time.time_ns() // 1_000_000
+
+
+def _assessment_dict(assessment: Any) -> dict[str, Any]:
+    data = asdict(assessment)
+    data["verdict"] = assessment.verdict.value
+    return data
 
 
 class MeasuredJSON:
@@ -171,8 +182,14 @@ class MeasuredJSON:
 
 def probe(adapter: BinanceBookTickerAdapter, fetcher: MeasuredJSON, *,
           samples: int = 3, interval: float = 0.0,
-          sleeper: Callable[[float], None] = time.sleep) -> list[dict[str, Any]]:
-    """Probe one fixed pair; keep failures and never retry/reroute failed requests."""
+          sleeper: Callable[[float], None] = time.sleep,
+          staleness_policy: StalenessPolicy | None = None,
+          staleness_now_ms: Callable[[], int] = _wall_now_ms) -> list[dict[str, Any]]:
+    """Probe one fixed pair; keep failures and never retry/reroute failed requests.
+
+    Staleness assessment, when requested, runs after the adapter timing interval is
+    closed so policy evaluation is not attributed to ``adapter_total_ns``.
+    """
     if type(samples) is not int or not 1 <= samples <= 1001:
         raise ValueError("samples must be an integer in 1..1001")
     if isinstance(interval, bool) or not math.isfinite(interval) or interval < 0:
@@ -183,7 +200,7 @@ def probe(adapter: BinanceBookTickerAdapter, fetcher: MeasuredJSON, *,
         started = fetcher.clock()
         fetcher.attempt_count += 1
         row: dict[str, Any] = {"id": fetcher.attempt_count, "status": "ERROR", "error_code": None,
-                               "error_type": None, "snapshot": None,
+                               "error_type": None, "snapshot": None, "staleness": None,
                                "verifier_ns": None, "source_age_ms": None}
         try:
             snapshot = adapter.fetch("BTCUSDT", base_asset="BTC", quote_asset="USDT")
@@ -191,10 +208,17 @@ def probe(adapter: BinanceBookTickerAdapter, fetcher: MeasuredJSON, *,
             row.update(error_code=error_code(exc), error_type=type(exc).__name__)
         else:
             row["status"] = "OK"
-            # Defer serialization until after the adapter interval is closed.
+            # Defer serialization and staleness evaluation until adapter timing is closed.
         ended = fetcher.clock()
         if row["status"] == "OK":
             row["snapshot"] = asdict(snapshot)
+            if staleness_policy is not None:
+                assessment = assess_quote_staleness(
+                    snapshot, now_ms=staleness_now_ms(), policy=staleness_policy,
+                )
+                row["staleness"] = _assessment_dict(assessment)
+                # Backward-compatible top-level alias; remains None when source age is unavailable.
+                row["source_age_ms"] = assessment.source_age_ms
         requests = fetcher.requests[before:]
         metadata_requested = any(r["endpoint"].endswith("exchangeInfo") for r in requests)
         row["metadata_regime"] = (
@@ -253,10 +277,13 @@ def summarize(attempts: list[dict[str, Any]], requests: list[dict[str, Any]]) ->
             "success_decode_json_ns": distribution([r["decode_json_ns"] for r in ok]),
             "failed_request_elapsed_ns": distribution([r["request_elapsed_ns"] for r in rows if r["status"] != "OK"]),
         }
+    staleness_counts = Counter(
+        a["staleness"]["verdict"] for a in attempts if a.get("staleness") is not None
+    )
     return {"attempted_samples": len(attempts), "successful_samples": sum(a["status"] == "OK" for a in attempts),
             "errors_by_code": dict(Counter(a["error_code"] for a in attempts if a["status"] != "OK")),
+            "staleness_by_verdict": dict(staleness_counts),
             "adapter_by_metadata_regime": adapter_groups, "requests_by_endpoint_and_metadata_regime": request_groups}
-
 
 
 class FixtureOpener:
@@ -322,6 +349,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--interval", type=float, default=1.0, help="Seconds; live mode requires >=1")
     parser.add_argument("--timeout", type=float, default=5.0, help="Socket timeout, not end-to-end deadline")
     parser.add_argument("--fixture-delay-ms", type=float, default=0.0)
+    parser.add_argument("--max-observation-age-ms", type=int, default=None,
+                        help="Caller-supplied local observation-age bound; omitted means no staleness assessment")
+    parser.add_argument("--max-source-age-ms", type=int, default=None,
+                        help="Optional exchange-published snapshot-age bound; requires --max-observation-age-ms")
     parser.add_argument("--output", type=Path, required=True, help="New directory; never overwrite")
     args = parser.parse_args(argv)
     if args.output.exists():
@@ -330,19 +361,37 @@ def main(argv: list[str] | None = None) -> int:
             or not math.isfinite(args.timeout) or args.timeout <= 0
             or not math.isfinite(args.fixture_delay_ms) or not 0 <= args.fixture_delay_ms <= 2000):
         parser.error("invalid sample, interval, timeout, or fixture-delay value")
+    if args.max_observation_age_ms is not None and args.max_observation_age_ms < 0:
+        parser.error("max-observation-age-ms must be non-negative")
+    if args.max_source_age_ms is not None:
+        if args.max_source_age_ms < 0:
+            parser.error("max-source-age-ms must be non-negative")
+        if args.max_observation_age_ms is None:
+            parser.error("max-source-age-ms requires max-observation-age-ms")
     if args.live and (args.interval < 1 or args.fixture_delay_ms != 0):
         parser.error("live mode requires interval >=1 and forbids fixture delay")
+    staleness_policy = (
+        StalenessPolicy(
+            max_observation_age_ms=args.max_observation_age_ms,
+            max_source_age_ms=args.max_source_age_ms,
+        )
+        if args.max_observation_age_ms is not None else None
+    )
     fetcher = MeasuredJSON(timeout=args.timeout, opener=None if args.live else FixtureOpener(args.fixture_delay_ms))
     adapter = BinanceBookTickerAdapter(fetch_json=fetcher)
     # Both supported public endpoints use one host. Existing adapter defaults are unchanged.
     adapter.metadata_base_url = adapter.base_url
-    attempts = probe(adapter, fetcher, samples=args.samples, interval=args.interval if args.live else 0)
+    attempts = probe(
+        adapter, fetcher, samples=args.samples, interval=args.interval if args.live else 0,
+        staleness_policy=staleness_policy,
+    )
     report = {
-        "schema": "resonance-client-latency/v1", "source_kind": "LIVE_PUBLIC_HTTP" if args.live else "SYNTHETIC_FIXTURE",
+        "schema": "resonance-client-latency/v2", "source_kind": "LIVE_PUBLIC_HTTP" if args.live else "SYNTHETIC_FIXTURE",
         "captured_at_utc": datetime.now(timezone.utc).isoformat(), "environment": environment(),
         "config": {"symbol": "BTCUSDT", "requested_samples": args.samples, "socket_timeout_seconds": args.timeout,
                    "interval_seconds": args.interval if args.live else 0, "fixture_delay_ms": args.fixture_delay_ms,
-                   "retries": 0, "redirects": False, "max_body_bytes": fetcher.max_bytes},
+                   "retries": 0, "redirects": False, "max_body_bytes": fetcher.max_bytes,
+                   "staleness_policy": asdict(staleness_policy) if staleness_policy is not None else None},
         "completed_requested_samples": len(attempts) == args.samples,
         "stop_reason": None if attempts[-1]["status"] == "OK" else attempts[-1]["error_code"],
         "claim_boundary": {
@@ -350,12 +399,14 @@ def main(argv: list[str] | None = None) -> int:
             "pure_exchange_latency_measured": False, "trading_or_order_recovery_tested": False,
             "verifier_measured": False, "connection_reuse_asserted": False,
             "measurement_overhead_subtracted": False, "hashes_authenticate_exchange": False,
+            "staleness_policy_applied": staleness_policy is not None,
+            "source_age_claim_requires_exchange_published_timestamp": True,
         },
         "percentile_policy": {"method": "nearest_rank", "p95_min_successes": 100, "p99_min_successes": 1000,
                               "confidence_guarantee": False},
         "source_sha256": {
             name: hashlib.sha256((Path(__file__).parent / name).read_bytes()).hexdigest()
-            for name in ("latency_probe.py", "adapters/binance.py", "adapters/http.py",
+            for name in ("latency_probe.py", "staleness.py", "adapters/binance.py", "adapters/http.py",
                          "quotes.py", "model.py", "validation.py")
         },
         "attempts": attempts, "requests": fetcher.requests, "summary": summarize(attempts, fetcher.requests),
