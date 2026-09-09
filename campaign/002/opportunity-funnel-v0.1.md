@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `6ce90cdf60cdb20e89516c3d7e30c6d8c6cf5be230c76e67a2911d181a0af03b`
-- Replay SHA-256: `e6343f3190d97c872d94f4f448a300f867c9abaad474e62d486f9e703f2d49d1`
+- Source SHA-256: `634aa3fc9d87e80099c9131f3d89c22751ddc750e13e10584ce3ea38e5d85592`
+- Replay SHA-256: `d240a5413f4e12ddec01a5217fe7c987659ec49b5106c7daa3ddd327f1884450`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **788**
-- Complete evidence: **786** (99.75%)
-- Structural constraints pass: **671** (85.15%)
-- Gross-positive before costs: **119** (15.10%)
+- Captured terminal cycles: **798**
+- Complete evidence: **796** (99.75%)
+- Structural constraints pass: **679** (85.09%)
+- Gross-positive before costs: **120** (15.04%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -20,8 +20,8 @@
 ## Edge distributions
 
 - Gross edge: **mean -3.90 bps (min -35.06, max 8.52)**
-- Expected net edge: **mean -39.85 bps (min -70.89, max -27.47)**
-- Observed terminal edge: **mean -39.80 bps (min -88.73, max -26.12)**
+- Expected net edge: **mean -39.84 bps (min -70.89, max -27.47)**
+- Observed terminal edge: **mean -39.81 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.83, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 552 × `GROSS_NON_POSITIVE`
-- 119 × `MODELED_COSTS_ERASE_EDGE`
-- 65 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 559 × `GROSS_NON_POSITIVE`
+- 120 × `MODELED_COSTS_ERASE_EDGE`
+- 67 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 26 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 24 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `361b79e215ef382b6a8a7f488c5029aba93276f49e9f5e122334773e29b05587`
+Evidence SHA-256: `b9f27b0bb7cef190fb137a589d681c105871d58716f69d781c68d62c0fac3b5c`
