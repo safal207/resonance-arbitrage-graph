@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `545c812fc1e43ef3dda1898d0cf7d4e112fe4c5bde93d1a4ceb940b2f2d4e63c`
-- Replay SHA-256: `520483ba1240f3b3921c4b6d64552ce47eb12c113e909b7f8e1cb1922eb8dd1a`
+- Source SHA-256: `b4701410085589d66e6b0614f185cfe6c1cf1025543468a41924e172414972e1`
+- Replay SHA-256: `d759590cfa677fb4263c9ce89f45678bd57c3bcdf3ff770e169409c9f52beabd`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **728**
-- Complete evidence: **726** (99.73%)
-- Structural constraints pass: **623** (85.58%)
-- Gross-positive before costs: **108** (14.84%)
+- Captured terminal cycles: **738**
+- Complete evidence: **736** (99.73%)
+- Structural constraints pass: **631** (85.50%)
+- Gross-positive before costs: **111** (15.04%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 515 × `GROSS_NON_POSITIVE`
-- 108 × `MODELED_COSTS_ERASE_EDGE`
-- 57 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 520 × `GROSS_NON_POSITIVE`
+- 111 × `MODELED_COSTS_ERASE_EDGE`
+- 58 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 24 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
-- 22 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
+- 23 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `a3dcfde0250bce2fd6cb7c04ca3863c8628c74cd6f4151d819463d759a41e470`
+Evidence SHA-256: `ad52ecb6d3afaa21177ac140c9fc3ceeff9b00678526b98050640d4eba870bd5`
