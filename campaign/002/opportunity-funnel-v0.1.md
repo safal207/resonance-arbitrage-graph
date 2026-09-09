@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `2386091edf9ce02b139ab77cad776028d5ac1fe0d6451b46c8763c46aae2dc76`
-- Replay SHA-256: `7c2e70e1ec91dc39ac247ee30e8b76250c8d2cacc2c78b59ae13ce56dba410d9`
+- Source SHA-256: `6ce90cdf60cdb20e89516c3d7e30c6d8c6cf5be230c76e67a2911d181a0af03b`
+- Replay SHA-256: `e6343f3190d97c872d94f4f448a300f867c9abaad474e62d486f9e703f2d49d1`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **778**
-- Complete evidence: **776** (99.74%)
-- Structural constraints pass: **663** (85.22%)
-- Gross-positive before costs: **117** (15.04%)
+- Captured terminal cycles: **788**
+- Complete evidence: **786** (99.75%)
+- Structural constraints pass: **671** (85.15%)
+- Gross-positive before costs: **119** (15.10%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -20,7 +20,7 @@
 ## Edge distributions
 
 - Gross edge: **mean -3.90 bps (min -35.06, max 8.52)**
-- Expected net edge: **mean -39.84 bps (min -70.89, max -27.47)**
+- Expected net edge: **mean -39.85 bps (min -70.89, max -27.47)**
 - Observed terminal edge: **mean -39.80 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.83, max 35.99)**
 
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 546 × `GROSS_NON_POSITIVE`
-- 117 × `MODELED_COSTS_ERASE_EDGE`
-- 63 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 552 × `GROSS_NON_POSITIVE`
+- 119 × `MODELED_COSTS_ERASE_EDGE`
+- 65 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 26 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 24 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `9a1fcfb73c32505e1b71a2c91ecb6b97a457f728b632e953a6d988051bf89e06`
+Evidence SHA-256: `361b79e215ef382b6a8a7f488c5029aba93276f49e9f5e122334773e29b05587`
