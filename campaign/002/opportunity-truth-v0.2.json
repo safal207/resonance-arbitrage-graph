@@ -14,7 +14,7 @@
     ],
     "claim_status": "NOT_READY",
     "corpus_quality": {
-      "corpus_sha256": "162f519136b5b89d2bdb1acc4ba21a4aae6cb71a3a757d7c5d0b800614267edf",
+      "corpus_sha256": "7ce444ad04b161e500f2afa9ff3cc6c6f678d0911b5e62cdbf0dab81f6fef0e0",
       "decision_batch_counts": [
         {
           "evaluation_time_ms": 1787979680466,
@@ -1751,18 +1751,38 @@
         {
           "evaluation_time_ms": 1789082331212,
           "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789088739422,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789088836965,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789088934471,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789089032060,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789089129558,
+          "terminal_operations": 2
         }
       ],
-      "distinct_decision_batches": 434,
+      "distinct_decision_batches": 439,
       "distinct_regimes": 3,
       "distinct_route_markets": 11,
       "distinct_routes": 10,
-      "effective_decision_batches": 433.99999999999704,
-      "effective_routes": 9.999787640688046,
+      "effective_decision_batches": 439.00000000000017,
+      "effective_routes": 9.99979245038267,
       "failed_dimensions": [],
       "interpretation": "RESEARCH_READINESS_ONLY",
-      "largest_decision_batch_share": 0.002304147465437788,
-      "largest_route_share": 0.10023041474654378,
+      "largest_decision_batch_share": 0.002277904328018223,
+      "largest_route_share": 0.10022779043280182,
       "paper_only": true,
       "policy_payload": {
         "interpretation": "RESEARCH_READINESS_ONLY",
@@ -1781,11 +1801,11 @@
       "regime_counts": [
         {
           "regime": "NORMAL",
-          "terminal_operations": 715
+          "terminal_operations": 722
         },
         {
           "regime": "THIN_LIQUIDITY",
-          "terminal_operations": 151
+          "terminal_operations": 154
         },
         {
           "regime": "UNKNOWN",
@@ -1808,50 +1828,50 @@
       "route_topology_counts": [
         {
           "route_topology_id": "1b31c86d9eb3a09c207f98bc9e5a2172bfb704dd4d76764a7a8725323f441510",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "2efce319f0d40456b773f060846b547a2422063b1195bc49e991e0256c6b4faf",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "4b46f6bcff526fef2122ba25b60df88602ad458034a8f0c76150e3d83016a4c4",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "60f588cd596301c633dd760d22a156a3edb4bcf81b813417d1afd7b1f41b523d",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "bf7097c185f558d3a2f4964317d17e5f4c5a289123f3e6661f0210b15467c4a5",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "d788aa3e0a85767fca6c99eb080b383518511fed5bd40e325c6a15bb6177b272",
-          "terminal_operations": 86
+          "terminal_operations": 87
         },
         {
           "route_topology_id": "deb88b7bd12a91b53723ed11fa5deb369842c6f3a26b059c36bbaaeee9eefd8f",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "e63f24ebab5b3eb5dcb963849e9f9ad51a994e2bbd02003e0dd57cfaa2c61a0f",
-          "terminal_operations": 87
+          "terminal_operations": 88
         },
         {
           "route_topology_id": "e6ce8f663532c037262665cc45a6cc119e87a2b7377452f4b640201aee9cf624",
-          "terminal_operations": 86
+          "terminal_operations": 87
         },
         {
           "route_topology_id": "f8dd05217448d1dbd515357d4104fd7dcea6149bbf5a3a7d753a45aebc0f2f9d",
-          "terminal_operations": 87
+          "terminal_operations": 88
         }
       ],
       "schema": "resonance.arbitrage.corpus-quality-report/v0.1",
-      "temporal_span_ms": 1102650746,
-      "terminal_operation_count": 868
+      "temporal_span_ms": 1109449092,
+      "terminal_operation_count": 878
     },
-    "corpus_quality_sha256": "f40dc36aa0cecc946622b1fad1aac77b59bba651a8c4098aa585f60dc568ffd7",
+    "corpus_quality_sha256": "6ba13b8b0459573c230bbd798ebe412f36bbf891e24ffd83c307b894ea86faf9",
     "evidence_source": "REAL_MARKET_CORPUS",
     "internal_evidence_ready": false,
     "legacy_benchmark": {
@@ -1860,16 +1880,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "NORMAL",
-          "logical_operations": 715,
+          "logical_operations": 722,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 715,
+            "logical_operations": 722,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 715,
+            "rejected": 722,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -1880,16 +1900,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "THIN_LIQUIDITY",
-          "logical_operations": 151,
+          "logical_operations": 154,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 151,
+            "logical_operations": 154,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 151,
+            "rejected": 154,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -1922,16 +1942,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "0f900639b50bd580e23728e911fb1edd6d7309932ef2cb15c491db8594b9bc81",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -1942,16 +1962,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "195fffbb1e0172ae1a17f3a4fcbd1848a25c39e36129389a036c3f4b65712437",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -1962,16 +1982,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "3a41007eaaefc79b61ae7351071fa476b018a32ebf9dfd589da8f3475aedf3c6",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -1982,16 +2002,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "81d88668c16fa78f000433a2cfaa32f5efb2f43297fa4cca58c6671e85644f9a",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -2002,16 +2022,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "850b84dc68c3d52a9812d9d7d9ff0f278615028aeea482d83cc457d821b51c54",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -2022,16 +2042,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "98d774c1e10cf931bb917fc3b775cdf0641046cdd2a4baad38000bafcea40368",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -2042,16 +2062,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "a1d4c89ed1ed7def6f517eefc3a7ac8ad7c4f44a343e70444bfdbfd2da83ff3b",
-          "logical_operations": 86,
+          "logical_operations": 87,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 86,
+            "logical_operations": 87,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 86,
+            "rejected": 87,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -2062,16 +2082,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "a7d665a0424aaa64e5897b3f91d326a29e50ab07d480a6fd94246f15ec7691ec",
-          "logical_operations": 87,
+          "logical_operations": 88,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 87,
+            "logical_operations": 88,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 87,
+            "rejected": 88,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -2082,6 +2102,26 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "e0b6ce6d92e622816d56623b1bc8fbad98c7f2bbc72a322383ef975933413db7",
+          "logical_operations": 88,
+          "metrics": {
+            "expired": 0,
+            "false_opportunity_rate": null,
+            "false_positive": 0,
+            "indeterminate": 0,
+            "logical_operations": 88,
+            "mean_prediction_error_bps": null,
+            "opportunity_truth_rate": null,
+            "rejected": 88,
+            "route_survival_rate": null,
+            "true_positive": 0
+          },
+          "realized_paper_pnl": 0.0,
+          "realized_paper_return_bps": null
+        },
+        {
+          "evaluated_execute_sim_capital": 0.0,
+          "execute_sim_decisions": 0,
+          "key": "f7f75ffb8a100ecc88a293d803cc63ed38da355a9dc2dc2324624bbb7ee479c6",
           "logical_operations": 87,
           "metrics": {
             "expired": 0,
@@ -2097,32 +2137,12 @@
           },
           "realized_paper_pnl": 0.0,
           "realized_paper_return_bps": null
-        },
-        {
-          "evaluated_execute_sim_capital": 0.0,
-          "execute_sim_decisions": 0,
-          "key": "f7f75ffb8a100ecc88a293d803cc63ed38da355a9dc2dc2324624bbb7ee479c6",
-          "logical_operations": 86,
-          "metrics": {
-            "expired": 0,
-            "false_opportunity_rate": null,
-            "false_positive": 0,
-            "indeterminate": 0,
-            "logical_operations": 86,
-            "mean_prediction_error_bps": null,
-            "opportunity_truth_rate": null,
-            "rejected": 86,
-            "route_survival_rate": null,
-            "true_positive": 0
-          },
-          "realized_paper_pnl": 0.0,
-          "realized_paper_return_bps": null
         }
       ],
-      "candidate_opportunities": 868,
+      "candidate_opportunities": 878,
       "downgrade_reason_counts": [
         {
-          "count": 868,
+          "count": 878,
           "reason": "BASE_VERDICT:REJECT"
         },
         {
@@ -2130,7 +2150,7 @@
           "reason": "CAPACITY_EXCEEDED:0"
         },
         {
-          "count": 82,
+          "count": 85,
           "reason": "CAPACITY_EXCEEDED:1"
         },
         {
@@ -2138,15 +2158,15 @@
           "reason": "CAPACITY_EXCEEDED:2"
         },
         {
-          "count": 868,
+          "count": 878,
           "reason": "FINAL_VERDICT:REJECT"
         },
         {
-          "count": 715,
+          "count": 722,
           "reason": "MARKET_REGIME:NORMAL"
         },
         {
-          "count": 151,
+          "count": 154,
           "reason": "MARKET_REGIME:THIN_LIQUIDITY"
         },
         {
@@ -2154,15 +2174,15 @@
           "reason": "MARKET_REGIME:UNKNOWN"
         },
         {
-          "count": 738,
+          "count": 745,
           "reason": "NON_POSITIVE_NET_EDGE"
         },
         {
-          "count": 715,
+          "count": 722,
           "reason": "REGIME_ACTION:ALLOW"
         },
         {
-          "count": 151,
+          "count": 154,
           "reason": "REGIME_ACTION:OBSERVE_ONLY"
         },
         {
@@ -2179,10 +2199,10 @@
         "false_opportunity_rate": null,
         "false_positive": 0,
         "indeterminate": 0,
-        "logical_operations": 868,
+        "logical_operations": 878,
         "mean_prediction_error_bps": null,
         "opportunity_truth_rate": null,
-        "rejected": 868,
+        "rejected": 878,
         "route_survival_rate": null,
         "true_positive": 0
       },
@@ -2192,15 +2212,15 @@
       "public_claim_eligible": false,
       "realized_paper_pnl": 0.0,
       "realized_paper_return_bps": null,
-      "reject_decisions": 868,
+      "reject_decisions": 878,
       "sample_size_gate_passed": false,
       "schema": "resonance.verify.opportunity-truth-benchmark/v0.1",
-      "source_bundle_sha256": "eeb0d4a6f65c5f3c6fae4122516f36ae3b51bc8f5c6b8334e06cb896f972072c",
-      "source_corpus_sha256": "162f519136b5b89d2bdb1acc4ba21a4aae6cb71a3a757d7c5d0b800614267edf",
+      "source_bundle_sha256": "81fadb554279c96d904a95448af4f302d9e9e64840806be0a032a463cf14ffa5",
+      "source_corpus_sha256": "7ce444ad04b161e500f2afa9ff3cc6c6f678d0911b5e62cdbf0dab81f6fef0e0",
       "status": "INSUFFICIENT_TRUTH_POPULATION",
       "truth_population": 0
     },
-    "legacy_benchmark_sha256": "e1de64f8cdd6d6637ffdc92cb6ad0b8aec0065c02e3f54c619e17186e597571a",
+    "legacy_benchmark_sha256": "8aa002b92557a6a5d37d453b92f97269b8878f271ca42b2ec7394f0bc09ed92c",
     "legacy_cross_unit_pnl_is_not_used": true,
     "mean_edge_decay_bps": null,
     "mean_expected_edge_bps": null,
@@ -3073,16 +3093,26 @@
       "real-market-KRAKEN_SPOT-1789082212371-0",
       "real-market-KRAKEN_SPOT-1789082212371-1",
       "real-market-KRAKEN_SPOT-1789082331212-0",
-      "real-market-KRAKEN_SPOT-1789082331212-1"
+      "real-market-KRAKEN_SPOT-1789082331212-1",
+      "real-market-KRAKEN_SPOT-1789088739422-0",
+      "real-market-KRAKEN_SPOT-1789088739422-1",
+      "real-market-KRAKEN_SPOT-1789088836965-0",
+      "real-market-KRAKEN_SPOT-1789088836965-1",
+      "real-market-KRAKEN_SPOT-1789088934471-0",
+      "real-market-KRAKEN_SPOT-1789088934471-1",
+      "real-market-KRAKEN_SPOT-1789089032060-0",
+      "real-market-KRAKEN_SPOT-1789089032060-1",
+      "real-market-KRAKEN_SPOT-1789089129558-0",
+      "real-market-KRAKEN_SPOT-1789089129558-1"
     ],
     "paper_only": true,
     "paper_pnl_by_start_state": [],
-    "replay_bundle_sha256": "eeb0d4a6f65c5f3c6fae4122516f36ae3b51bc8f5c6b8334e06cb896f972072c",
+    "replay_bundle_sha256": "81fadb554279c96d904a95448af4f302d9e9e64840806be0a032a463cf14ffa5",
     "schema": "resonance.verify.opportunity-truth-benchmark/v0.2",
-    "source_sha256": "162f519136b5b89d2bdb1acc4ba21a4aae6cb71a3a757d7c5d0b800614267edf",
-    "terminal_operations": 868,
+    "source_sha256": "7ce444ad04b161e500f2afa9ff3cc6c6f678d0911b5e62cdbf0dab81f6fef0e0",
+    "terminal_operations": 878,
     "truth_coverage": null,
     "truth_population": 0
   },
-  "sha256": "c12c5a5f1a40cb02a46e2d583cfd08f12173859c3453fc5ac34314a659b84752"
+  "sha256": "0cce3941c5bc41f05c9c5ec60955a71987f2e2bd182a3f4f90b52cb5d3b6c179"
 }
