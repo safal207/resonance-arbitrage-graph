@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `23c3eb3db096e3f958d7fd069017068b951eb4194784f4bf2b66880fc02a7b74`
-- Replay SHA-256: `eb4bfde15b971f49ca8d01ab7a9c86367594373ea172bc44da08aab22cf6da24`
+- Source SHA-256: `1aba91f259c8af2e2c32c059e41171c2005ad118a97f2c065435c868a4343861`
+- Replay SHA-256: `9e4b228b1aa48b1b3e26753c3a77a8dafb3b9162c82e3e5745f3e088c5129ba7`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **1180**
-- Complete evidence: **1178** (99.83%)
-- Structural constraints pass: **981** (83.14%)
-- Gross-positive before costs: **169** (14.32%)
+- Captured terminal cycles: **1190**
+- Complete evidence: **1188** (99.83%)
+- Structural constraints pass: **985** (82.77%)
+- Gross-positive before costs: **169** (14.20%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -3.93 bps (min -35.06, max 8.52)**
+- Gross edge: **mean -3.94 bps (min -35.06, max 8.52)**
 - Expected net edge: **mean -39.88 bps (min -70.89, max -27.47)**
-- Observed terminal edge: **mean -39.82 bps (min -88.73, max -26.12)**
+- Observed terminal edge: **mean -39.83 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.83, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 812 × `GROSS_NON_POSITIVE`
+- 816 × `GROSS_NON_POSITIVE`
 - 169 × `MODELED_COSTS_ERASE_EDGE`
-- 120 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
-- 40 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
-- 37 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
+- 122 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 42 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
+- 39 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `289988378f05ed00f9d12d53f592bb97f66707d7c0407b67e39086f60a7d9a6a`
+Evidence SHA-256: `448c94f607019b1aae83ba39faa7d88bdef8953f09021db83d3389cf70f46b88`
