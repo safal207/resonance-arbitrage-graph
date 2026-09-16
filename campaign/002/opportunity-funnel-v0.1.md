@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `8f5e3ff1e7408e4503160f9ca8f6b2e381367986319ead3ccf63d0e4942d3b09`
-- Replay SHA-256: `387a60cc82215c4fc9b3159b91d7f12eb06d097cc992c036d73504d4ee4d6d92`
+- Source SHA-256: `58afb67de589c6c7eded5dd6195cd19f03e6d31aff9a507cb9bec4b86c305366`
+- Replay SHA-256: `6d48667f65e1b4b7b446b85d9a5b80920019b4f49a69b513eaa8ee9a26e05cd6`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **1220**
-- Complete evidence: **1218** (99.84%)
-- Structural constraints pass: **1009** (82.70%)
-- Gross-positive before costs: **171** (14.02%)
+- Captured terminal cycles: **1230**
+- Complete evidence: **1228** (99.84%)
+- Structural constraints pass: **1017** (82.68%)
+- Gross-positive before costs: **172** (13.98%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,9 +19,9 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -3.97 bps (min -35.06, max 8.52)**
-- Expected net edge: **mean -39.91 bps (min -70.89, max -27.47)**
-- Observed terminal edge: **mean -39.83 bps (min -88.73, max -26.12)**
+- Gross edge: **mean -3.98 bps (min -35.06, max 8.52)**
+- Expected net edge: **mean -39.92 bps (min -70.89, max -27.47)**
+- Observed terminal edge: **mean -39.84 bps (min -88.73, max -26.12)**
 - Modeled cost drag: **mean 35.94 bps (min 35.83, max 35.99)**
 
 ## Interpretation boundary
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 838 × `GROSS_NON_POSITIVE`
-- 171 × `MODELED_COSTS_ERASE_EDGE`
+- 845 × `GROSS_NON_POSITIVE`
+- 172 × `MODELED_COSTS_ERASE_EDGE`
 - 127 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
-- 43 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
+- 45 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
 - 39 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `41be398617f6b2729540869261f971b858dcfb9973dd24346cdbb53efffd86fa`
+Evidence SHA-256: `6a1a01fd9862a681d2ecdf22aaa258113ad93d1b8b7ca65f8b59b6cac94915f2`
