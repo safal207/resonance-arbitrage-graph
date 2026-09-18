@@ -1,15 +1,15 @@
 # RESONANCE Verify — Opportunity Funnel Benchmark
 
 - Evidence source: **REAL_MARKET_CORPUS**
-- Source SHA-256: `54b60c7e271fb4776d8ae834e1463212714505aef11edc41146106f3275129fd`
-- Replay SHA-256: `bd5393b1401ac0aa62fcc0a74f5baec11f66f7bc4ea6d21cd2015f106ee99555`
+- Source SHA-256: `4f4483351d5430909011f502bd51d26183d4ab90ccc612410841f82679ed0303`
+- Replay SHA-256: `2a03e8fe9e8bbfe7155f775c15d89d9e29741b1177f2bdd5ca3ab20aca0a5b87`
 
 ## Cumulative funnel
 
-- Captured terminal cycles: **1310**
-- Complete evidence: **1308** (99.85%)
-- Structural constraints pass: **1090** (83.21%)
-- Gross-positive before costs: **179** (13.66%)
+- Captured terminal cycles: **1320**
+- Complete evidence: **1318** (99.85%)
+- Structural constraints pass: **1098** (83.18%)
+- Gross-positive before costs: **180** (13.64%)
 - Net-positive after modeled costs: **0** (0.00%)
 - Execute-threshold eligible: **0** (0.00%)
 - Final EXECUTE_SIM: **0** (0.00%)
@@ -19,10 +19,10 @@
 
 ## Edge distributions
 
-- Gross edge: **mean -4.02 bps (min -40.61, max 8.52)**
-- Expected net edge: **mean -39.96 bps (min -76.42, max -27.47)**
-- Observed terminal edge: **mean -39.88 bps (min -88.73, max -26.12)**
-- Modeled cost drag: **mean 35.94 bps (min 35.81, max 35.99)**
+- Gross edge: **mean -4.02 bps (min -40.61, max 10.88)**
+- Expected net edge: **mean -39.96 bps (min -76.42, max -25.12)**
+- Observed terminal edge: **mean -39.89 bps (min -88.73, max -26.12)**
+- Modeled cost drag: **mean 35.94 bps (min 35.81, max 36.00)**
 
 ## Interpretation boundary
 
@@ -32,11 +32,11 @@ Gross-positive is not a trading instruction. Rejected routes are not false posit
 
 ## First blocker
 
-- 911 × `GROSS_NON_POSITIVE`
-- 179 × `MODELED_COSTS_ERASE_EDGE`
-- 129 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
+- 918 × `GROSS_NON_POSITIVE`
+- 180 × `MODELED_COSTS_ERASE_EDGE`
+- 130 × `STRUCTURAL:CAPACITY_EXCEEDED:1`
 - 49 × `STRUCTURAL:CAPACITY_EXCEEDED:2`
-- 40 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
+- 41 × `STRUCTURAL:CAPACITY_EXCEEDED:0`
 - 2 × `INCOMPLETE_EVIDENCE`
 
-Evidence SHA-256: `f45722c837e6602798b2fc9d8ce4757b124c996185e27b89d5c694588abf5750`
+Evidence SHA-256: `cd91223c2e55201548050a3524db1d6848e9b0f1c79c7a7b3c34b2959d635a50`
