@@ -14,7 +14,7 @@
     ],
     "claim_status": "NOT_READY",
     "corpus_quality": {
-      "corpus_sha256": "bab4000f48f564c23ff2fa93d1261d928963ab0e8eb0850a5873e00db453a826",
+      "corpus_sha256": "feb2bec14e0610593cd4821675908e233278ff0f7e48a38fac99a0a182cd3375",
       "decision_batch_counts": [
         {
           "evaluation_time_ms": 1787979680466,
@@ -2835,17 +2835,37 @@
         {
           "evaluation_time_ms": 1789810912716,
           "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789824363461,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789824497781,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789824630888,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789824764553,
+          "terminal_operations": 2
+        },
+        {
+          "evaluation_time_ms": 1789824898018,
+          "terminal_operations": 2
         }
       ],
-      "distinct_decision_batches": 705,
+      "distinct_decision_batches": 710,
       "distinct_regimes": 4,
       "distinct_route_markets": 11,
       "distinct_routes": 10,
-      "effective_decision_batches": 704.9999999999926,
+      "effective_decision_batches": 709.9999999999927,
       "effective_routes": 9.999999999999996,
       "failed_dimensions": [],
       "interpretation": "RESEARCH_READINESS_ONLY",
-      "largest_decision_batch_share": 0.0014184397163120568,
+      "largest_decision_batch_share": 0.0014084507042253522,
       "largest_route_share": 0.1,
       "paper_only": true,
       "policy_payload": {
@@ -2869,11 +2889,11 @@
         },
         {
           "regime": "NORMAL",
-          "terminal_operations": 1132
+          "terminal_operations": 1141
         },
         {
           "regime": "THIN_LIQUIDITY",
-          "terminal_operations": 275
+          "terminal_operations": 276
         },
         {
           "regime": "UNKNOWN",
@@ -2896,50 +2916,50 @@
       "route_topology_counts": [
         {
           "route_topology_id": "1b31c86d9eb3a09c207f98bc9e5a2172bfb704dd4d76764a7a8725323f441510",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "2efce319f0d40456b773f060846b547a2422063b1195bc49e991e0256c6b4faf",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "4b46f6bcff526fef2122ba25b60df88602ad458034a8f0c76150e3d83016a4c4",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "60f588cd596301c633dd760d22a156a3edb4bcf81b813417d1afd7b1f41b523d",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "bf7097c185f558d3a2f4964317d17e5f4c5a289123f3e6661f0210b15467c4a5",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "d788aa3e0a85767fca6c99eb080b383518511fed5bd40e325c6a15bb6177b272",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "deb88b7bd12a91b53723ed11fa5deb369842c6f3a26b059c36bbaaeee9eefd8f",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "e63f24ebab5b3eb5dcb963849e9f9ad51a994e2bbd02003e0dd57cfaa2c61a0f",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "e6ce8f663532c037262665cc45a6cc119e87a2b7377452f4b640201aee9cf624",
-          "terminal_operations": 141
+          "terminal_operations": 142
         },
         {
           "route_topology_id": "f8dd05217448d1dbd515357d4104fd7dcea6149bbf5a3a7d753a45aebc0f2f9d",
-          "terminal_operations": 141
+          "terminal_operations": 142
         }
       ],
       "schema": "resonance.arbitrage.corpus-quality-report/v0.1",
-      "temporal_span_ms": 1831232250,
-      "terminal_operation_count": 1410
+      "temporal_span_ms": 1845217552,
+      "terminal_operation_count": 1420
     },
-    "corpus_quality_sha256": "7a118cbeb297a19fca366911c3141dce8cb03d42f4835e15c384db6de6d01f84",
+    "corpus_quality_sha256": "b282407cc9900e64f45397c4354e145079c386a592df42b0508adfb8cb24d780",
     "evidence_source": "REAL_MARKET_CORPUS",
     "internal_evidence_ready": false,
     "legacy_benchmark": {
@@ -2968,16 +2988,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "NORMAL",
-          "logical_operations": 1132,
+          "logical_operations": 1141,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 1132,
+            "logical_operations": 1141,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 1132,
+            "rejected": 1141,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -2988,16 +3008,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "THIN_LIQUIDITY",
-          "logical_operations": 275,
+          "logical_operations": 276,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 275,
+            "logical_operations": 276,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 275,
+            "rejected": 276,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3030,16 +3050,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "0f900639b50bd580e23728e911fb1edd6d7309932ef2cb15c491db8594b9bc81",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3050,16 +3070,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "195fffbb1e0172ae1a17f3a4fcbd1848a25c39e36129389a036c3f4b65712437",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3070,16 +3090,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "3a41007eaaefc79b61ae7351071fa476b018a32ebf9dfd589da8f3475aedf3c6",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3090,16 +3110,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "81d88668c16fa78f000433a2cfaa32f5efb2f43297fa4cca58c6671e85644f9a",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3110,16 +3130,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "850b84dc68c3d52a9812d9d7d9ff0f278615028aeea482d83cc457d821b51c54",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3130,16 +3150,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "98d774c1e10cf931bb917fc3b775cdf0641046cdd2a4baad38000bafcea40368",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3150,16 +3170,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "a1d4c89ed1ed7def6f517eefc3a7ac8ad7c4f44a343e70444bfdbfd2da83ff3b",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3170,16 +3190,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "a7d665a0424aaa64e5897b3f91d326a29e50ab07d480a6fd94246f15ec7691ec",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3190,16 +3210,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "e0b6ce6d92e622816d56623b1bc8fbad98c7f2bbc72a322383ef975933413db7",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3210,16 +3230,16 @@
           "evaluated_execute_sim_capital": 0.0,
           "execute_sim_decisions": 0,
           "key": "f7f75ffb8a100ecc88a293d803cc63ed38da355a9dc2dc2324624bbb7ee479c6",
-          "logical_operations": 141,
+          "logical_operations": 142,
           "metrics": {
             "expired": 0,
             "false_opportunity_rate": null,
             "false_positive": 0,
             "indeterminate": 0,
-            "logical_operations": 141,
+            "logical_operations": 142,
             "mean_prediction_error_bps": null,
             "opportunity_truth_rate": null,
-            "rejected": 141,
+            "rejected": 142,
             "route_survival_rate": null,
             "true_positive": 0
           },
@@ -3227,10 +3247,10 @@
           "realized_paper_return_bps": null
         }
       ],
-      "candidate_opportunities": 1410,
+      "candidate_opportunities": 1420,
       "downgrade_reason_counts": [
         {
-          "count": 1410,
+          "count": 1420,
           "reason": "BASE_VERDICT:REJECT"
         },
         {
@@ -3238,7 +3258,7 @@
           "reason": "CAPACITY_EXCEEDED:0"
         },
         {
-          "count": 140,
+          "count": 141,
           "reason": "CAPACITY_EXCEEDED:1"
         },
         {
@@ -3246,7 +3266,7 @@
           "reason": "CAPACITY_EXCEEDED:2"
         },
         {
-          "count": 1410,
+          "count": 1420,
           "reason": "FINAL_VERDICT:REJECT"
         },
         {
@@ -3254,11 +3274,11 @@
           "reason": "MARKET_REGIME:DISLOCATED"
         },
         {
-          "count": 1132,
+          "count": 1141,
           "reason": "MARKET_REGIME:NORMAL"
         },
         {
-          "count": 275,
+          "count": 276,
           "reason": "MARKET_REGIME:THIN_LIQUIDITY"
         },
         {
@@ -3266,15 +3286,15 @@
           "reason": "MARKET_REGIME:UNKNOWN"
         },
         {
-          "count": 1174,
+          "count": 1183,
           "reason": "NON_POSITIVE_NET_EDGE"
         },
         {
-          "count": 1132,
+          "count": 1141,
           "reason": "REGIME_ACTION:ALLOW"
         },
         {
-          "count": 276,
+          "count": 277,
           "reason": "REGIME_ACTION:OBSERVE_ONLY"
         },
         {
@@ -3291,10 +3311,10 @@
         "false_opportunity_rate": null,
         "false_positive": 0,
         "indeterminate": 0,
-        "logical_operations": 1410,
+        "logical_operations": 1420,
         "mean_prediction_error_bps": null,
         "opportunity_truth_rate": null,
-        "rejected": 1410,
+        "rejected": 1420,
         "route_survival_rate": null,
         "true_positive": 0
       },
@@ -3304,15 +3324,15 @@
       "public_claim_eligible": false,
       "realized_paper_pnl": 0.0,
       "realized_paper_return_bps": null,
-      "reject_decisions": 1410,
+      "reject_decisions": 1420,
       "sample_size_gate_passed": false,
       "schema": "resonance.verify.opportunity-truth-benchmark/v0.1",
-      "source_bundle_sha256": "8c1138d3cb7c903f88aa3959c621921a4fd41d028bb4019f5a07d85c04789b31",
-      "source_corpus_sha256": "bab4000f48f564c23ff2fa93d1261d928963ab0e8eb0850a5873e00db453a826",
+      "source_bundle_sha256": "1f6e2a0e573bd1d95a41b4390f6a5ada6b416c20b00ffdb9a1585eecf6eaa6ac",
+      "source_corpus_sha256": "feb2bec14e0610593cd4821675908e233278ff0f7e48a38fac99a0a182cd3375",
       "status": "INSUFFICIENT_TRUTH_POPULATION",
       "truth_population": 0
     },
-    "legacy_benchmark_sha256": "69fb4354dab3287cc54cce0a1ecd39801e0348874cb01e4fa1dceb89392d67c4",
+    "legacy_benchmark_sha256": "273e27c28b16cd46edfb29f1a1c75296e5781ccdaf385b7484d4a73be8ef8292",
     "legacy_cross_unit_pnl_is_not_used": true,
     "mean_edge_decay_bps": null,
     "mean_expected_edge_bps": null,
@@ -4727,16 +4747,26 @@
       "real-market-KRAKEN_SPOT-1789810762342-0",
       "real-market-KRAKEN_SPOT-1789810762342-1",
       "real-market-KRAKEN_SPOT-1789810912716-0",
-      "real-market-KRAKEN_SPOT-1789810912716-1"
+      "real-market-KRAKEN_SPOT-1789810912716-1",
+      "real-market-KRAKEN_SPOT-1789824363461-0",
+      "real-market-KRAKEN_SPOT-1789824363461-1",
+      "real-market-KRAKEN_SPOT-1789824497781-0",
+      "real-market-KRAKEN_SPOT-1789824497781-1",
+      "real-market-KRAKEN_SPOT-1789824630888-0",
+      "real-market-KRAKEN_SPOT-1789824630888-1",
+      "real-market-KRAKEN_SPOT-1789824764553-0",
+      "real-market-KRAKEN_SPOT-1789824764553-1",
+      "real-market-KRAKEN_SPOT-1789824898018-0",
+      "real-market-KRAKEN_SPOT-1789824898018-1"
     ],
     "paper_only": true,
     "paper_pnl_by_start_state": [],
-    "replay_bundle_sha256": "8c1138d3cb7c903f88aa3959c621921a4fd41d028bb4019f5a07d85c04789b31",
+    "replay_bundle_sha256": "1f6e2a0e573bd1d95a41b4390f6a5ada6b416c20b00ffdb9a1585eecf6eaa6ac",
     "schema": "resonance.verify.opportunity-truth-benchmark/v0.2",
-    "source_sha256": "bab4000f48f564c23ff2fa93d1261d928963ab0e8eb0850a5873e00db453a826",
-    "terminal_operations": 1410,
+    "source_sha256": "feb2bec14e0610593cd4821675908e233278ff0f7e48a38fac99a0a182cd3375",
+    "terminal_operations": 1420,
     "truth_coverage": null,
     "truth_population": 0
   },
-  "sha256": "156675fc3104feb7d22ab6c7ec241b54f44b5768121ddcc5d5e5b3a3b6d7e751"
+  "sha256": "c8ec9de089e69ea7cc0f60148a0d9d7433105dd7482d49c6ef384d9205d7a61c"
 }
