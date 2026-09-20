@@ -276,6 +276,23 @@ resonance-replay-benchmark
 resonance-opportunity-truth-benchmark
 ```
 
+## Independent external verification
+
+A public RESONANCE evidence case received an independent bounded comparison in [CrewAI issue #5802](https://github.com/crewAIInc/crewAI/issues/5802#issuecomment-5743395182).
+
+The external reviewer downloaded both the successful and incomplete-retrieval evidence bundles, confirmed that the archives matched their published SHA-256 manifests, and ran the offline verifiers successfully against the pinned source commit.
+
+- The successful bundle was classified as `OBSERVED_EVENT_ONLY`.
+- The failed retrieval remained `INCOMPLETE_RETRIEVAL / UNCERTAIN`, rather than being promoted to evidence of external absence or successful execution.
+- `event.event_id` was preserved as an observed chain/log identity and was not reinterpreted as a pre-dispatch logical-action or payment-intent ID.
+- The reviewer's narrow adapter plus boundary tests passed its complete local suite: `153/153`.
+
+This is external evidence of bundle integrity, reproducibility and conservative classification. It is **not** a claim of independent network completeness, payment execution, crash recovery or exactly-once delivery.
+
+Public artifacts:
+- [Successful evidence bundle](https://github.com/safal207/resonance-arbitrage-graph/blob/34e99b59424924a50f5e35966bfd531d16eb1e2b/docs/evidence/wallet-watch-pr85/recent-resume-20260906/README.md)
+- [Incomplete-retrieval control](https://github.com/safal207/resonance-arbitrage-graph/blob/4cc66497c2e32221d3a726cd78b247cda57873b1/docs/evidence/wallet-watch-pr85/resume-20260906/README.md)
+
 ## Who this is for
 
 ### 1. Agentic trading builders
