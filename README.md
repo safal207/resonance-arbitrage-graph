@@ -289,6 +289,8 @@ The external reviewer downloaded both the successful and incomplete-retrieval ev
 
 This is external evidence of bundle integrity, reproducibility and conservative classification. It is **not** a claim of independent network completeness, payment execution, crash recovery or exactly-once delivery.
 
+Full record: [External Verification & Upstream Review Record](docs/external-verification-record.md)
+
 Public artifacts:
 - [Successful evidence bundle](https://github.com/safal207/resonance-arbitrage-graph/blob/34e99b59424924a50f5e35966bfd531d16eb1e2b/docs/evidence/wallet-watch-pr85/recent-resume-20260906/README.md)
 - [Incomplete-retrieval control](https://github.com/safal207/resonance-arbitrage-graph/blob/4cc66497c2e32221d3a726cd78b247cda57873b1/docs/evidence/wallet-watch-pr85/resume-20260906/README.md)
