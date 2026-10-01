@@ -252,6 +252,19 @@ resonance-opportunity-truth-benchmark render \
   --output opportunity-truth-v0.2.md
 ```
 
+## Wallet monitoring preview
+
+A separate [Wallet Watch v0.1](docs/WALLET_WATCH_V0_1.md) module implements one
+public Ethereum address → USDC transfer → RPC consistency/finality checks →
+local console notification → persistent SQLite history. An offline synthetic
+demo covers restart and deduplication. A live JSON-RPC connector is implemented;
+live collection remains unverified in the authoring environment. This is an
+operator CLI preview, not a hosted wallet-intelligence or copy-trading service.
+
+```bash
+python -m resonance_arbitrage_graph.wallet_watch_cli demo --db wallet-data/demo.sqlite3
+```
+
 ## Real-market evidence pipeline
 
 The repository already contains a public-market corpus path:

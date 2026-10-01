@@ -17,6 +17,7 @@ test = ["pytest>=8.0"]
 ml-catboost = ["catboost==1.2.10"]
 
 [project.scripts]
+resonance-wallet-watch = "resonance_arbitrage_graph.wallet_watch_cli:main"
 resonance-live-scan = "resonance_arbitrage_graph.live_scan:main"
 resonance-replay-benchmark = "resonance_arbitrage_graph.replay_cli:main"
 resonance-holdout-calibration = "resonance_arbitrage_graph.holdout_cli:main"
