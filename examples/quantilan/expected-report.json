@@ -1,0 +1,2607 @@
+{
+  "payload": {
+    "claim_status": "UNASSESSED_REPLAY_SOURCE",
+    "costs": {
+      "fee_bps": 5.0,
+      "gas_bps": 0.0,
+      "slippage_bps": 5.0
+    },
+    "fill_model": "NONE_ADMISSION_ONLY",
+    "fixture_sha256": "bbbfecaeabbb70d68ab3b513e575edf2da5cac1ba86c3ae7fa20cf509f477dbc",
+    "implementation_files_sha256": {
+      "engine.py": "8d1ede1ad0791b7049e6be8e794e870caa4983e1f8fc5c64563f660b96f6c727",
+      "evidence.py": "681f6ee2e1b9bf4b4b010d351f6714d92dd9478c95ee6b100a58dce4094cb509",
+      "exchange_state_demo.py": "fe2f7aa93a495287f6868f17bcf438afb65f888d931a4b3a1800a35876c8cfe4",
+      "market_evidence.py": "8d6cbf1d2a849c1939eee741fb83c97972c3b574aa1c7b2c53124c4f33804f7d",
+      "model.py": "7b22464ba949adca46d8ada8d63808677d9157d9fa4308abba5db7e3a0168654",
+      "quotes.py": "2227048b292bd608f5e843a078704344690db5d953038e00902571fb5ca3bd76",
+      "validation.py": "129bd79a06f0be02a8ad357a73f2607c373f01dc9641167fdb5f495118521834"
+    },
+    "initial_validation": {
+      "evaluation_time_ms": 1000,
+      "exchange_status": "TRADING",
+      "market_evidence": {
+        "payload": {
+          "causal_spine": [
+            "market_state",
+            "discrepancy",
+            "candidate_route",
+            "execution_constraints",
+            "state_transitions",
+            "settlement",
+            "paper_pnl",
+            "evidence"
+          ],
+          "expected": {
+            "final_amount": 1009.4655364875,
+            "gross_edge": 0.012499999999999956,
+            "gross_final_amount": 1012.5,
+            "net_edge": 0.009465536487500037,
+            "reasons": [],
+            "risk_adjusted_edge": 0.009465536487500037,
+            "start_amount": 1000.0,
+            "success_probability": 1.0,
+            "total_latency_ms": 0,
+            "verdict": "EXECUTE_SIM"
+          },
+          "invariants": {
+            "constraints_satisfied": true,
+            "positive_net_edge": true,
+            "returns_to_start": true
+          },
+          "logical_operation_id": "quantilan:initial",
+          "market_bindings": [
+            {
+              "edge_index": 0,
+              "side": "BUY",
+              "snapshot_index": 0
+            },
+            {
+              "edge_index": 1,
+              "side": "BUY",
+              "snapshot_index": 1
+            },
+            {
+              "edge_index": 2,
+              "side": "SELL",
+              "snapshot_index": 2
+            }
+          ],
+          "market_data": [
+            {
+              "ask_price": 80000.0,
+              "ask_qty": 2.0,
+              "base_asset": "BTC",
+              "bid_price": 79990.0,
+              "bid_qty": 2.0,
+              "metadata_url": null,
+              "observed_at_ms": 1000,
+              "quote_asset": "USDT",
+              "source_timestamp_ms": null,
+              "source_url": "fixture://quantilan-v1/initial/BTCUSDT",
+              "symbol": "BTCUSDT",
+              "timestamp_class": "client_observed",
+              "venue": "SIMULATED"
+            },
+            {
+              "ask_price": 0.05,
+              "ask_qty": 20.0,
+              "base_asset": "ETH",
+              "bid_price": 0.0499,
+              "bid_qty": 20.0,
+              "metadata_url": null,
+              "observed_at_ms": 1000,
+              "quote_asset": "BTC",
+              "source_timestamp_ms": null,
+              "source_url": "fixture://quantilan-v1/initial/ETHBTC",
+              "symbol": "ETHBTC",
+              "timestamp_class": "client_observed",
+              "venue": "SIMULATED"
+            },
+            {
+              "ask_price": 4051.0,
+              "ask_qty": 20.0,
+              "base_asset": "ETH",
+              "bid_price": 4050.0,
+              "bid_qty": 20.0,
+              "metadata_url": null,
+              "observed_at_ms": 1000,
+              "quote_asset": "USDT",
+              "source_timestamp_ms": null,
+              "source_url": "fixture://quantilan-v1/initial/ETHUSDT",
+              "symbol": "ETHUSDT",
+              "timestamp_class": "client_observed",
+              "venue": "SIMULATED"
+            }
+          ],
+          "market_evaluation_time_ms": 1000,
+          "paper_only": true,
+          "route": [
+            {
+              "capacity": 160000.0,
+              "confidence": 1.0,
+              "dst": "SIMULATED:BTC",
+              "failure_probability": 0.0,
+              "fee_bps": 5.0,
+              "gas_bps": 0.0,
+              "latency_ms": 0,
+              "quote_age_ms": 0,
+              "rate": 1.25e-05,
+              "settlement_probability": 1.0,
+              "slippage_bps": 5.0,
+              "src": "SIMULATED:USDT"
+            },
+            {
+              "capacity": 1.0,
+              "confidence": 1.0,
+              "dst": "SIMULATED:ETH",
+              "failure_probability": 0.0,
+              "fee_bps": 5.0,
+              "gas_bps": 0.0,
+              "latency_ms": 0,
+              "quote_age_ms": 0,
+              "rate": 20.0,
+              "settlement_probability": 1.0,
+              "slippage_bps": 5.0,
+              "src": "SIMULATED:BTC"
+            },
+            {
+              "capacity": 20.0,
+              "confidence": 1.0,
+              "dst": "SIMULATED:USDT",
+              "failure_probability": 0.0,
+              "fee_bps": 5.0,
+              "gas_bps": 0.0,
+              "latency_ms": 0,
+              "quote_age_ms": 0,
+              "rate": 4050.0,
+              "settlement_probability": 1.0,
+              "slippage_bps": 5.0,
+              "src": "SIMULATED:ETH"
+            }
+          ],
+          "schema": "resonance.arbitrage.evidence/v0.1"
+        },
+        "sha256": "4913f3dcd9f311a216f608236262ee36bbf6a9c2afcbb9a1d41e1dee72e3e0d6"
+      },
+      "modeled_net_edge_bps": 94.65536487500037,
+      "reasons": [],
+      "snapshot_age_ms": 0,
+      "state_id": "initial",
+      "state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+      "verdict": "EXECUTE_SIM"
+    },
+    "limits": [
+      "All market states and clock values are synthetic; no exchange is contacted.",
+      "Top-of-book capacity only; no multi-level fills, queue position or partial fills.",
+      "EXECUTE_SIM authorizes only an in-memory admission event, never a live order.",
+      "Initial-to-submission delay is distinct from engine route latency (zero here).",
+      "The recheck and simulated submission share one fixture clock tick.",
+      "State may change after the last observation or after submission; no atomic exchange binding.",
+      "Arrival diagnostics are hindsight policy checks, not observed fills or trading outcomes.",
+      "Hashes identify inputs and implementation bytes; they do not authenticate market truth."
+    ],
+    "paper_only": true,
+    "policy": {
+      "execute_net_edge": 0.003,
+      "max_quote_age_ms": 100,
+      "max_route_latency_ms": 5000,
+      "min_success_probability": 0.75,
+      "observe_net_edge": 0.0
+    },
+    "route": [
+      {
+        "side": "BUY",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "side": "BUY",
+        "symbol": "ETHBTC"
+      },
+      {
+        "side": "SELL",
+        "symbol": "ETHUSDT"
+      }
+    ],
+    "scenarios": [
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1100,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "EXECUTE_SIM"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:unchanged_fresh:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/unchanged_fresh:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/unchanged_fresh:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/unchanged_fresh:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1100,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "c759e07f65af616954a25b7e4e906ea75560949db4bec9ab865b16a6c7ddb303"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [],
+          "snapshot_age_ms": 0,
+          "state_id": "unchanged_fresh:arrival",
+          "state_sha256": "7823775278f277614d00d427b548e8c1dfe787b5d45f3c13f32737568747f011",
+          "verdict": "EXECUTE_SIM"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1080,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "EXECUTE_SIM"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:unchanged_fresh:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/unchanged_fresh:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/unchanged_fresh:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/unchanged_fresh:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1080,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "6bbf211c221e6985db839b9950559c22af15fe87df0184c2d7a9b232bfdea342"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [],
+          "snapshot_age_ms": 5,
+          "state_id": "unchanged_fresh:boundary",
+          "state_sha256": "bf3e0c343f73ec03736664c31deda3e0eaba6b97816f256f25c5a711cadcddd4",
+          "verdict": "EXECUTE_SIM"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": false,
+          "reused_permission_disagrees_with_arrival_policy": false
+        },
+        "description": "Fresh observation of unchanged prices and capacity: positive control.",
+        "guarded": {
+          "decision_state_sha256": "bf3e0c343f73ec03736664c31deda3e0eaba6b97816f256f25c5a711cadcddd4",
+          "reasons": [],
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "id": "unchanged_fresh",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1080,
+          "initial_check_to_submission_ms": 80,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1100,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      },
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1100,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [
+                  "CAPACITY_EXCEEDED:0"
+                ],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:depth_shrink:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 0.0075,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/depth_shrink:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/depth_shrink:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/depth_shrink:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1100,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 600.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "7cd49a5d2030ed73d924a4bb88e9517c049085e5a2c12542013b456081a41742"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "CAPACITY_EXCEEDED:0"
+          ],
+          "snapshot_age_ms": 0,
+          "state_id": "depth_shrink:arrival",
+          "state_sha256": "9dd2d57d39256ff70e96f34b1f8eca4c58ddc320f8c8f31f3fa455b6ffd153be",
+          "verdict": "REJECT"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1080,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [
+                  "CAPACITY_EXCEEDED:0"
+                ],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:depth_shrink:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 0.0075,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/depth_shrink:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/depth_shrink:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/depth_shrink:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1080,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 600.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "c0732f9a71c1c998eb423444d4516ac29adb56d7960fa8c218fb1b7e0109e939"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "CAPACITY_EXCEEDED:0"
+          ],
+          "snapshot_age_ms": 5,
+          "state_id": "depth_shrink:boundary",
+          "state_sha256": "b1f60e4777b6a4e5498b47b8b0319350e6c03c780cca2fdfeee61124a09bba77",
+          "verdict": "REJECT"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": false,
+          "reused_permission_disagrees_with_arrival_policy": true
+        },
+        "description": "BTC ask capacity falls from 160000 to 600 USDT before the 1000 USDT paper submission.",
+        "guarded": {
+          "decision_state_sha256": "b1f60e4777b6a4e5498b47b8b0319350e6c03c780cca2fdfeee61124a09bba77",
+          "reasons": [
+            "CAPACITY_EXCEEDED:0"
+          ],
+          "simulated_submission": false,
+          "verdict": "REJECT"
+        },
+        "id": "depth_shrink",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1080,
+          "initial_check_to_submission_ms": 80,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1100,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      },
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1100,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 994.5104915025,
+                "gross_edge": -0.0024999999999999467,
+                "gross_final_amount": 997.5,
+                "net_edge": -0.005489508497499962,
+                "reasons": [
+                  "NON_POSITIVE_NET_EDGE"
+                ],
+                "risk_adjusted_edge": -0.005489508497499962,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": false,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:price_drift:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/price_drift:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/price_drift:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 3990.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/price_drift:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1100,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 3990.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "80f200a320fa479d8d5a71dd2a2c88df760839c50361a30bd9f67b3476e17495"
+          },
+          "modeled_net_edge_bps": -54.89508497499962,
+          "reasons": [
+            "NON_POSITIVE_NET_EDGE"
+          ],
+          "snapshot_age_ms": 0,
+          "state_id": "price_drift:arrival",
+          "state_sha256": "053908a8a26b43d740f629661cb4017680760f6c20dcac5972c1f57aba21a3ac",
+          "verdict": "REJECT"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1080,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 994.5104915025,
+                "gross_edge": -0.0024999999999999467,
+                "gross_final_amount": 997.5,
+                "net_edge": -0.005489508497499962,
+                "reasons": [
+                  "NON_POSITIVE_NET_EDGE"
+                ],
+                "risk_adjusted_edge": -0.005489508497499962,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": false,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:price_drift:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/price_drift:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/price_drift:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 3990.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/price_drift:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1080,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 3990.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "7ec5d4a3c7f91b8c00b193bec4fd3ecddc5d13e645f90a22967ee6b65f5d7540"
+          },
+          "modeled_net_edge_bps": -54.89508497499962,
+          "reasons": [
+            "NON_POSITIVE_NET_EDGE"
+          ],
+          "snapshot_age_ms": 5,
+          "state_id": "price_drift:boundary",
+          "state_sha256": "e43bdeae3f6f577463ec0b76b2c94d246e7721f5a7f9c66eea31b0eb3dae7836",
+          "verdict": "REJECT"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": false,
+          "reused_permission_disagrees_with_arrival_policy": true
+        },
+        "description": "ETH bid falls from 4050 to 3990 USDT; modeled net edge becomes negative.",
+        "guarded": {
+          "decision_state_sha256": "e43bdeae3f6f577463ec0b76b2c94d246e7721f5a7f9c66eea31b0eb3dae7836",
+          "reasons": [
+            "NON_POSITIVE_NET_EDGE"
+          ],
+          "simulated_submission": false,
+          "verdict": "REJECT"
+        },
+        "id": "price_drift",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1080,
+          "initial_check_to_submission_ms": 80,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1100,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      },
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1100,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1001.9880139950001,
+                "gross_edge": 0.004999999999999893,
+                "gross_final_amount": 1005.0,
+                "net_edge": 0.0019880139950001485,
+                "reasons": [],
+                "risk_adjusted_edge": 0.0019880139950001485,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "OBSERVE"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:edge_below_threshold:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/edge_below_threshold:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/edge_below_threshold:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4020.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/edge_below_threshold:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1100,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 4020.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "992d061c310dd8b4971ad521101dcddf1e0ce4a64e2e6dc54e1e18f7937ef897"
+          },
+          "modeled_net_edge_bps": 19.880139950001485,
+          "reasons": [
+            "BELOW_EXECUTE_THRESHOLD"
+          ],
+          "snapshot_age_ms": 0,
+          "state_id": "edge_below_threshold:arrival",
+          "state_sha256": "17744c6f805fa9c3ba92a00d8f9bdb2414656fe1cc9388e71be255e270480289",
+          "verdict": "OBSERVE"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1080,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1001.9880139950001,
+                "gross_edge": 0.004999999999999893,
+                "gross_final_amount": 1005.0,
+                "net_edge": 0.0019880139950001485,
+                "reasons": [],
+                "risk_adjusted_edge": 0.0019880139950001485,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "OBSERVE"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:edge_below_threshold:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/edge_below_threshold:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/edge_below_threshold:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4020.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/edge_below_threshold:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1080,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 4020.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "dfddacda1348e64923107af4272e28ee25fcdd11e9a38a12bab7b1df26df5afc"
+          },
+          "modeled_net_edge_bps": 19.880139950001485,
+          "reasons": [
+            "BELOW_EXECUTE_THRESHOLD"
+          ],
+          "snapshot_age_ms": 5,
+          "state_id": "edge_below_threshold:boundary",
+          "state_sha256": "509c043f45b432f16775b0cfd3ebcb3f622773bc3ef837f76623661f2b26a3d2",
+          "verdict": "OBSERVE"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": false,
+          "reused_permission_disagrees_with_arrival_policy": true
+        },
+        "description": "ETH bid falls to 4020 USDT; modeled edge remains positive but falls below the 30 bps threshold.",
+        "guarded": {
+          "decision_state_sha256": "509c043f45b432f16775b0cfd3ebcb3f622773bc3ef837f76623661f2b26a3d2",
+          "reasons": [
+            "BELOW_EXECUTE_THRESHOLD"
+          ],
+          "simulated_submission": false,
+          "verdict": "OBSERVE"
+        },
+        "id": "edge_below_threshold",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1080,
+          "initial_check_to_submission_ms": 80,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1100,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      },
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1100,
+          "exchange_status": "HALTED",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "EXECUTE_SIM"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:exchange_halted:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/exchange_halted:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/exchange_halted:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/exchange_halted:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1100,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "cd99035110df6d3ab036c676bac8b5471647641f9a88225b100083b923c1190a"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "EXCHANGE_NOT_TRADING:HALTED"
+          ],
+          "snapshot_age_ms": 0,
+          "state_id": "exchange_halted:arrival",
+          "state_sha256": "044ed2a1edea3e2209d9fa7e971f988cd5b467edca9537925e7a676de09fc2b0",
+          "verdict": "REJECT"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1080,
+          "exchange_status": "HALTED",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "EXECUTE_SIM"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:exchange_halted:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/exchange_halted:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/exchange_halted:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/exchange_halted:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1080,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "f2ec3a8b6a34d23f07a97a7fe72e00e17583d5feebb8ea969a39cfc5b6eef937"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "EXCHANGE_NOT_TRADING:HALTED"
+          ],
+          "snapshot_age_ms": 5,
+          "state_id": "exchange_halted:boundary",
+          "state_sha256": "b135cb3a7850983612bc43fd7ef2949f05a2da9429110c8a3f7467897dc8c17b",
+          "verdict": "REJECT"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": false,
+          "reused_permission_disagrees_with_arrival_policy": true
+        },
+        "description": "Synthetic exchange status changes from TRADING to HALTED before submission.",
+        "guarded": {
+          "decision_state_sha256": "b135cb3a7850983612bc43fd7ef2949f05a2da9429110c8a3f7467897dc8c17b",
+          "reasons": [
+            "EXCHANGE_NOT_TRADING:HALTED"
+          ],
+          "simulated_submission": false,
+          "verdict": "REJECT"
+        },
+        "id": "exchange_halted",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1080,
+          "initial_check_to_submission_ms": 80,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1100,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      },
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1200,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [
+                  "STALE_QUOTE:0",
+                  "STALE_QUOTE:1",
+                  "STALE_QUOTE:2"
+                ],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:stale_snapshot:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1000,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/stale_snapshot:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1000,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/stale_snapshot:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1000,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/stale_snapshot:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1200,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 200,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 200,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 200,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "a43640f78571ab4bca85a66dd7d8639168061ded2732517130edcfe53e88d8ee"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "STALE_QUOTE:0",
+            "STALE_QUOTE:1",
+            "STALE_QUOTE:2"
+          ],
+          "snapshot_age_ms": 200,
+          "state_id": "stale_snapshot:arrival",
+          "state_sha256": "b9497e129abf8c8a278664a2ff7dd0bc450aa1e45fe6f9b539755c1eebc77191",
+          "verdict": "REJECT"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1180,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [
+                  "STALE_QUOTE:0",
+                  "STALE_QUOTE:1",
+                  "STALE_QUOTE:2"
+                ],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:stale_snapshot:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1000,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/stale_snapshot:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1000,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/stale_snapshot:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1000,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/stale_snapshot:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1180,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 180,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 180,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 180,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "f5656b37fce29353e55c9d3b45658a67ad7fcbf4e5de9ac3cb8165f87f191d17"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "STALE_QUOTE:0",
+            "STALE_QUOTE:1",
+            "STALE_QUOTE:2"
+          ],
+          "snapshot_age_ms": 180,
+          "state_id": "stale_snapshot:boundary",
+          "state_sha256": "39f8dd6bc62cdba6c4f13e836ee5846ccb1b0f705f827823bf677b2557e8abad",
+          "verdict": "REJECT"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": false,
+          "reused_permission_disagrees_with_arrival_policy": true
+        },
+        "description": "No refreshed observation arrives: snapshot age at submission is 180 ms versus a 100 ms limit.",
+        "guarded": {
+          "decision_state_sha256": "39f8dd6bc62cdba6c4f13e836ee5846ccb1b0f705f827823bf677b2557e8abad",
+          "reasons": [
+            "STALE_QUOTE:0",
+            "STALE_QUOTE:1",
+            "STALE_QUOTE:2"
+          ],
+          "simulated_submission": false,
+          "verdict": "REJECT"
+        },
+        "id": "stale_snapshot",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1180,
+          "initial_check_to_submission_ms": 180,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1200,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      },
+      {
+        "arrival_diagnostic": {
+          "evaluation_time_ms": 1100,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [
+                  "CAPACITY_EXCEEDED:0"
+                ],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "REJECT"
+              },
+              "invariants": {
+                "constraints_satisfied": false,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:drift_after_recheck:arrival-diagnostic",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 0.0075,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/drift_after_recheck:arrival/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/drift_after_recheck:arrival/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1100,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/drift_after_recheck:arrival/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1100,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 600.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 0,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "111049516c5f6ae635600f24f1f5b45f742a10f23fc09db75bc8dae2c365fb68"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [
+            "CAPACITY_EXCEEDED:0"
+          ],
+          "snapshot_age_ms": 0,
+          "state_id": "drift_after_recheck:arrival",
+          "state_sha256": "a009aed4f62b020b8c77ca7e9f958786e99097eb90b7db41f16e5af976acb249",
+          "verdict": "REJECT"
+        },
+        "boundary_recheck": {
+          "evaluation_time_ms": 1080,
+          "exchange_status": "TRADING",
+          "market_evidence": {
+            "payload": {
+              "causal_spine": [
+                "market_state",
+                "discrepancy",
+                "candidate_route",
+                "execution_constraints",
+                "state_transitions",
+                "settlement",
+                "paper_pnl",
+                "evidence"
+              ],
+              "expected": {
+                "final_amount": 1009.4655364875,
+                "gross_edge": 0.012499999999999956,
+                "gross_final_amount": 1012.5,
+                "net_edge": 0.009465536487500037,
+                "reasons": [],
+                "risk_adjusted_edge": 0.009465536487500037,
+                "start_amount": 1000.0,
+                "success_probability": 1.0,
+                "total_latency_ms": 0,
+                "verdict": "EXECUTE_SIM"
+              },
+              "invariants": {
+                "constraints_satisfied": true,
+                "positive_net_edge": true,
+                "returns_to_start": true
+              },
+              "logical_operation_id": "quantilan:drift_after_recheck:boundary",
+              "market_bindings": [
+                {
+                  "edge_index": 0,
+                  "side": "BUY",
+                  "snapshot_index": 0
+                },
+                {
+                  "edge_index": 1,
+                  "side": "BUY",
+                  "snapshot_index": 1
+                },
+                {
+                  "edge_index": 2,
+                  "side": "SELL",
+                  "snapshot_index": 2
+                }
+              ],
+              "market_data": [
+                {
+                  "ask_price": 80000.0,
+                  "ask_qty": 2.0,
+                  "base_asset": "BTC",
+                  "bid_price": 79990.0,
+                  "bid_qty": 2.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/drift_after_recheck:boundary/BTCUSDT",
+                  "symbol": "BTCUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 0.05,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 0.0499,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "BTC",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/drift_after_recheck:boundary/ETHBTC",
+                  "symbol": "ETHBTC",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                },
+                {
+                  "ask_price": 4051.0,
+                  "ask_qty": 20.0,
+                  "base_asset": "ETH",
+                  "bid_price": 4050.0,
+                  "bid_qty": 20.0,
+                  "metadata_url": null,
+                  "observed_at_ms": 1075,
+                  "quote_asset": "USDT",
+                  "source_timestamp_ms": null,
+                  "source_url": "fixture://quantilan-v1/drift_after_recheck:boundary/ETHUSDT",
+                  "symbol": "ETHUSDT",
+                  "timestamp_class": "client_observed",
+                  "venue": "SIMULATED"
+                }
+              ],
+              "market_evaluation_time_ms": 1080,
+              "paper_only": true,
+              "route": [
+                {
+                  "capacity": 160000.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:BTC",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 1.25e-05,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:USDT"
+                },
+                {
+                  "capacity": 1.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:ETH",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 20.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:BTC"
+                },
+                {
+                  "capacity": 20.0,
+                  "confidence": 1.0,
+                  "dst": "SIMULATED:USDT",
+                  "failure_probability": 0.0,
+                  "fee_bps": 5.0,
+                  "gas_bps": 0.0,
+                  "latency_ms": 0,
+                  "quote_age_ms": 5,
+                  "rate": 4050.0,
+                  "settlement_probability": 1.0,
+                  "slippage_bps": 5.0,
+                  "src": "SIMULATED:ETH"
+                }
+              ],
+              "schema": "resonance.arbitrage.evidence/v0.1"
+            },
+            "sha256": "acfa9c850743abe40497d222ab2307c3f35ab4d7e3c62846c39a48e53220d40d"
+          },
+          "modeled_net_edge_bps": 94.65536487500037,
+          "reasons": [],
+          "snapshot_age_ms": 5,
+          "state_id": "drift_after_recheck:boundary",
+          "state_sha256": "ae602a41a2c5b58e8938dd0aa0cc14a258d977e6b8a99111b2a26c5da15ed3d7",
+          "verdict": "EXECUTE_SIM"
+        },
+        "comparison": {
+          "guarded_submission_disagrees_with_arrival_policy": true,
+          "reused_permission_disagrees_with_arrival_policy": true
+        },
+        "description": "Depth shrinks only after the final recheck, during the 20 ms simulated transmission gap; the guard cannot see it.",
+        "guarded": {
+          "decision_state_sha256": "ae602a41a2c5b58e8938dd0aa0cc14a258d977e6b8a99111b2a26c5da15ed3d7",
+          "reasons": [],
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "id": "drift_after_recheck",
+        "reuse_initial_permission": {
+          "decision_state_sha256": "f31922759aecf12f2c35c2455e03d26ed556f6b6d75140aae38e880698ea2c97",
+          "simulated_submission": true,
+          "verdict": "EXECUTE_SIM"
+        },
+        "timing": {
+          "boundary_check_and_simulated_submission_at_ms": 1080,
+          "initial_check_to_submission_ms": 80,
+          "initial_validation_at_ms": 1000,
+          "simulated_arrival_at_ms": 1100,
+          "unprotected_submission_to_arrival_ms": 20
+        }
+      }
+    ],
+    "schema": "resonance.exchange-state-demo-report/v1",
+    "source_kind": "SYNTHETIC_FIXTURE",
+    "start_amount": 1000.0
+  },
+  "sha256": "313084ae4464b057423496f800225015a4a2b565a0ae81be748aed02c0f5bad0"
+}
