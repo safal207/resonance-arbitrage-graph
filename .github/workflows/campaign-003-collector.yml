@@ -180,6 +180,7 @@ jobs:
           PY
 
       - name: Preserve all evidence including partial/failed samples
+        id: persist
         if: always() && steps.gate.outputs.collect == 'true'
         working-directory: campaign-data
         shell: bash
@@ -194,6 +195,15 @@ jobs:
             git commit -m "data(campaign-003): slot $GITHUB_RUN_ID [skip ci]"
             git push origin HEAD:data/corpus-campaign-003
           fi
+
+      - name: Backup full evidence if persistence or collection fails
+        if: failure() && steps.gate.outputs.collect == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: campaign-003-recovery-${{ github.run_id }}
+          path: campaign-data/campaign/003/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Upload capture audit receipts without trading actions
         if: always() && steps.gate.outputs.collect == 'true'
@@ -211,8 +221,9 @@ jobs:
         env:
           COLLECT_OK: ${{ steps.collect.outputs.ok }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          PERSIST_OUTCOME: ${{ steps.persist.outcome }}
         run: |
-          if [[ "$COLLECT_OK" != 'true' || "$VERIFY_OUTCOME" != 'success' ]]; then
+          if [[ "$COLLECT_OK" != 'true' || "$VERIFY_OUTCOME" != 'success' || "$PERSIST_OUTCOME" != 'success' ]]; then
             echo "::error::Incomplete Campaign 003 slot. Do not retry or backfill this slot."
             exit 1
           fi
