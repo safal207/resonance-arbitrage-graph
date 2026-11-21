@@ -91,7 +91,7 @@ jobs:
               exit 1
             fi
           else
-            printf '%s\\n' "$actual" > "$pin"
+            echo "$actual" > "$pin"
           fi
 
       - name: Capture exactly one attempt per frozen market profile
