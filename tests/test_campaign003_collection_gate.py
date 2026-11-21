@@ -148,3 +148,21 @@ def test_preregistered_evaluator_checks_other_frozen_policy_guards():
     assert "case.engine_policy.max_route_latency_ms != 5000" in src
     assert "case.engine_policy.min_success_probability - 0.75" in src
     assert "case.engine_policy.observe_net_edge - 0.0" in src
+
+
+def test_collector_checks_out_pinned_code_before_installing_and_sampling():
+    yaml = Path(".github/workflows/campaign-003-collector.yml").read_text()
+    assert "Restore frozen collector code after initial slot" in yaml
+    assert 'git -C "$code" cat-file -e "$pinned^{commit}"' in yaml
+    assert 'git -C "$code" fetch --no-tags --depth=1 origin "$pinned"' in yaml
+    assert 'git -C "$code" checkout --detach "$pinned"' in yaml
+    assert 'if [[ ! "$pinned" =~ ^[0-9a-f]{40}$ ]]' in yaml
+    assert yaml.index("Restore frozen collector code after initial slot") < yaml.index(
+        "Install paper-only scanner"
+    )
+    assert yaml.index("Install paper-only scanner") < yaml.index(
+        "Check strict UTC window, canonical corpus and prior slots"
+    )
+    assert yaml.index("Check strict UTC window, canonical corpus and prior slots") < yaml.index(
+        "Pin acquisition code SHA before first capture"
+    )
