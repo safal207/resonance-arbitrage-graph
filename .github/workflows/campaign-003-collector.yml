@@ -75,6 +75,25 @@ jobs:
             --corpus "$GITHUB_WORKSPACE/campaign-data/campaign/003/corpus.json" \
             --github-output "$GITHUB_OUTPUT"
 
+      - name: Pin acquisition code SHA before first capture
+        if: steps.gate.outputs.collect == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$GITHUB_WORKSPACE/campaign-data/campaign/003"
+          mkdir -p "$root"
+          pin="$root/collector-source-sha.txt"
+          actual="$(git -C "$GITHUB_WORKSPACE/code" rev-parse HEAD)"
+          if [[ -f "$pin" ]]; then
+            recorded="$(cat "$pin")"
+            if [[ "$recorded" != "$actual" ]]; then
+              echo "::error::Collector code SHA drift detected. Do not collect mixed-version evidence."
+              exit 1
+            fi
+          else
+            printf '%s\\n' "$actual" > "$pin"
+          fi
+
       - name: Capture exactly one attempt per frozen market profile
         id: collect
         if: steps.gate.outputs.collect == 'true'
