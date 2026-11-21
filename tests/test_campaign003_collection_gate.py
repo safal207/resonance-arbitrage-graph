@@ -121,6 +121,8 @@ def test_workflow_never_collects_from_push_or_manual_dispatch():
     assert "--fee-bps 10" in yaml
     assert "--slippage-bps 2" in yaml
     assert "--execute-net-edge-bps 5" in yaml
+    assert "--max-route-latency-ms 5000" in yaml
+    assert "--min-success-probability 0.75" in yaml
     assert "--max-cases 2" in yaml
     assert "Never force-push" in yaml
     assert "No collection is performed by push or manual dispatch" in yaml
