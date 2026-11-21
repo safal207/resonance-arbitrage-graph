@@ -57,7 +57,7 @@ jobs:
               if not row.gross_positive:
                   continue
               edges = case.build_route()
-              path = [edges[0].src] + [edge.dst for edge in edges]
+              path = [edges[0].src.asset] + [edge.dst.asset for edge in edges]
               others = sorted(set(path) - {"BTC", "USD"})
               if len(edges) != 3 or path[0] != "USD" or path[-1] != "USD" or len(others) != 1:
                   raise SystemExit(f"Unexpected triangle for {row.operation_id}: {path}")
