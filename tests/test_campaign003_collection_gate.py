@@ -128,3 +128,23 @@ def test_workflow_never_collects_from_push_or_manual_dispatch():
     assert "No collection is performed by push or manual dispatch" in yaml
     assert "if: always() && steps.gate.outputs.collect == 'true'" in yaml
     assert "git push origin HEAD:data/corpus-campaign-003" in yaml
+
+
+def test_future_collector_pins_code_and_does_not_change_source_mid_campaign():
+    yaml = Path(".github/workflows/campaign-003-collector.yml").read_text()
+    assert "Pin acquisition code SHA before first capture" in yaml
+    assert 'collector-source-sha.txt' in yaml
+    assert "Collector code SHA drift detected" in yaml
+    assert yaml.index("Pin acquisition code SHA before first capture") < yaml.index(
+        "Capture exactly one attempt per frozen market profile"
+    )
+
+
+def test_preregistered_evaluator_checks_other_frozen_policy_guards():
+    from inspect import getsource
+    from resonance_arbitrage_graph.temporal_holdout import extract_holdout
+
+    src = getsource(extract_holdout)
+    assert "case.engine_policy.max_route_latency_ms != 5000" in src
+    assert "case.engine_policy.min_success_probability - 0.75" in src
+    assert "case.engine_policy.observe_net_edge - 0.0" in src
