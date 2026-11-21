@@ -165,6 +165,12 @@ def extract_holdout(corpus: RealMarketReplayCorpus) -> list[HoldoutObservation]:
             raise ValueError("changed execute threshold")
         if case.engine_policy.max_quote_age_ms != 3000:
             raise ValueError("changed quote-age policy")
+        if case.engine_policy.max_route_latency_ms != 5000:
+            raise ValueError("changed route-latency policy")
+        if abs(case.engine_policy.min_success_probability - 0.75) > 1e-12:
+            raise ValueError("changed minimum-success-probability policy")
+        if abs(case.engine_policy.observe_net_edge - 0.0) > 1e-12:
+            raise ValueError("changed observation threshold")
         if len(case.legs) != 3:
             raise ValueError("holdout route must have exactly three legs")
         if any(
