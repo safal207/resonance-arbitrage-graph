@@ -17,7 +17,7 @@ import json
 from .opportunity_funnel import _build_row
 from .real_market_corpus import RealMarketReplayCorpus, load_corpus
 
-START = date(2026, 11, 24)
+START = date(2026, 12, 1)
 DAYS = 28
 SLOTS_UTC = (1, 16)
 ASSETS = ("ADA", "ETH", "LTC", "SOL", "XRP")
