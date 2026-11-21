@@ -131,6 +131,11 @@ are reviewed and merged in dependency order.
   uses the frozen $25, 10+2 bps per-leg, 60-second paper horizon.
 - No retries, backfill, partial-day reconstruction, secret exchange
   credentials, wallet connection, live orders or real capital.
+- The first successful scheduled sampling attempt pins the collector source
+  commit SHA. Later jobs load that same immutable code commit from Git,
+  **even when `main` changes**. If the original source commit cannot be
+  fetched/verified or the recorded pin is invalid, they fail closed without
+  collecting. The pin is checked again before the market adapter is used.
 - Source data are committed only to the dedicated Campaign 003 branch;
   commits use ordinary fast-forward \`git push\` and never force-push.
   If a profile fails after creating pending data, the partial evidence
