@@ -107,6 +107,8 @@ jobs:
               --execute-net-edge-bps 5 \
               --observe-net-edge-bps 0 \
               --max-quote-age-ms 3000 \
+              --max-route-latency-ms 5000 \
+              --min-success-probability 0.75 \
               --horizon-ms 60000 \
               --max-hops 3 \
               --max-cases 2 \
