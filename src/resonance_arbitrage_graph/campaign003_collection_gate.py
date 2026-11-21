@@ -104,6 +104,8 @@ def main(argv: list[str] | None = None) -> int:
             target.write("collect=" + ("true" if decision.may_collect else "false") + "\n")
             target.write("status=" + decision.status + "\n")
             target.write("before=" + str(decision.previous_cases) + "\n")
+            target.write("date=" + decision.date_utc + "\n")
+            target.write("hour=" + str(decision.hour_utc) + "\n")
     print(f"Campaign 003 gate: {decision.status} at "
           f"{decision.date_utc} UTC{decision.hour_utc:02d}, "
           f"existing={decision.previous_cases}; max={MAX_OPERATIONS}")
