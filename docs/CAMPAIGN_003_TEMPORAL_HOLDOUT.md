@@ -136,6 +136,12 @@ are reviewed and merged in dependency order.
   **even when `main` changes**. If the original source commit cannot be
   fetched/verified or the recorded pin is invalid, they fail closed without
   collecting. The pin is checked again before the market adapter is used.
+- On the first scheduled slot, also pin the Git blob SHA of the **workflow
+  YAML** itself as `collector-workflow-blob-sha.txt`. Before any later
+  source restore or network collection, compare the current scheduled
+  workflow's blob SHA from `main` against this original value. If scheduler
+  arguments or step structure change, **fail closed**, even if the Python
+  commit is still available. Regular unrelated `main` changes are fine.
 - Source data are committed only to the dedicated Campaign 003 branch;
   commits use ordinary fast-forward \`git push\` and never force-push.
   If a profile fails after creating pending data, the partial evidence
