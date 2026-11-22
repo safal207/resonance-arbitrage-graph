@@ -61,8 +61,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pin="$GITHUB_WORKSPACE/campaign-data/campaign/003/collector-source-sha.txt"
+          root="$GITHUB_WORKSPACE/campaign-data/campaign/003"
+          pin="$root/collector-source-sha.txt"
+          workflow_pin="$root/collector-workflow-blob-sha.txt"
           code="$GITHUB_WORKSPACE/code"
+          # Check the actual scheduled workflow from the current main revision
+          # BEFORE restoring previously pinned Python source code.
+          workflow_blob="$(git -C "$code" rev-parse "HEAD:.github/workflows/campaign-003-collector.yml")"
+          if [[ -f "$workflow_pin" ]]; then
+            pinned_workflow="$(cat "$workflow_pin")"
+            if [[ ! "$pinned_workflow" =~ ^[0-9a-f]{40}$ || "$workflow_blob" != "$pinned_workflow" ]]; then
+              echo "::error::Scheduled workflow YAML drift detected; refuse to mix collection policies."
+              exit 1
+            fi
+          fi
           if [[ -f "$pin" ]]; then
             pinned="$(cat "$pin")"
             if [[ ! "$pinned" =~ ^[0-9a-f]{40}$ ]]; then
@@ -104,6 +116,9 @@ jobs:
           root="$GITHUB_WORKSPACE/campaign-data/campaign/003"
           mkdir -p "$root"
           pin="$root/collector-source-sha.txt"
+          workflow_pin="$root/collector-workflow-blob-sha.txt"
+          # The workflow blob SHA is read from the scheduled main revision.
+          # Pinned code may differ from that revision after a normal main update.
           actual="$(git -C "$GITHUB_WORKSPACE/code" rev-parse HEAD)"
           if [[ -f "$pin" ]]; then
             recorded="$(cat "$pin")"
@@ -113,6 +128,9 @@ jobs:
             fi
           else
             echo "$actual" > "$pin"
+          fi
+          if [[ ! -f "$workflow_pin" ]]; then
+            git -C "$GITHUB_WORKSPACE/code" rev-parse "HEAD:.github/workflows/campaign-003-collector.yml" > "$workflow_pin"
           fi
 
       - name: Capture exactly one attempt per frozen market profile
