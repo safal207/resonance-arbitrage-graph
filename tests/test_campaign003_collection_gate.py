@@ -166,3 +166,14 @@ def test_collector_checks_out_pinned_code_before_installing_and_sampling():
     assert yaml.index("Check strict UTC window, canonical corpus and prior slots") < yaml.index(
         "Pin acquisition code SHA before first capture"
     )
+
+
+def test_collector_rejects_scheduled_yaml_drift():
+    yaml = Path(".github/workflows/campaign-003-collector.yml").read_text()
+    assert "collector-workflow-blob-sha.txt" in yaml
+    assert 'git -C "$code" rev-parse "HEAD:.github/workflows/campaign-003-collector.yml"' in yaml
+    assert "Scheduled workflow YAML drift detected" in yaml
+    assert 'git -C "$GITHUB_WORKSPACE/code" rev-parse "HEAD:.github/workflows/campaign-003-collector.yml" > "$workflow_pin"' in yaml
+    assert yaml.index("Scheduled workflow YAML drift detected") < yaml.index(
+        "Pin acquisition code SHA before first capture"
+    )
