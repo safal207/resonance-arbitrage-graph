@@ -110,3 +110,60 @@ promotion.
 Source of historical hypothesis: [Campaign 002 evidence audit
 PR #87](https://github.com/safal207/resonance-arbitrage-graph/pull/87)
 and [campaign issue #57](https://github.com/safal207/resonance-arbitrage-graph/issues/57).
+
+
+## Separate future collection implementation — operational review gate
+
+The companion collector uses \`.github/workflows/campaign-003-collector.yml\`
+and \`campaign003_collection_gate.py\`. These are isolated in a separate
+draft pull request stacked **on top of this preregistration**; nothing
+in this protocol authorizes automatic collection before both PRs
+are reviewed and merged in dependency order.
+
+- A new \`data/corpus-campaign-003\` branch exists, created **without**
+  importing or modifying Campaign 002 evidence.
+- Proposed UTC schedule: \`17 1,16 1-28 12 *\`. The code enforces the year
+  **2026** and day range **Dec 1–28**, and declines every call outside
+  UTC hours **01**/**16**, or outside minute **12–30**. A delayed GitHub
+  cron trigger is **skipped**, never backdated to the planned hour.
+- Each permitted slot is captured **once** with five sequential
+  asset profiles (two triangular routes per asset); each profile
+  uses the frozen $25, 10+2 bps per-leg, 60-second paper horizon.
+- No retries, backfill, partial-day reconstruction, secret exchange
+  credentials, wallet connection, live orders or real capital.
+- The first successful scheduled sampling attempt pins the collector source
+  commit SHA. Later jobs load that same immutable code commit from Git,
+  **even when `main` changes**. If the original source commit cannot be
+  fetched/verified or the recorded pin is invalid, they fail closed without
+  collecting. The pin is checked again before the market adapter is used.
+- On the first scheduled slot, also pin the Git blob SHA of the **workflow
+  YAML** itself as `collector-workflow-blob-sha.txt`. Before any later
+  source restore or network collection, compare the current scheduled
+  workflow's blob SHA from `main` against this original value. If scheduler
+  arguments or step structure change, **fail closed**, even if the Python
+  commit is still available. Regular unrelated `main` changes are fine.
+- Source data are committed only to the dedicated Campaign 003 branch;
+  commits use ordinary fast-forward \`git push\` and never force-push.
+  If a profile fails after creating pending data, the partial evidence
+  is preserved and the **entire** slot is excluded from complete-pair
+  inference. Pending or inconsistent evidence blocks later automatic
+  progress until separately investigated; it is never silently repaired.
+- Every successful slot must have exactly ten terminal cycles from the
+  right UTC date/hour and exactly ten asset/direction identities.
+  Otherwise the job fails after persisting partial evidence.
+- Github \`workflow_dispatch\` and PR-branch pushes are **dry-run/gate
+  only**; they must not call the Kraken adapter or mutate the corpus.
+  Actual scheduled collection **only runs from the default branch**
+  after review/merge, per GitHub Actions behavior.
+- The GitHub Actions data collector has a 22-minute job timeout.
+  Because scheduled workflows can run late or be skipped by GitHub,
+  24/28 complete paired days remains a **quality requirement**, not
+  a guarantee of successful collection.
+- GitHub cron syntax has no year field. Although the workflow file's
+  cron can fire in later Decembers while active, the UTC date guard
+  will reject every post-2026 run before contacting markets. Plan to
+  remove the schedule when the campaign has closed.
+
+The future holdout evaluation remains manual/read-only:
+\`python -m resonance_arbitrage_graph.temporal_holdout ...\`.
+No benchmark promotion or profitability publication is automatic.
